@@ -2,6 +2,8 @@
 
 Status against handbook §6 Week 1 and the "Done when" line. Updated as of this build.
 
+**Update:** a real Firebase project is now live — `entertainment-power-play-bcf29`. Rules and indexes are deployed to it (not just written/tested), and it's seeded with real data: 5 categories, 5 quotes, 6 tracks × 10 challenges, 3 sample contacts. `apps/mobile/.env` points at it. Auth (Email/Password + Google) needs one manual click in the console to activate. Everything below that said "pending a real project" is now resolved.
+
 ## Handbook §6 Week 1 checklist
 
 | Item | Status | Evidence |

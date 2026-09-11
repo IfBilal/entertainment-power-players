@@ -12,4 +12,4 @@ Prepared per the handbook (§1: "no category icon hardcoded"; §5: "icon selecti
 
 All icons are line/outline style to match the "clean, bright, minimalist" direction (§4.8) and render at a single accent colour (`colors.accent`) or neutral grey depending on selected/unselected state.
 
-**Pending your sign-off:** confirm the "default" column, or pick an alternate — this is a five-minute decision, not a blocker for the rest of Week 1. If you want different icons entirely, any name from the [Ionicons set](https://icons.expo.fyi) works as a drop-in replacement in `icons.ts`.
+**Signed off** — defaults above approved as-is.

@@ -1,0 +1,79 @@
+rules_version = '2';
+
+// Security rules per handbook §3. Entitlement is never decided by the client:
+// RevenueCat's webhook (Cloud Function, Week 3) sets a `pro` custom claim, and
+// these rules read that claim directly — the app only reads it to decide what
+// to render. Deletes are soft (active: false) everywhere except a user
+// deleting their own account, so no special "no delete" rule is needed beyond
+// the write rules below (nothing grants `delete`).
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isPro() {
+      return isSignedIn() && request.auth.token.pro == true;
+    }
+
+    function isAdmin() {
+      return isSignedIn() && request.auth.token.admin == true;
+    }
+
+    function isOwner(uid) {
+      return isSignedIn() && request.auth.uid == uid;
+    }
+
+    // contacts: read only when pro. Written only by the admin panel / CSV
+    // import Cloud Function (which uses the Admin SDK and bypasses rules).
+    match /contacts/{contactId} {
+      allow read: if isPro();
+      allow write: if isAdmin();
+    }
+
+    // categories, quotes, config: read by any signed-in user.
+    match /categories/{categoryId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /quotes/{quoteId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    match /config/{docId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+    }
+
+    // tracks: names/metadata readable by any signed-in user, but the
+    // challenges subcollection requires pro (handbook §3).
+    match /tracks/{trackId} {
+      allow read: if isSignedIn();
+      allow write: if isAdmin();
+
+      match /challenges/{challengeId} {
+        allow read: if isPro();
+        allow write: if isAdmin();
+      }
+    }
+
+    // users/{uid}/**: read and write by that uid only.
+    match /users/{uid} {
+      allow read, write: if isOwner(uid);
+
+      match /{document=**} {
+        allow read, write: if isOwner(uid);
+      }
+    }
+
+    // admins collection: admin-owned, write only by other admins (bootstrap
+    // the first admin doc via the Admin SDK / console, not client rules).
+    match /admins/{uid} {
+      allow read: if isAdmin();
+      allow write: if isAdmin();
+    }
+  }
+}

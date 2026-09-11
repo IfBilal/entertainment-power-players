@@ -1,4 +1,5 @@
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Animated, StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { colors, radius, spacing } from '../theme';
 
@@ -11,6 +12,17 @@ type BarChartProps = {
   data: BarChartDatum[];
   height?: number;
 };
+
+function Bar({ value, max, height }: { value: number; max: number; height: number }) {
+  const grow = useRef(new Animated.Value(0)).current;
+  const targetHeight = Math.max(3, (value / max) * height);
+
+  useEffect(() => {
+    Animated.timing(grow, { toValue: targetHeight, duration: 420, useNativeDriver: false }).start();
+  }, [targetHeight]);
+
+  return <Animated.View style={[styles.bar, { height: grow }]} />;
+}
 
 /**
  * Minimal flexbox bar chart — deliberately not Victory Native/Skia (see
@@ -25,9 +37,9 @@ export function BarChart({ data, height = 120 }: BarChartProps) {
       {data.map((d) => (
         <View key={d.label} style={styles.column}>
           <View style={styles.barTrack}>
-            <View style={[styles.bar, { height: Math.max(2, (d.value / max) * height) }]} />
+            <Bar value={d.value} max={max} height={height} />
           </View>
-          <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
+          <AppText variant="caption" color={colors.textMuted} numberOfLines={1}>
             {d.label}
           </AppText>
         </View>
@@ -50,7 +62,7 @@ const styles = StyleSheet.create({
   barTrack: {
     flex: 1,
     justifyContent: 'flex-end',
-    width: '60%',
+    width: '55%',
   },
   bar: {
     backgroundColor: colors.accent,

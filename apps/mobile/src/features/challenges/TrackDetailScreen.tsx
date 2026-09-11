@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Card, EmptyState, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, Card, EmptyState, ProgressRing, Screen } from '../../components';
+import { colors, spacing } from '../../theme';
 import { tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
 import { useAppStore } from '../../store/useAppStore';
 import { useChallengesStore } from '../../store/useChallengesStore';
@@ -105,11 +105,16 @@ export function TrackDetailScreen({ route, navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">{track.name}</AppText>
-      <View style={styles.ring}>
-        <View style={[styles.ringFill, { width: `${total > 0 ? (done / total) * 100 : 0}%` }]} />
+      <View style={styles.header}>
+        <View style={styles.headerText}>
+          <AppText variant="label" color={colors.textMuted}>TRACK</AppText>
+          <AppText variant="title">{track.name}</AppText>
+          <AppText variant="caption" color={colors.textSecondary} style={styles.ringLabel}>
+            {done} of {total} complete
+          </AppText>
+        </View>
+        <ProgressRing progress={total > 0 ? done / total : 0} label={`${done}/${total}`} />
       </View>
-      <AppText variant="caption" color={colors.textSecondary} style={styles.ringLabel}>{done} of {total} complete</AppText>
 
       <FlatList
         data={track.challenges.sort((a, b) => a.order - b.order)}
@@ -123,10 +128,10 @@ export function TrackDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   heading: { marginBottom: spacing.md },
-  ring: { height: 8, borderRadius: radius.pill, backgroundColor: colors.border, marginTop: spacing.md, overflow: 'hidden' },
-  ringFill: { height: '100%', backgroundColor: colors.accent },
-  ringLabel: { marginTop: spacing.xs, marginBottom: spacing.md },
-  list: { gap: spacing.sm },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  headerText: { flex: 1, marginRight: spacing.md },
+  ringLabel: { marginTop: spacing.xs },
+  list: { gap: spacing.sm, paddingBottom: spacing.lg },
   challengeCard: { gap: spacing.sm },
   challengeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   challengeText: { flex: 1, marginRight: spacing.sm },

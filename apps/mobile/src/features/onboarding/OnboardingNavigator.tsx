@@ -5,13 +5,14 @@ import { SignUpScreen } from './SignUpScreen';
 import { LoginScreen } from './LoginScreen';
 import { ForgotPasswordScreen } from './ForgotPasswordScreen';
 import { TrackPickerScreen } from './TrackPickerScreen';
+import { themedHeaderOptions } from '../../navigation/headerOptions';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 const Stack = createNativeStackNavigator<OnboardingStackParamList>();
 
 export function OnboardingNavigator() {
   return (
-    <Stack.Navigator screenOptions={{ headerShown: false }}>
+    <Stack.Navigator screenOptions={{ headerShown: false, ...themedHeaderOptions }}>
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="IntroSlides" component={IntroSlidesScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />

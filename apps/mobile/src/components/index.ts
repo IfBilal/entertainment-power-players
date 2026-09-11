@@ -4,3 +4,5 @@ export { Button } from './Button';
 export { Card } from './Card';
 export { EmptyState } from './EmptyState';
 export { BarChart } from './BarChart';
+export { ProgressBar } from './ProgressBar';
+export { ProgressRing } from './ProgressRing';

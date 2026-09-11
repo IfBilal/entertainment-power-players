@@ -5,7 +5,7 @@ import { TrackerNavigator } from '../features/tracker/TrackerNavigator';
 import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator';
 import { InspirationNavigator } from '../features/inspiration/InspirationNavigator';
 import { ProfileNavigator } from '../features/profile/ProfileNavigator';
-import { colors, tabIcons } from '../theme';
+import { colors, fontFamilies, tabIcons } from '../theme';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
@@ -16,8 +16,17 @@ export function MainTabNavigator() {
       screenOptions={({ route }) => ({
         headerShown: false,
         tabBarActiveTintColor: colors.accent,
-        tabBarInactiveTintColor: colors.textSecondary,
-        tabBarIcon: ({ color, size }) => <Ionicons name={tabIcons[route.name]} size={size} color={color} />,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: {
+          backgroundColor: colors.background,
+          borderTopColor: colors.border,
+          height: 60,
+          paddingTop: 8,
+        },
+        tabBarLabelStyle: { fontFamily: fontFamilies.sansSemiBold, fontSize: 11 },
+        tabBarIcon: ({ color, size, focused }) => (
+          <Ionicons name={tabIcons[route.name]} size={focused ? size + 1 : size} color={color} />
+        ),
       })}
     >
       <Tab.Screen name="Directory" component={DirectoryNavigator} />

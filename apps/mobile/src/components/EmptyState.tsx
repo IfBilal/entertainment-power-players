@@ -1,7 +1,7 @@
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
-import { colors, spacing, type IoniconName } from '../theme';
+import { colors, radius, spacing, type IoniconName } from '../theme';
 
 type EmptyStateProps = {
   icon: IoniconName;
@@ -12,7 +12,9 @@ type EmptyStateProps = {
 export function EmptyState({ icon, title, description }: EmptyStateProps) {
   return (
     <View style={styles.container}>
-      <Ionicons name={icon} size={40} color={colors.textSecondary} />
+      <View style={styles.iconWrap}>
+        <Ionicons name={icon} size={26} color={colors.accent} />
+      </View>
       <AppText variant="subtitle" style={styles.title}>
         {title}
       </AppText>
@@ -32,6 +34,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.xxl,
     paddingHorizontal: spacing.lg,
   },
+  iconWrap: {
+    width: 56,
+    height: 56,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   title: {
     marginTop: spacing.md,
     textAlign: 'center',
@@ -39,5 +49,6 @@ const styles = StyleSheet.create({
   description: {
     marginTop: spacing.xs,
     textAlign: 'center',
+    maxWidth: 260,
   },
 });

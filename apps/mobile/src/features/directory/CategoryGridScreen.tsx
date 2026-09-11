@@ -11,8 +11,11 @@ type Props = NativeStackScreenProps<DirectoryStackParamList, 'CategoryGrid'>;
 export function CategoryGridScreen({ navigation }: Props) {
   return (
     <Screen>
+      <AppText variant="label" color={colors.textMuted} style={styles.eyebrow}>
+        DIRECTORY
+      </AppText>
       <AppText variant="title" style={styles.heading}>
-        Directory
+        Who you should know
       </AppText>
       <FlatList
         data={mockCategories}
@@ -26,7 +29,9 @@ export function CategoryGridScreen({ navigation }: Props) {
           return (
             <Pressable style={styles.cell} onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}>
               <Card style={styles.card}>
-                <Ionicons name={icon} size={28} color={colors.accent} />
+                <View style={styles.iconWrap}>
+                  <Ionicons name={icon} size={22} color={colors.accent} />
+                </View>
                 <AppText variant="bodyStrong" style={styles.cardTitle}>
                   {item.name}
                 </AppText>
@@ -43,10 +48,19 @@ export function CategoryGridScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  eyebrow: { marginTop: spacing.xs },
   heading: { marginBottom: spacing.md },
-  grid: { gap: spacing.sm },
+  grid: { gap: spacing.sm, paddingBottom: spacing.lg },
   row: { gap: spacing.sm },
   cell: { flex: 1 },
-  card: { alignItems: 'flex-start', minHeight: 100, borderRadius: radius.lg },
+  card: { alignItems: 'flex-start', minHeight: 112, borderRadius: radius.lg },
+  iconWrap: {
+    width: 40,
+    height: 40,
+    borderRadius: radius.md,
+    backgroundColor: colors.accentSoft,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardTitle: { marginTop: spacing.sm },
 });

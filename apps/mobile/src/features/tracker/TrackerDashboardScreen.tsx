@@ -1,6 +1,6 @@
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, BarChart, Button, Card, Screen } from '../../components';
+import { AppText, BarChart, Button, Card, ProgressBar, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
 import { countsForWeek, last8WeeksTotals } from '../../services/mock/tracker';
@@ -26,23 +26,25 @@ export function TrackerDashboardScreen({ navigation }: Props) {
 
   return (
     <Screen>
+      <AppText variant="label" color={colors.textMuted} style={styles.eyebrow}>
+        {weekKey}
+      </AppText>
       <AppText variant="title">This week</AppText>
+
       <View style={styles.progressList}>
         {rows.map((row) => {
           const value = counts[row.key];
           const goal = goals[row.key];
-          const pct = goal > 0 ? Math.min(1, value / goal) : 0;
+          const pct = goal > 0 ? value / goal : 0;
           return (
             <Card key={row.key} style={styles.progressCard}>
               <View style={styles.progressHeader}>
                 <AppText variant="bodyStrong">{row.label}</AppText>
-                <AppText variant="caption" color={colors.textSecondary}>
+                <AppText variant="captionStrong" color={pct >= 1 ? colors.success : colors.textSecondary}>
                   {value} / {goal}
                 </AppText>
               </View>
-              <View style={styles.track}>
-                <View style={[styles.fill, { width: `${pct * 100}%` }]} />
-              </View>
+              <ProgressBar progress={pct} />
             </Card>
           );
         })}
@@ -52,7 +54,7 @@ export function TrackerDashboardScreen({ navigation }: Props) {
       <View style={styles.spacer} />
 
       <AppText variant="subtitle">Last 8 weeks</AppText>
-      <Card style={styles.chartCard}>
+      <Card style={styles.chartCard} elevation="none">
         <BarChart data={chartData} />
       </Card>
 
@@ -65,12 +67,11 @@ export function TrackerDashboardScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  eyebrow: { marginTop: spacing.xs },
   progressList: { marginTop: spacing.md, gap: spacing.sm, marginBottom: spacing.md },
-  progressCard: { gap: spacing.xs },
+  progressCard: { gap: spacing.sm },
   progressHeader: { flexDirection: 'row', justifyContent: 'space-between' },
-  track: { height: 6, borderRadius: 3, backgroundColor: colors.border, overflow: 'hidden' },
-  fill: { height: '100%', backgroundColor: colors.accent },
   spacer: { height: spacing.lg },
-  chartCard: { marginTop: spacing.sm, marginBottom: spacing.lg },
+  chartCard: { marginTop: spacing.sm, marginBottom: spacing.lg, backgroundColor: colors.surface },
   footerRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
 });

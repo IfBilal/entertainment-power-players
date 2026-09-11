@@ -1,8 +1,11 @@
 export { colors } from './colors';
 export { spacing, radius } from './spacing';
 export { typography } from './typography';
+export { shadows } from './shadows';
 export { categoryIconOptions, categorySlugToKey, tabIcons } from './icons';
+export { fontFamilies, useAppFonts } from './fonts';
 export type { ColorToken } from './colors';
 export type { SpacingToken, RadiusToken } from './spacing';
 export type { TypographyToken } from './typography';
+export type { ShadowToken } from './shadows';
 export type { IoniconName } from './icons';

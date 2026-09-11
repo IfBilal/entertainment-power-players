@@ -23,7 +23,7 @@ Status against handbook §6 Week 1 and the "Done when" line. Updated as of this 
 
 ## What you need to do
 
-1. **Install a JDK** (any recent LTS, e.g. via your OS package manager or `sdk install java`) — required for the Firestore emulator.
+1. **Install a JDK 21 or newer** (firebase-tools requires it — confirmed via the CI run, which failed on JDK 17 with "firebase-tools no longer supports Java version before 21" before I bumped it) — e.g. via your OS package manager or `sdk install java`.
 2. **Create/select a Firebase project**: `firebase login`, then `firebase projects:create` (or reuse an existing one). Copy `firebase/.firebaserc.example` to `firebase/.firebaserc` and put the project id in it.
 3. Run `cd firebase && npm test` — this spins up the Firestore emulator and runs `firebase/tests/firestore.rules.test.ts` (17 assertions: contacts pro-gating, categories/tracks/quotes/config free-for-signed-in, challenges subcollection pro-gating, users/{uid} isolation, admin-only collections).
 4. Run `cd functions && npm run build` then, with the emulator running, exercise `importContactsCsv` against `docs/contacts-import-template.csv` to confirm end-to-end writes land and are rules-enforced (a Firestore emulator UI walkthrough or a small script calling the callable — happy to write that script once the emulator is confirmed working on your machine).

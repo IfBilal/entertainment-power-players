@@ -44,7 +44,7 @@ npm test          # unit tests, no Firebase project or emulator required
 2. `firebase login`
 3. `firebase projects:create` (or use an existing project) and note the project id
 4. From `firebase/`: `cp .firebaserc.example .firebaserc` and put the project id in it
-5. Install a JDK (required by the Firestore emulator) — `firebase emulators:start` will tell you if one is missing
+5. Install a JDK 21 or newer (required by the Firestore emulator/firebase-tools) — `firebase emulators:start` will tell you if one is missing or too old
 6. `firebase emulators:start` to run Firestore + rules locally; `functions/` and `firebase/` tests that need the emulator are documented in each folder
 
 ### Admin panel

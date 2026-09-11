@@ -1,0 +1,114 @@
+{
+  "version": 1,
+  "note": "Seed content for tracks/{trackId}/challenges. Types: single = one tick, counter = stepper with target. Wording is editable in the admin panel after launch; structure (six tracks, ten each) is fixed for v1.",
+  "tracks": [
+    {
+      "slug": "creators-producers",
+      "name": "Creators + Producers",
+      "order": 1,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Create Something New", "description": "Make one new idea.", "type": "single" },
+        { "order": 2, "title": "Treat Yourself", "description": "Celebrate your wins!", "type": "single" },
+        { "order": 3, "title": "Find 3 POWER PLAYERS", "description": "Read trade publications or articles. Who should know your work?", "type": "counter", "target": 3 },
+        { "order": 4, "title": "Launch Something", "description": "Put one idea into motion.", "type": "single" },
+        { "order": 5, "title": "Make One Introduction", "description": "Introduce yourself to someone new.", "type": "single" },
+        { "order": 6, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" },
+        { "order": 7, "title": "Name Your IP", "description": "Give your idea a title.", "type": "single" },
+        { "order": 8, "title": "Polish Your Bio", "description": "Write your 50-word bio.", "type": "single" },
+        { "order": 9, "title": "Protect Your Work", "description": "Research copyright or trademark.", "type": "single" },
+        { "order": 10, "title": "Invite the Industry", "description": "Invite someone to see your work.", "type": "single" }
+      ]
+    },
+    {
+      "slug": "fashion",
+      "name": "Fashion",
+      "order": 2,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Attend 5 Events", "description": "Go online or in person.", "type": "counter", "target": 5 },
+        { "order": 2, "title": "Build a Look", "description": "Create one complete look.", "type": "single" },
+        { "order": 3, "title": "Create Something New", "description": "Sketch, style or design something.", "type": "single" },
+        { "order": 4, "title": "Find 3 Designers", "description": "Discover three you should know.", "type": "counter", "target": 3 },
+        { "order": 5, "title": "Follow a Trend", "description": "Find tomorrow's trend.", "type": "single" },
+        { "order": 6, "title": "Meet a POWER PLAYER", "description": "Make one new connection.", "type": "single" },
+        { "order": 7, "title": "Refresh Your Portfolio", "description": "Add your strongest work.", "type": "single" },
+        { "order": 8, "title": "Study a Brand", "description": "Pick one and study it.", "type": "single" },
+        { "order": 9, "title": "Work the Room", "description": "Start three conversations.", "type": "counter", "target": 3 },
+        { "order": 10, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" }
+      ]
+    },
+    {
+      "slug": "film-tv",
+      "name": "Film + TV",
+      "order": 3,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Attend 5 Events", "description": "Online counts.", "type": "counter", "target": 5 },
+        { "order": 2, "title": "Create Something New", "description": "Write, shoot or develop something.", "type": "single" },
+        { "order": 3, "title": "Find 3 POWER PLAYERS", "description": "Writers, directors, producers or executives.", "type": "counter", "target": 3 },
+        { "order": 4, "title": "Make an Introduction", "description": "Reach out to one industry contact.", "type": "single" },
+        { "order": 5, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" },
+        { "order": 6, "title": "Polish Your Pitch", "description": "Make your idea easy to understand.", "type": "single" },
+        { "order": 7, "title": "Update Your Bio", "description": "Tell the industry who you are.", "type": "single" },
+        { "order": 8, "title": "Watch a New Genre", "description": "Study something outside your usual lane.", "type": "single" },
+        { "order": 9, "title": "Watch the Credits", "description": "Study who made the last film you watched.", "type": "single" },
+        { "order": 10, "title": "Write a Logline", "description": "Describe your story in one sentence.", "type": "single" }
+      ]
+    },
+    {
+      "slug": "gaming",
+      "name": "Gaming",
+      "order": 4,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Build a Game Idea", "description": "Create a title and concept.", "type": "single" },
+        { "order": 2, "title": "Design a Character", "description": "Give them a name, purpose and backstory.", "type": "single" },
+        { "order": 3, "title": "Find 3 Developers", "description": "Discover studios you should know.", "type": "counter", "target": 3 },
+        { "order": 4, "title": "Find 3 POWER PLAYERS", "description": "Developers, publishers or creators.", "type": "counter", "target": 3 },
+        { "order": 5, "title": "Join a Gaming Community", "description": "Start today.", "type": "single" },
+        { "order": 6, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" },
+        { "order": 7, "title": "Play Something New", "description": "Try a game outside your usual genre.", "type": "single" },
+        { "order": 8, "title": "Show Your Work", "description": "Share your game, art or idea.", "type": "single" },
+        { "order": 9, "title": "Study a Platform", "description": "Console, PC, mobile or cloud.", "type": "single" },
+        { "order": 10, "title": "Study the Market", "description": "What's hot right now, next or new?", "type": "single" }
+      ]
+    },
+    {
+      "slug": "music",
+      "name": "Music",
+      "order": 5,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Attend 5 Music Events", "description": "Online or in person.", "type": "counter", "target": 5 },
+        { "order": 2, "title": "Build a Playlist", "description": "Choose 10 songs that inspire you.", "type": "single" },
+        { "order": 3, "title": "Create Something New", "description": "Write, produce or record.", "type": "single" },
+        { "order": 4, "title": "Find 3 POWER PLAYERS", "description": "Artists, producers, managers or labels.", "type": "counter", "target": 3 },
+        { "order": 5, "title": "Make an Introduction", "description": "Connect with one new person.", "type": "single" },
+        { "order": 6, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" },
+        { "order": 7, "title": "Name Your Sound", "description": "Describe your musical lane.", "type": "single" },
+        { "order": 8, "title": "Polish One Track", "description": "Make your strongest song stronger.", "type": "single" },
+        { "order": 9, "title": "Share Your Music", "description": "Put your work where people can hear it.", "type": "single" },
+        { "order": 10, "title": "Study a Label", "description": "Know its artists and sound.", "type": "single" }
+      ]
+    },
+    {
+      "slug": "sports",
+      "name": "Sports",
+      "order": 6,
+      "active": true,
+      "challenges": [
+        { "order": 1, "title": "Attend 5 Sports Events", "description": "Watch the business, not just the game.", "type": "counter", "target": 5 },
+        { "order": 2, "title": "Build Your Brand", "description": "Write your one-sentence brand statement.", "type": "single" },
+        { "order": 3, "title": "Create Something New", "description": "An event, idea, content or business.", "type": "single" },
+        { "order": 4, "title": "Find 3 POWER PLAYERS", "description": "Agents, executives, owners or sponsors.", "type": "counter", "target": 3 },
+        { "order": 5, "title": "Make Your NEXT POWER PLAY", "description": "Choose your next action.", "type": "single" },
+        { "order": 6, "title": "Meet Someone New", "description": "Make one sports-industry connection.", "type": "single" },
+        { "order": 7, "title": "Pick Your Lane", "description": "Athlete, media, business, management or another role.", "type": "single" },
+        { "order": 8, "title": "Study a Deal", "description": "Look at an endorsement or sponsorship.", "type": "single" },
+        { "order": 9, "title": "Study a League", "description": "Know how it works.", "type": "single" },
+        { "order": 10, "title": "Update Your Resume", "description": "Put your best experience first.", "type": "single" }
+      ]
+    }
+  ]
+}

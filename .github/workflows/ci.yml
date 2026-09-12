@@ -47,7 +47,9 @@ jobs:
       - name: Verify RLS is enabled on every table
         run: |
           RESULT=$(supabase db query --local -o json "select relname from pg_class c join pg_namespace n on n.oid = c.relnamespace where n.nspname = 'public' and c.relkind = 'r' and not c.relrowsecurity;")
-          ROWS=$(echo "$RESULT" | jq '.rows | length')
+          # supabase db query -o json has returned both a bare array and a
+          # {rows:[...]} wrapper across CLI versions -- handle either shape.
+          ROWS=$(echo "$RESULT" | jq 'if type == "array" then length else (.rows // []) | length end')
           if [ "$ROWS" != "0" ]; then
             echo "Tables without RLS enabled found: $RESULT"
             exit 1

@@ -1,24 +1,27 @@
 # Entertainment Power Players
 
-Subscription app for people building a career in entertainment: a contact directory, a weekly activity tracker, career challenge tracks, and an industry quote feed. Full build spec lives in [`docs/Entertainment-Power-Developer-Handbook.md`](docs/Entertainment-Power-Developer-Handbook.md).
+Subscription app for people building a career in entertainment: a contact directory, a weekly activity tracker, career challenge tracks, and an industry quote feed. Full build spec lives in [`docs/Entertainment-Power-Developer-Handbook.md`](docs/Entertainment-Power-Developer-Handbook.md) — note the handbook itself describes a Firebase backend; the project switched to Supabase after Week 1 (see [`docs/week1-acceptance.md`](docs/week1-acceptance.md) for why), so treat Supabase as the source of truth for backend architecture and the handbook as the source of truth for product/screen behavior.
 
-**Stack:** React Native / Expo (TypeScript) mobile app · React + Vite admin panel · Firebase (Auth, Firestore, Cloud Functions, Hosting) · RevenueCat.
+**Stack:** React Native / Expo (TypeScript) mobile app · React + Vite admin panel · Supabase (Auth, Postgres, Edge Functions) · RevenueCat.
 
 ## Repo layout
 
 ```
 docs/               Build spec, seed content, CSV import template
-apps/mobile/         Expo app (this repo's main deliverable for Week 1)
-apps/admin/          React + Vite admin panel (scaffolded, built out in Week 2)
-functions/           Firebase Cloud Functions (CSV import, RevenueCat webhook, etc.)
-firebase/            firestore.rules, firestore.indexes.json, firebase.json
+apps/mobile/        Expo app (this repo's main deliverable for Week 1)
+apps/admin/         React + Vite admin panel (scaffolded, built out in Week 2)
+supabase/
+  migrations/       Postgres schema + RLS policies
+  seed.sql          Real seed content (categories, quotes, tracks/challenges, sample contacts)
+  functions/
+    import-contacts-csv/   CSV import Edge Function
 ```
 
 ## Status
 
 **Week 1 (Foundations & Design) — complete.** See [`docs/week1-acceptance.md`](docs/week1-acceptance.md) for the full criteria checklist.
 
-**Firebase project is live:** `entertainment-power-play-bcf29`. Firestore rules/indexes deployed, and real data seeded — 5 categories, 5 quotes, 6 challenge tracks (60 challenges), and 3 sample contacts. `apps/mobile/.env` is already filled in with this project's config (gitignored — see "Firebase project setup" below if you need to regenerate it on another machine). Auth (Email/Password, Google) still needs to be switched on once in the console — see below.
+**Supabase project is live:** `entertainment-power-players` (ref `knrjhmrsuyzzxlverryl`). Schema + RLS policies deployed (12 tables, all RLS-enabled, security/performance advisories clean), real data seeded (5 categories, 5 quotes, 6 tracks × 10 challenges, 3 sample contacts), Auth enabled (Email/Password + Google), and the `import-contacts-csv` Edge Function deployed and verified end-to-end (admin-only, tested against the real sample CSV). `apps/mobile/.env` is already filled in with this project's config (gitignored).
 
 ## Getting started
 
@@ -30,33 +33,18 @@ npm install
 npx expo start
 ```
 
-Open in Expo Go (scan the QR code) or an iOS/Android simulator. `.env` is already filled in with the real Firebase project's config (see `.env.example` for the shape, if you need to regenerate it elsewhere). Note: the screens themselves still read from local mock data, not live Firestore — that wiring is Week 2 scope; the real project/data is ready and waiting for it.
+Open in Expo Go (scan the QR code) or an iOS/Android simulator. `.env` is already filled in with the real Supabase project's config (see `.env.example` for the shape, if you need to regenerate it elsewhere). Note: the screens themselves still read from local mock data, not live Postgres — that wiring is Week 2 scope; the real project/data is ready and waiting for it.
 
-### Cloud Functions
+### Supabase project
 
-```bash
-cd functions
-npm install
-npm test          # unit tests, no Firebase project or emulator required
-```
+Already set up for `entertainment-power-players`. This section is for local development, re-seeding, or standing up a second (e.g. staging) project.
 
-### Firebase project setup
-
-Already done for `entertainment-power-play-bcf29` — this section is for regenerating config on another machine, re-seeding, or standing up a second (e.g. staging) project.
-
-1. `npm install -g firebase-tools` (or use `npx firebase-tools`)
-2. `firebase login`
-3. `firebase projects:create` (or use an existing project) and note the project id
-4. From `firebase/`: `cp .firebaserc.example .firebaserc` and put the project id in it
-5. Install a JDK 21 or newer (required by the Firestore emulator/firebase-tools) — `firebase emulators:start` will tell you if one is missing or too old
-6. `firebase emulators:start` to run Firestore + rules locally; `functions/` and `firebase/` tests that need the emulator are documented in each folder
-7. In the Firebase Console → **Build → Authentication → Get started**, enable **Email/Password** and **Google** sign-in (one click each). Apple sign-in needs your own Apple Developer account.
-8. To re-seed categories/quotes/tracks/challenges: from `functions/`, generate a service account key yourself (Project Settings → Service Accounts → Generate new private key — **do this yourself, never share/commit this file**), save it somewhere outside the repo, then:
-   ```bash
-   cd functions
-   npm install
-   GOOGLE_APPLICATION_CREDENTIALS=/path/to/your-key.json npm run seed
-   ```
+1. `supabase login` (opens a browser)
+2. `supabase link --project-ref knrjhmrsuyzzxlverryl` (or `supabase projects create` for a new one)
+3. Local Postgres via Docker: `supabase db start`, then `supabase migration up --local` to apply `supabase/migrations/*.sql`
+4. Load seed data locally: `PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -f supabase/seed.sql` (the Supabase CLI's own `db query -f` doesn't support multi-statement files — use `psql` directly, or the Supabase dashboard's SQL editor for the real project)
+5. Edge Functions: `deno test --allow-read` from `supabase/functions/import-contacts-csv/` to run its unit tests; `supabase functions deploy import-contacts-csv` to deploy
+6. In the Supabase dashboard → **Authentication → Providers**, enable **Email** and **Google** (already done for the live project). Apple sign-in needs your own Apple Developer account.
 
 ### Admin panel
 

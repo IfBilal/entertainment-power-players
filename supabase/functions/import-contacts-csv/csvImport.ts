@@ -1,5 +1,5 @@
-import Papa from 'papaparse';
-import { computeNameLower, computeSortKey } from './contactFields';
+import Papa from 'npm:papaparse@5.4.1';
+import { computeNameLower, computeSortKey } from './contactFields.ts';
 
 /**
  * Columns this importer understands, matching docs/contacts-import-template.csv
@@ -53,16 +53,16 @@ export function parseContactsCsv(csvText: string, validCategorySlugs?: Set<strin
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true,
     skipEmptyLines: true,
-    transformHeader: (h) => h.trim(),
+    transformHeader: (h: string) => h.trim(),
   });
 
   const headers = parsed.meta.fields ?? [];
-  const unmappedColumns = headers.filter((h) => !KNOWN_COLUMNS.includes(h as KnownColumn));
+  const unmappedColumns = headers.filter((h: string) => !KNOWN_COLUMNS.includes(h as KnownColumn));
 
   const imported: ContactRecord[] = [];
   const skipped: RowError[] = [];
 
-  parsed.data.forEach((raw, index) => {
+  parsed.data.forEach((raw: Record<string, string>, index: number) => {
     const row = index + 2; // +1 for 0-index, +1 for the header row
     const name = (raw.name ?? '').trim();
     const category = (raw.category ?? '').trim();
@@ -108,7 +108,7 @@ export function parseContactsCsv(csvText: string, validCategorySlugs?: Set<strin
   return { imported, skipped, unmappedColumns };
 }
 
-/** Splits an array into chunks of at most `size` — used to keep Firestore batch writes under the 500-op limit (handbook §5). */
+/** Splits an array into chunks of at most `size` — used to keep batch writes under the 500-row limit (handbook §5). */
 export function chunk<T>(items: T[], size: number): T[][] {
   const out: T[][] = [];
   for (let i = 0; i < items.length; i += size) {

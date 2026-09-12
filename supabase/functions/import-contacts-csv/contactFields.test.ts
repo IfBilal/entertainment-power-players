@@ -1,4 +1,6 @@
-import { computeNameLower, computeSortKey } from './contactFields';
+import { describe, it } from 'jsr:@std/testing/bdd';
+import { expect } from 'jsr:@std/expect';
+import { computeNameLower, computeSortKey } from './contactFields.ts';
 
 describe('computeNameLower', () => {
   it('lowercases and trims', () => {

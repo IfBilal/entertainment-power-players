@@ -1,8 +1,13 @@
+import { describe, it } from 'jsr:@std/testing/bdd';
+import { expect } from 'jsr:@std/expect';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { chunk, parseContactsCsv } from './csvImport';
+import { chunk, parseContactsCsv } from './csvImport.ts';
 
-const sampleCsv = readFileSync(join(__dirname, '../../docs/contacts-import-template.csv'), 'utf8');
+const sampleCsv = readFileSync(
+  join(new URL('.', import.meta.url).pathname, '../../../docs/contacts-import-template.csv'),
+  'utf8',
+);
 
 describe('parseContactsCsv against the real sample template', () => {
   it('imports all three sample rows with no unmapped columns', () => {

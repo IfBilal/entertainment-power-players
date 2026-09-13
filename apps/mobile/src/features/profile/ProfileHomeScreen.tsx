@@ -9,7 +9,6 @@ type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 
 export function ProfileHomeScreen({ navigation }: Props) {
   const isPro = useAppStore((s) => s.isPro);
-  const setIsPro = useAppStore((s) => s.setIsPro);
 
   return (
     <Screen padded={false}>
@@ -32,16 +31,6 @@ export function ProfileHomeScreen({ navigation }: Props) {
             label={isPro ? 'Manage subscription' : 'Upgrade to Pro'}
             onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })}
           />
-        </Card>
-
-        <Card style={styles.card}>
-          <View style={styles.row}>
-            <AppText variant="body">Demo: Pro entitlement</AppText>
-            <Switch value={isPro} onValueChange={setIsPro} trackColor={{ true: colors.accent, false: colors.border }} thumbColor={colors.surfaceRaised} />
-          </View>
-          <AppText variant="caption" color={colors.textSecondary}>
-            Stands in for the real RevenueCat + backend entitlement flow (Week 3). Lets you preview locked/unlocked screens now.
-          </AppText>
         </Card>
 
         <Card style={styles.card}>

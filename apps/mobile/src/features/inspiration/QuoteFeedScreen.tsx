@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Card, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
@@ -9,6 +9,10 @@ export function QuoteFeedScreen() {
   const favoriteIds = useFavoritesStore((s) => s.favoriteQuoteIds);
   const toggleQuote = useFavoritesStore((s) => s.toggleQuote);
   const featured = quoteOfTheDay(mockQuotes, new Date());
+
+  function shareQuote(quote: Quote) {
+    Share.share({ message: `"${quote.text}" — ${quote.author}` }).catch(() => undefined);
+  }
 
   function renderQuote(quote: Quote, isFeatured = false) {
     const isFavorite = favoriteIds.has(quote.id);
@@ -21,7 +25,7 @@ export function QuoteFeedScreen() {
             <Pressable onPress={() => toggleQuote(quote.id)} accessibilityLabel="Save quote">
               <Ionicons name={isFavorite ? 'heart' : 'heart-outline'} size={18} color={colors.accent} />
             </Pressable>
-            <Pressable accessibilityLabel="Share quote">
+            <Pressable onPress={() => shareQuote(quote)} accessibilityLabel="Share quote">
               <Ionicons name="share-outline" size={18} color={colors.accent} />
             </Pressable>
           </View>

@@ -42,4 +42,20 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     expect(await screen.findByPlaceholderText('Search by name, company or role')).toBeTruthy();
     expect(screen.queryByText('Pro feature')).toBeNull();
   });
+
+  it('returns to Profile (not Directory) when opened from Profile > Upgrade to Pro', async () => {
+    await renderApp();
+
+    // Switch to the Profile tab.
+    fireEvent.press(await screen.findByText('Profile'));
+    expect(await screen.findByText('Upgrade to Pro')).toBeTruthy();
+    fireEvent.press(screen.getByText('Upgrade to Pro'));
+
+    expect(await screen.findByText('Open every door')).toBeTruthy();
+    fireEvent.press(screen.getByText('Subscribe'));
+
+    // Should land back on Profile, showing the now-Pro state -- not on Directory.
+    expect(await screen.findByText('Renews monthly')).toBeTruthy();
+    expect(screen.queryByText('Who you should know')).toBeNull();
+  });
 });

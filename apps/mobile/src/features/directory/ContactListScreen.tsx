@@ -49,7 +49,7 @@ export function ContactListScreen({ route, navigation }: Props) {
           title="Pro feature"
           description="Subscribe to see the full contact list for this category."
         />
-        <Button label="See plans" onPress={() => navigation.getParent()?.navigate('Profile', { screen: 'Paywall', params: { reason: 'directory' } })} />
+        <Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'directory' })} />
       </Screen>
     );
   }

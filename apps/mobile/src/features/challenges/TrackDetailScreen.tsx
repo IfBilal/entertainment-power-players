@@ -96,7 +96,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
       <Screen>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
         <EmptyState icon="lock-closed-outline" title="Pro feature" description="Subscribe to unlock this track's challenges." />
-        <Button label="See plans" onPress={() => navigation.getParent()?.navigate('Profile', { screen: 'Paywall', params: { reason: 'challenges' } })} />
+        <Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'challenges' })} />
       </Screen>
     );
   }

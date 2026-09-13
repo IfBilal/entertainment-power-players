@@ -28,7 +28,10 @@ export function ProfileHomeScreen({ navigation }: Props) {
           <AppText variant="caption" color={colors.textSecondary}>
             {isPro ? 'Renews monthly' : 'Free plan'}
           </AppText>
-          <Button label={isPro ? 'Manage subscription' : 'Upgrade to Pro'} onPress={() => navigation.navigate('Paywall', { reason: 'profile' })} />
+          <Button
+            label={isPro ? 'Manage subscription' : 'Upgrade to Pro'}
+            onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })}
+          />
         </Card>
 
         <Card style={styles.card}>
@@ -37,7 +40,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
             <Switch value={isPro} onValueChange={setIsPro} trackColor={{ true: colors.accent, false: colors.border }} thumbColor={colors.surfaceRaised} />
           </View>
           <AppText variant="caption" color={colors.textSecondary}>
-            Stands in for the real RevenueCat + Firestore claim flow (Week 3). Lets you preview locked/unlocked screens now.
+            Stands in for the real RevenueCat + backend entitlement flow (Week 3). Lets you preview locked/unlocked screens now.
           </AppText>
         </Card>
 

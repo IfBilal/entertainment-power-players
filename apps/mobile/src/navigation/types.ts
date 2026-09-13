@@ -33,7 +33,6 @@ export type InspirationStackParamList = {
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
-  Paywall: { reason?: string } | undefined;
 };
 
 export type MainTabParamList = {
@@ -47,4 +46,5 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
+  Paywall: { reason?: string } | undefined;
 };

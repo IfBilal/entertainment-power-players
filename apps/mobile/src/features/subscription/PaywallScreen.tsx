@@ -5,9 +5,9 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { useAppStore } from '../../store/useAppStore';
-import type { ProfileStackParamList } from '../../navigation/types';
+import type { RootStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'Paywall'>;
+type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
 const benefits = [
   { icon: 'people-outline' as const, text: 'Full contact directory across all five categories' },

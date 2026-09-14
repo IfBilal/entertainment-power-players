@@ -76,7 +76,7 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 
 ## 4. Decisions (resolved 2026-09-14)
 
-1. **Sign in with Apple: deferred.** No Apple Developer account exists. Apple sign-in is dropped from this week's scope entirely — not attempted, not stubbed with fake UI-only buttons pretending to work. `SignUpScreen`'s Apple button either gets removed for now or left as a visibly-disabled/"coming soon" state (decide during Workstream A) so "Auth complete" for Week 2 means **email/password + Google** only. Revisit Apple once an account exists — likely rolls into a later week, not automatically Week 3.
+1. **Sign in with Apple: deferred, not dropped.** No Apple Developer account exists yet — **the client will provide one**, and Apple sign-in gets built once it does. It's out of *this week's* scope, not out of the project. `SignUpScreen`'s Apple button gets removed or visibly disabled/"coming soon" for now (decide during Workstream A) so "Auth complete" for Week 2 means **email/password + Google** only — Apple slots into whichever week the account actually arrives in, not necessarily Week 3.
 2. **Admin panel hosting: Vercel.** Confirmed, no Firebase Hosting.
 3. **"Full dataset imported to staging": placeholder data, for now.** No real client contact list exists yet. Same approach as `docs/contacts-import-template.csv` (already a placeholder) — I'll generate ~100-150 realistic-but-fake contacts (plausible names/roles like "Casting Director"/"A&R Manager", spread across the 5 categories and a handful of cities) purely to build and test search/filter/pagination/jump-bar against something dataset-shaped. Clearly placeholder, swapped out wholesale when real client data arrives — not treated as real content.
 4. **Google Sign-In build tooling: EAS dev client.** `@react-native-google-signin/google-signin` is a native module and can't run in plain Expo Go — a one-time custom dev-client build (`eas build --profile development`) bakes it in; after that, `expo start --dev-client` + QR-scan-and-reload development continues exactly as before. Only needs a new build if another new native module is added later; regular JS/React changes never require a rebuild. Also needed eventually for Week 4 real-device builds anyway, so this isn't wasted setup.
@@ -95,7 +95,7 @@ Per handbook §8 ("No new dependency without approval") — new mobile dependenc
 - **Email/password sign up + log in** — `supabase.auth.signUp` / `signInWithPassword`. Wire `SignUpScreen`, `LoginScreen`.
 - **Forgot password** — `supabase.auth.resetPasswordForEmail`, wire `ForgotPasswordScreen`. Needs a redirect URL configured (deep link back into the app, or a simple "check your email" confirmation screen for v1 — a full deep-link password-reset flow is more involved; recommend the "check your email" version for now unless you want the full deep link).
 - **Sign in with Google** — `supabase.auth.signInWithIdToken` with `@react-native-google-signin/google-signin` (native module, requires the dev client from Step 0 — decision #4, resolved in favor of this over the `expo-auth-session` web-popup alternative).
-- **Sign in with Apple** — **deferred, not built this week** (no Apple Developer account exists — see decision #1). Remove or visibly disable the Apple button on `SignUpScreen` rather than leaving a fake-functional one.
+- **Sign in with Apple** — **deferred, not built this week, not dropped from the project** (client is providing an Apple Developer account — see decision #1). Remove or visibly disable the Apple button on `SignUpScreen` rather than leaving a fake-functional one; build it for real once the account arrives.
 - **Log out** — `supabase.auth.signOut()`, reset local Zustand state, `RootNavigator` returns to Onboarding.
 - **Delete account** — cannot be done from the client directly (a user can't delete their own `auth.users` row). Needs a new Edge Function `delete-account` (service-role, verifies the caller's own JWT first) that deletes the `auth.users` row — `profiles`, `profile_entitlements`, `favorites`, `challenge_progress`, `activity`, `goals` all cascade-delete automatically (already `on delete cascade` in the Week 1 schema). Mirrors the handbook's "Delete account removes the user document and all subcollections through a Cloud Function" (§4.7), adapted to Postgres cascade + an Edge Function trigger.
 - **Session persistence + auto-login**: `RootNavigator` checks for an existing Supabase session on launch (via `supabase.auth.getSession()` / `onAuthStateChange`) and skips Onboarding if already logged in, going straight to Main.
@@ -162,7 +162,7 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [ ] Sign up with email/password creates a real Supabase user; profile + entitlement rows auto-created (trigger already built in Week 1)
 - [ ] Log in with email/password works; wrong password shows an error, not a crash
 - [ ] Google sign-in works on a real device
-- [ ] Apple sign-in — **out of scope this week** (no Apple Developer account); button removed/disabled, not faked
+- [ ] Apple sign-in — **out of scope this week, not dropped** (client providing an Apple Developer account; build it once that arrives); button removed/disabled for now, not faked
 - [ ] Forgot password sends a real reset email
 - [ ] Log out clears the session and returns to Onboarding
 - [ ] Delete account removes the auth user and all their data (verified via the Supabase dashboard, not just the app UI disappearing)
@@ -193,7 +193,7 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 
 This plan was independently validated (a second agent fact-checked every claim against the live database, the actual codebase, and the handbook) — no factual errors found. It did catch one real gap, now folded in as decision #4 below.
 
-1. ~~Apple Developer account~~ — **resolved**: no account, Apple sign-in deferred out of Week 2 entirely.
+1. ~~Apple Developer account~~ — **resolved**: none yet, client is providing one; Apple sign-in deferred out of Week 2, built for real once the account arrives (not dropped from the project).
 2. ~~Admin panel hosting~~ — **resolved**: Vercel.
 3. ~~Full dataset~~ — **resolved**: placeholder data (~100-150 fake-but-realistic contacts), swapped for real client data whenever it arrives.
 4. ~~Google Sign-In build tooling~~ — **resolved**: EAS dev client.

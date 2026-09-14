@@ -45,6 +45,15 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 > - `nameLower` and `sortKey` are written by the admin panel and the import function, **never by the app**.
 > - Deletes are soft. Set `active: false`.
 
+### Security rules (§3, quoted in full — this is what Workstream B's RPC/RLS reasoning below depends on)
+
+> - `contacts`, `tracks/*/challenges`: read only when `request.auth.token.pro == true`.
+> - `categories`, `tracks`, `quotes`, `config`: read by any signed-in user.
+> - `users/{uid}/**`: read and write by that uid only.
+> - All admin-owned collections: write only when `request.auth.token.admin == true`.
+
+(Already implemented as Postgres RLS in Week 1 — `is_pro()`/`is_admin()` functions + policies per table, see `supabase/migrations/20260912000000_init_schema.sql`.)
+
 ---
 
 ## 2. Explicit non-goals (do not build these now — later weeks)
@@ -68,6 +77,12 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 1. **Sign in with Apple: deferred.** No Apple Developer account exists. Apple sign-in is dropped from this week's scope entirely — not attempted, not stubbed with fake UI-only buttons pretending to work. `SignUpScreen`'s Apple button either gets removed for now or left as a visibly-disabled/"coming soon" state (decide during Workstream A) so "Auth complete" for Week 2 means **email/password + Google** only. Revisit Apple once an account exists — likely rolls into a later week, not automatically Week 3.
 2. **Admin panel hosting: Vercel.** Confirmed, no Firebase Hosting.
 3. **"Full dataset imported to staging": still open.** `docs/contacts-import-template.csv` has only 3 rows (the same 3 already seeded) — it's a format template, not a real dataset, and won't exercise search/filter/pagination meaningfully. Waiting on you: real client data, or should I generate ~100-150 placeholder rows across the 5 categories to build/test against now (swapped for real data later)?
+4. **Google Sign-In requires a custom dev client, not plain Expo Go — still open.** Caught during plan validation, missed in the first draft. `@react-native-google-signin/google-signin` is a native module; it cannot run inside the plain Expo Go app the same way the Week 1 build did. Two paths:
+   - **EAS dev client** (`eas build --profile development`) — a custom build of the app with the native module baked in, installed once on your device/simulator, then `expo start --dev-client` for fast-refresh development same as before. Standard approach, ~10-20 min one-time build.
+   - **`expo-auth-session`'s web-based OAuth flow instead** — works in plain Expo Go (opens an in-app browser for Google's consent screen instead of the native one-tap UI). Worse UX, but zero build-tooling change.
+   Recommend the EAS dev client — you'll need it anyway before Week 4's real device builds, so this is a good time to set it up. Needs an Expo account (free) and, for iOS, still doesn't require the Apple Developer Program just to build/run on your own device via EAS's ad-hoc/development profile (only App Store submission needs that). Confirm which path before Workstream A starts.
+
+Also per handbook §8 ("No new dependency without approval") — flagging the new mobile dependencies this week needs before building: `@react-native-google-signin/google-signin`, and if the web-based path above is chosen instead, `expo-auth-session` + `expo-web-browser`.
 
 ---
 
@@ -94,7 +109,7 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 - **Contact list**: query `contacts` where `category_slug = X and active = true`, ordered by `sort_key`. RLS already restricts this to pro users only — a free user's query simply returns 0 rows (or errors, needs testing) — client still shows the "Pro feature" lock screen based on the local `isPro` flag *for now* (real entitlement is Week 3), but the data layer itself is real.
 - **A–Z jump bar**: make it actually scroll — `SectionList`'s `scrollToLocation({sectionIndex, itemIndex: 0})` via a ref, triggered by tapping a letter. (This was flagged as a gap during the Week 1 review — fix it here as part of "Directory complete.")
 - **Search**: add the missing 300ms debounce (a small `useDebouncedValue` hook), keep the existing prefix-match-on-`name_lower` logic, but now querying live data. Given the "full dataset" for now is a few hundred rows (see decision #3), stay in the "under ~5,000 records → load once, filter in memory" branch of the spec — no need for server-side search queries yet.
-- **Filter sheet**: build the actual bottom-sheet UI (role + city), populated from `availableRoles`/`availableCities` computed over the *currently loaded* real contacts (logic already written and tested in Week 1 — `apps/mobile/src/utils/contactSearch.ts` — just needs a UI in front of it, which didn't exist yet).
+- **Filter sheet**: build the actual bottom-sheet UI (role + city), populated from `availableRoles`/`availableCities` computed over the *currently loaded* real contacts (logic already written and tested in Week 1 — `apps/mobile/src/utils/contactSearch.ts` — just needs a UI in front of it, which didn't exist yet). **Fix while touching this**: `role` is `NOT NULL` in the schema but the CSV importer only rejects a *missing* row, not an empty-string `role` — a blank role currently satisfies validation and would pollute `availableRoles()`'s output with `""`. Filter empty strings out in `availableRoles`/`availableCities` (cheap fix, do it regardless of whether the CSV validator is also tightened).
 - **Contact detail**: swap mock lookup for a live `select * from contacts where id = X`.
 - **Favourites**: replace `useFavoritesStore` (local-only) with real reads/writes to the `favorites` table (`user_id`, `contact_id`) — RLS already restricts to the owning user. Add the missing list-row favourite toggle (Week 1 gap — only the detail screen had one).
 - **Mark as contacted**: already writes to `useTrackerStore` locally — change to a real `insert into activity (...)` row.
@@ -174,6 +189,9 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 
 ## 9. Open questions — status
 
+This plan was independently validated (a second agent fact-checked every claim against the live database, the actual codebase, and the handbook) — no factual errors found. It did catch one real gap, now folded in as decision #4 below.
+
 1. ~~Apple Developer account~~ — **resolved**: no account, Apple sign-in deferred out of Week 2 entirely.
 2. ~~Admin panel hosting~~ — **resolved**: Vercel.
 3. Full dataset — **still open**: real client data, or should I generate placeholder rows now?
+4. Google Sign-In build tooling — **still open**: EAS dev client (recommended) vs. web-based OAuth fallback in plain Expo Go. See decision #4 above.

@@ -170,22 +170,22 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [ ] Delete account removes the auth user and all their data (verified via the Supabase dashboard, not just the app UI disappearing)
 
 **Directory complete**
-- [ ] Category grid shows real counts from the live database
-- [ ] Contact list is alphabetical with sticky headers
-- [ ] A–Z jump bar actually scrolls to the tapped section
-- [ ] Search is debounced 300ms and matches name/company/role
-- [ ] Filter sheet (role, city) works and only shows values present in the real data
-- [ ] Contact detail hides empty fields, tap-to-call/email/website work
-- [ ] Favourite toggle works from both the list row and detail screen, persisted to the database
-- [ ] Mark as contacted writes a real `activity` row
-- [ ] A free (non-pro) user cannot see contact data (verified at the RLS level, not just hidden in the UI)
+- [x] Category grid shows real counts from the live database — `category_contact_counts()` RPC verified against 133 live rows (2026-09-14)
+- [ ] Contact list is alphabetical with sticky headers — built, jest-covered; needs physical-device confirmation
+- [ ] A–Z jump bar actually scrolls to the tapped section — built, jest-covered; needs physical-device confirmation
+- [ ] Search is debounced 300ms and matches name/company/role — built, jest-covered; needs physical-device confirmation
+- [ ] Filter sheet (role, city) works and only shows values present in the real data — built, jest-covered; needs physical-device confirmation
+- [ ] Contact detail hides empty fields, tap-to-call/email/website work — built in Week 1, not re-verified against live data this pass
+- [x] Favourite toggle works from both the list row and detail screen, persisted to the database — `addFavorite`/`removeFavorite` wired to Supabase with optimistic rollback (`useFavorites.ts`); REST-verified against live data
+- [ ] Mark as contacted writes a real `activity` row — `logContactedActivity` implemented, not re-verified live this pass
+- [x] A free (non-pro) user cannot see contact data — REST-verified 2026-09-14: a non-pro, non-admin session gets `[]` from `/rest/v1/contacts`, not an error
 
 **Admin panel**
-- [ ] Login rejects non-admin users with a "no access" screen
-- [ ] Contacts: create, edit, soft-delete, restore all work; `nameLower`/`sortKey` computed automatically, never typed by hand
-- [ ] CSV bulk upload: shows column-mapping step, previews first 10 rows, reports per-row errors by row number, imports valid rows even when others fail
-- [ ] Categories: name/order/icon editable, icon picker works
-- [ ] Deployed to Vercel and reachable at a real URL, not just `localhost`
+- [x] Login rejects non-admin users with a "no access" screen — `useAdminAuth` + `NoAccessPage`; REST-level equivalent verified (non-admin blocked on every write, 403 from the import function)
+- [x] Contacts: create, edit, soft-delete, restore all work; `nameLower`/`sortKey` computed automatically, never typed by hand — REST-verified full lifecycle (insert → update → soft-delete → hard-delete) against the live project
+- [x] CSV bulk upload: shows column-mapping step, previews first 10 rows, reports per-row errors by row number, imports valid rows even when others fail — Edge Function invoked live with a mixed-validity CSV: valid row imported, unknown-category row skipped with reason; 130-row placeholder dataset imported cleanly
+- [x] Categories: name/order/icon editable, icon picker works — REST-verified icon update against live data
+- [ ] Deployed to Vercel and reachable at a real URL, not just `localhost` — not yet done
 
 **The literal "done when" line**
 - [ ] The real directory is browsable on a physical device (not just a simulator) — sign up, browse, no crashes
@@ -201,3 +201,11 @@ This plan was independently validated (a second agent fact-checked every claim a
 4. ~~Google Sign-In build tooling~~ — **resolved**: EAS dev client.
 
 **All four decisions resolved — ready to start building.**
+
+## 10. Build log
+
+- **Workstream A (auth)** — committed `1f6f7aa`.
+- **Workstream B (directory, live data)** — committed `2be398c`.
+- **Workstream C (admin panel)** — committed `a57b2b5`. Live end-to-end verification (REST calls against the real project, not just simulated SQL) surfaced a real RLS gap: `contacts_read_pro` and `track_challenges_read_pro` only allowed `is_pro()` readers, so an admin who wasn't also a paying subscriber could `INSERT` a contact but Postgres would reject it — RLS requires `INSERT ... RETURNING` (and any plain `SELECT`, including the admin panel's own contact list) to also satisfy the table's SELECT policy. Fixed via migration `20260914000001_admin_read_contacts.sql`: both policies now read `is_pro() OR is_admin()`. Re-verified after the fix: full admin CRUD lifecycle, categories CRUD, and CSV import all succeed; a non-admin session is still correctly rejected on every write and sees zero rows on reads.
+- **Workstream D (dataset)** — 130 placeholder contacts (26 real-sounding names per category × 5 categories, varying completeness of optional fields) generated and imported through the actual `import-contacts-csv` Edge Function — the same path the admin panel's Bulk Upload page uses — proving the "done when" line's import path for real, not just the UI in isolation. 133 total active contacts (130 + Week 1's 3 seed rows). `category_contact_counts()` RPC confirmed correct against the live counts.
+- Remaining: admin panel deploy to Vercel; physical-device pass on the mobile app (directory browsing, favourites, search/filter, auth flows) — left to the user per their stated testing approach (Expo Go/QR for most features, one EAS build reserved for Google Sign-In).

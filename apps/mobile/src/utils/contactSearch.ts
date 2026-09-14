@@ -1,4 +1,4 @@
-import type { Contact } from '../services/mock/contacts';
+import type { Contact } from '../services/supabase/directory';
 
 export type ContactFilters = {
   role?: string;
@@ -28,12 +28,18 @@ export function filterContacts(contacts: Contact[], filters: ContactFilters): Co
   });
 }
 
+/**
+ * Blank values are filtered out deliberately: `role` is NOT NULL in the
+ * schema but the CSV importer only rejects a *missing* row, not an
+ * empty-string role, so an imported contact can legitimately carry `""`.
+ * Letting that through would render an empty, unselectable filter option.
+ */
 export function availableRoles(contacts: Contact[]): string[] {
-  return Array.from(new Set(contacts.map((c) => c.role))).sort();
+  return Array.from(new Set(contacts.map((c) => c.role?.trim()).filter((r): r is string => Boolean(r)))).sort();
 }
 
 export function availableCities(contacts: Contact[]): string[] {
-  return Array.from(new Set(contacts.map((c) => c.city).filter((c): c is string => Boolean(c)))).sort();
+  return Array.from(new Set(contacts.map((c) => c.city?.trim()).filter((c): c is string => Boolean(c)))).sort();
 }
 
 export function groupByLetter(contacts: Contact[]): Array<{ letter: string; contacts: Contact[] }> {

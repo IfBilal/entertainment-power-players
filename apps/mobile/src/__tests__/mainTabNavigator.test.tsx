@@ -1,28 +1,39 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { MainTabNavigator } from '../navigation/MainTabNavigator';
+import { renderWithProviders } from '../testing/renderWithProviders';
+import { useAuthStore } from '../store/useAuthStore';
 
-// `initialWindowMetrics` is null under the Jest test renderer (no real native
-// measurement pass ever fires), which leaves SafeAreaProvider's children
-// unrendered. Supplying explicit metrics unblocks it in tests.
-const testMetrics: Metrics = {
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
-  frame: { x: 0, y: 0, width: 390, height: 844 },
-};
+// Directory screens now read live data. Stub the service so these navigation
+// tests stay deterministic and offline -- what's under test here is that every
+// tab mounts and is reachable, not the data layer.
+jest.mock('../services/supabase/directory', () => ({
+  fetchCategories: jest.fn(async () => [
+    { slug: 'fashion', name: 'Fashion', icon: 'glasses-outline', order: 1 },
+  ]),
+  fetchCategoryCounts: jest.fn(async () => ({ fashion: 3 })),
+  fetchContactsByCategory: jest.fn(async () => []),
+  fetchContactById: jest.fn(async () => null),
+  fetchFavoriteContactIds: jest.fn(async () => []),
+  addFavorite: jest.fn(async () => undefined),
+  removeFavorite: jest.fn(async () => undefined),
+  logContactedActivity: jest.fn(async () => undefined),
+}));
 
 describe('MainTabNavigator', () => {
-  it('renders all five tabs and each is reachable', async () => {
-    await render(
-      <SafeAreaProvider initialMetrics={testMetrics}>
-        <NavigationContainer>
-          <MainTabNavigator />
-        </NavigationContainer>
-      </SafeAreaProvider>,
-    );
+  beforeEach(() => {
+    useAuthStore.setState({
+      status: 'signedIn',
+      userId: 'test-user',
+      selectedTrackSlugs: ['fashion'],
+      hydrated: true,
+    });
+  });
 
-    // Directory is the initial tab — its screen content (a category name) confirms it rendered.
-    expect(await screen.findByText('Fashion')).toBeTruthy();
+  it('renders all five tabs and each is reachable', async () => {
+    await renderWithProviders(<MainTabNavigator />);
+
+    // Directory is the initial tab — its screen heading confirms it rendered.
+    expect(await screen.findByText('Who you should know')).toBeTruthy();
 
     for (const tab of ['Tracker', 'Challenges', 'Inspiration', 'Profile']) {
       fireEvent.press(screen.getByText(tab));

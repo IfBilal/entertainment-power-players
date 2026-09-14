@@ -1,32 +1,37 @@
-import { NavigationContainer } from '@react-navigation/native';
-import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
-import { fireEvent, render, screen } from '@testing-library/react-native';
+import { fireEvent, screen } from '@testing-library/react-native';
 import { RootNavigator } from '../navigation/RootNavigator';
+import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAppStore } from '../store/useAppStore';
 import { useAuthStore } from '../store/useAuthStore';
 
-const testMetrics: Metrics = {
-  insets: { top: 0, left: 0, right: 0, bottom: 0 },
-  frame: { x: 0, y: 0, width: 390, height: 844 },
-};
-
-function renderApp() {
-  return render(
-    <SafeAreaProvider initialMetrics={testMetrics}>
-      <NavigationContainer>
-        <RootNavigator />
-      </NavigationContainer>
-    </SafeAreaProvider>,
-  );
-}
+jest.mock('../services/supabase/directory', () => ({
+  fetchCategories: jest.fn(async () => [
+    { slug: 'fashion', name: 'Fashion', icon: 'glasses-outline', order: 1 },
+  ]),
+  fetchCategoryCounts: jest.fn(async () => ({ fashion: 1 })),
+  fetchContactsByCategory: jest.fn(async () => [
+    {
+      id: 'c1',
+      name: 'Jane Doe',
+      nameLower: 'jane doe',
+      sortKey: 'jane doe',
+      categorySlug: 'fashion',
+      role: 'Casting Director',
+      company: 'Example Casting',
+    },
+  ]),
+  fetchContactById: jest.fn(async () => null),
+  fetchFavoriteContactIds: jest.fn(async () => []),
+  addFavorite: jest.fn(async () => undefined),
+  removeFavorite: jest.fn(async () => undefined),
+  logContactedActivity: jest.fn(async () => undefined),
+}));
 
 describe('Paywall reached from a locked screen (root-level modal)', () => {
   beforeEach(() => {
     useAppStore.setState({ isPro: false });
     // Signed in with tracks already picked == fully onboarded, so
     // RootNavigator renders the Main tabs directly (no Splash/auth wait).
-    // `hydrated: true` stops RootNavigator's hydrate() from kicking off a
-    // real Supabase session lookup during the test.
     useAuthStore.setState({
       status: 'signedIn',
       userId: 'test-user',
@@ -36,7 +41,7 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
   });
 
   it('returns to the exact locked screen it was opened from after subscribing, not to a different tab', async () => {
-    await renderApp();
+    await renderWithProviders(<RootNavigator />);
 
     // Directory tab is the initial tab, showing the category grid.
     fireEvent.press(await screen.findByText('Fashion'));
@@ -55,7 +60,7 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
   });
 
   it('returns to Profile (not Directory) when opened from Profile > Upgrade to Pro', async () => {
-    await renderApp();
+    await renderWithProviders(<RootNavigator />);
 
     // Switch to the Profile tab.
     fireEvent.press(await screen.findByText('Profile'));

@@ -1,14 +1,21 @@
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Card, Screen } from '../../components';
-import { colors, radius, spacing, categoryIconOptions, categorySlugToKey } from '../../theme';
-import { mockCategories, contactCountForCategory } from '../../services/mock/contacts';
+import { AppText, Card, EmptyState, Screen } from '../../components';
+import { colors, radius, spacing, type IoniconName } from '../../theme';
+import { fetchCategories, fetchCategoryCounts } from '../../services/supabase/directory';
 import type { DirectoryStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<DirectoryStackParamList, 'CategoryGrid'>;
 
 export function CategoryGridScreen({ navigation }: Props) {
+  const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
+  const countsQuery = useQuery({ queryKey: ['categoryCounts'], queryFn: fetchCategoryCounts });
+
+  const categories = categoriesQuery.data ?? [];
+  const counts = countsQuery.data ?? {};
+
   return (
     <Screen>
       <AppText variant="label" color={colors.textMuted} style={styles.eyebrow}>
@@ -17,32 +24,48 @@ export function CategoryGridScreen({ navigation }: Props) {
       <AppText variant="title" style={styles.heading}>
         Who you should know
       </AppText>
-      <FlatList
-        data={mockCategories}
-        keyExtractor={(c) => c.slug}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
-        contentContainerStyle={styles.grid}
-        renderItem={({ item }) => {
-          const iconKey = categorySlugToKey[item.slug];
-          const icon = categoryIconOptions[iconKey].default;
-          return (
-            <Pressable style={styles.cell} onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}>
-              <Card style={styles.card}>
-                <View style={styles.iconWrap}>
-                  <Ionicons name={icon} size={22} color={colors.accent} />
-                </View>
-                <AppText variant="bodyStrong" style={styles.cardTitle}>
-                  {item.name}
-                </AppText>
-                <AppText variant="caption" color={colors.textSecondary}>
-                  {contactCountForCategory(item.slug)} contacts
-                </AppText>
-              </Card>
-            </Pressable>
-          );
-        }}
-      />
+
+      {categoriesQuery.isError ? (
+        <EmptyState
+          icon="cloud-offline-outline"
+          title="Couldn't load categories"
+          description="Check your connection and pull to try again."
+        />
+      ) : (
+        <FlatList
+          data={categories}
+          keyExtractor={(c) => c.slug}
+          numColumns={2}
+          columnWrapperStyle={styles.row}
+          contentContainerStyle={styles.grid}
+          refreshing={categoriesQuery.isFetching}
+          onRefresh={() => {
+            categoriesQuery.refetch();
+            countsQuery.refetch();
+          }}
+          ListEmptyComponent={
+            categoriesQuery.isLoading ? null : <EmptyState icon="folder-open-outline" title="No categories yet" />
+          }
+          renderItem={({ item }) => {
+            const count = counts[item.slug];
+            return (
+              <Pressable style={styles.cell} onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}>
+                <Card style={styles.card}>
+                  <View style={styles.iconWrap}>
+                    <Ionicons name={item.icon as IoniconName} size={22} color={colors.accent} />
+                  </View>
+                  <AppText variant="bodyStrong" style={styles.cardTitle}>
+                    {item.name}
+                  </AppText>
+                  <AppText variant="caption" color={colors.textSecondary}>
+                    {count === undefined ? '—' : `${count} contact${count === 1 ? '' : 's'}`}
+                  </AppText>
+                </Card>
+              </Pressable>
+            );
+          }}
+        />
+      )}
     </Screen>
   );
 }

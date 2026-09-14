@@ -61,3 +61,22 @@ describe('groupByLetter', () => {
     expect(jGroup?.contacts.map((c) => c.id)).toEqual(['c1', 'c2']);
   });
 });
+
+describe('blank values are excluded from filter options', () => {
+  // `role` is NOT NULL in the schema, but the CSV importer only rejects a
+  // *missing* row -- an empty-string role passes validation. Surfacing that
+  // as a filter chip would render an empty, unselectable option.
+  const withBlanks: Contact[] = [
+    makeContact({ id: 'b1', role: 'Stylist', city: 'NYC' }),
+    makeContact({ id: 'b2', role: '', city: '' }),
+    makeContact({ id: 'b3', role: '   ', city: '   ' }),
+  ];
+
+  it('drops empty and whitespace-only roles', () => {
+    expect(availableRoles(withBlanks)).toEqual(['Stylist']);
+  });
+
+  it('drops empty and whitespace-only cities', () => {
+    expect(availableCities(withBlanks)).toEqual(['NYC']);
+  });
+});

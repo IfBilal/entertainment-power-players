@@ -1,28 +1,56 @@
+import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Card, Screen } from '../../components';
+import { AppText, Card, EmptyState, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { mockContacts } from '../../services/mock/contacts';
-import { useFavoritesStore } from '../../store/useFavoritesStore';
-import { useTrackerStore } from '../../store/useTrackerStore';
+import { fetchContactById, logContactedActivity } from '../../services/supabase/directory';
+import { useFavorites } from '../../hooks/useFavorites';
+import { useAuthStore } from '../../store/useAuthStore';
+import { computeWeekKey } from '../../utils/weekKey';
 import type { DirectoryStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<DirectoryStackParamList, 'ContactDetail'>;
 
 export function ContactDetailScreen({ route }: Props) {
   const { contactId } = route.params;
-  const contact = mockContacts.find((c) => c.id === contactId);
-  const isFavorite = useFavoritesStore((s) => s.favoriteContactIds.has(contactId));
-  const toggleFavorite = useFavoritesStore((s) => s.toggleContact);
-  const addEntry = useTrackerStore((s) => s.addEntry);
+  const userId = useAuthStore((s) => s.userId);
+  const { isFavorite, toggleFavorite } = useFavorites();
+  const [contactedState, setContactedState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
+
+  const contactQuery = useQuery({
+    queryKey: ['contact', contactId],
+    queryFn: () => fetchContactById(contactId),
+  });
+  const contact = contactQuery.data;
+
+  if (contactQuery.isLoading) {
+    return <Screen />;
+  }
 
   if (!contact) {
     return (
       <Screen>
-        <AppText variant="body">Contact not found.</AppText>
+        <EmptyState icon="person-outline" title="Contact not found" />
       </Screen>
     );
+  }
+
+  async function handleMarkContacted() {
+    if (!userId || !contact) return;
+    setContactedState('saving');
+    try {
+      await logContactedActivity({
+        userId,
+        contactId: contact.id,
+        contactName: contact.name,
+        weekKey: computeWeekKey(new Date()),
+      });
+      setContactedState('done');
+    } catch {
+      setContactedState('error');
+    }
   }
 
   const fields: Array<{ icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; onPress?: () => void }> = [
@@ -31,17 +59,19 @@ export function ContactDetailScreen({ route }: Props) {
     { icon: 'globe-outline', label: 'Website', value: contact.website, onPress: () => contact.website && Linking.openURL(contact.website) },
   ];
 
+  const favorited = isFavorite(contact.id);
+
   return (
     <Screen>
       <View style={styles.headerRow}>
-        <View>
+        <View style={styles.headerText}>
           <AppText variant="title">{contact.name}</AppText>
           <AppText variant="body" color={colors.textSecondary}>
             {contact.role}{contact.company ? ` · ${contact.company}` : ''}
           </AppText>
         </View>
         <Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel="Toggle favourite">
-          <Ionicons name={isFavorite ? 'heart' : 'heart-outline'} size={26} color={colors.accent} />
+          <Ionicons name={favorited ? 'heart' : 'heart-outline'} size={26} color={colors.accent} />
         </Pressable>
       </View>
 
@@ -75,28 +105,35 @@ export function ContactDetailScreen({ route }: Props) {
         </Card>
       ) : null}
 
-      <Pressable
-        onPress={() =>
-          addEntry({ type: 'contact', title: `Marked ${contact.name} as contacted`, contactId: contact.id, date: new Date() })
-        }
-      >
+      <Pressable onPress={handleMarkContacted} disabled={contactedState === 'saving'}>
         <Card style={styles.markContacted}>
-          <Ionicons name="checkmark-circle-outline" size={20} color={colors.accent} />
+          <Ionicons
+            name={contactedState === 'done' ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            size={20}
+            color={contactedState === 'done' ? colors.success : colors.accent}
+          />
           <AppText variant="bodyStrong" style={styles.fieldValue}>
-            Mark as contacted
+            {contactedState === 'done' ? 'Logged to your tracker' : 'Mark as contacted'}
           </AppText>
         </Card>
       </Pressable>
+      {contactedState === 'error' ? (
+        <AppText variant="caption" color={colors.danger} style={styles.error}>
+          Couldn't log that. Check your connection and try again.
+        </AppText>
+      ) : null}
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerText: { flex: 1, marginRight: spacing.md },
   city: { marginTop: spacing.xs },
   fields: { marginTop: spacing.lg, gap: spacing.sm },
   fieldCard: { flexDirection: 'row', alignItems: 'center' },
   fieldValue: { marginLeft: spacing.sm },
   notes: { marginTop: spacing.md },
   markContacted: { marginTop: spacing.lg, flexDirection: 'row', alignItems: 'center' },
+  error: { marginTop: spacing.xs },
 });

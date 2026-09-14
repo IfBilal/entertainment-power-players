@@ -1,19 +1,30 @@
+import { useEffect } from 'react';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { OnboardingNavigator } from '../features/onboarding/OnboardingNavigator';
 import { MainTabNavigator } from './MainTabNavigator';
 import { PaywallScreen } from '../features/subscription/PaywallScreen';
 import { themedHeaderOptions } from './headerOptions';
-import { useAppStore } from '../store/useAppStore';
+import { useAuthStore } from '../store/useAuthStore';
 import type { RootStackParamList } from './types';
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
 
 export function RootNavigator() {
-  const hasOnboarded = useAppStore((s) => s.hasOnboarded);
+  const status = useAuthStore((s) => s.status);
+  const selectedTrackSlugs = useAuthStore((s) => s.selectedTrackSlugs);
+  const hydrate = useAuthStore((s) => s.hydrate);
+
+  useEffect(() => hydrate(), [hydrate]);
+
+  // Fully onboarded: signed in AND has picked at least one track. Anything
+  // else (loading, signed out, or signed in but track picker not finished
+  // yet) shows the Onboarding stack -- Splash decides where within it to
+  // land (see SplashScreen).
+  const showMain = status === 'signedIn' && (selectedTrackSlugs?.length ?? 0) > 0;
 
   return (
     <Stack.Navigator screenOptions={{ headerShown: false }}>
-      {hasOnboarded ? (
+      {showMain ? (
         <Stack.Screen name="Main" component={MainTabNavigator} />
       ) : (
         <Stack.Screen name="Onboarding" component={OnboardingNavigator} />

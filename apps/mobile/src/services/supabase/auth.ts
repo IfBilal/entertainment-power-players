@@ -1,0 +1,76 @@
+import { supabase } from './client';
+
+export async function signUpWithEmail(email: string, password: string) {
+  const { data, error } = await supabase.auth.signUp({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+export async function signInWithEmail(email: string, password: string) {
+  const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+  if (error) throw error;
+  return data;
+}
+
+export async function sendPasswordResetEmail(email: string) {
+  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  if (error) throw error;
+}
+
+export async function signOut() {
+  const { error } = await supabase.auth.signOut();
+  if (error) throw error;
+}
+
+/**
+ * Deliberately lazy — nothing from @react-native-google-signin/google-signin
+ * runs at module load or app startup. `configure()` and the sign-in call both
+ * happen only when this function is actually invoked (button press), so the
+ * native module is never touched unless someone taps "Continue with Google".
+ * In plain Expo Go (no dev client) the native module isn't linked and this
+ * throws — callers show a friendly message instead of a crash. In the EAS
+ * dev-client build it works normally. See docs/week2-implementation-plan.md
+ * Workstream A.
+ */
+export async function signInWithGoogle() {
+  const { GoogleSignin } = await import('@react-native-google-signin/google-signin');
+
+  GoogleSignin.configure({
+    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
+  });
+
+  await GoogleSignin.hasPlayServices();
+  const response = await GoogleSignin.signIn();
+  const idToken = response.data?.idToken;
+  if (!idToken) {
+    throw new Error('No ID token returned from Google sign-in.');
+  }
+
+  const { data, error } = await supabase.auth.signInWithIdToken({
+    provider: 'google',
+    token: idToken,
+  });
+  if (error) throw error;
+  return data;
+}
+
+/**
+ * Calls the delete-account Edge Function (needs the service role to delete
+ * an auth.users row — a client can never do this directly). Signs the user
+ * out locally afterward regardless of network timing, since the account is
+ * gone either way.
+ */
+export async function deleteAccount() {
+  const { data: sessionData } = await supabase.auth.getSession();
+  const accessToken = sessionData.session?.access_token;
+  if (!accessToken) {
+    throw new Error('No active session.');
+  }
+
+  const { error } = await supabase.functions.invoke('delete-account', {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (error) throw error;
+
+  await supabase.auth.signOut();
+}

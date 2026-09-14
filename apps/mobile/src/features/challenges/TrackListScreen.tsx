@@ -4,14 +4,14 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Card, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import { tracks, trackCompletionCount } from '../../services/mock/challenges';
-import { useAppStore } from '../../store/useAppStore';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengesStore } from '../../store/useChallengesStore';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackList'>;
 
 export function TrackListScreen({ navigation }: Props) {
-  const selectedSlugs = useAppStore((s) => s.selectedTrackSlugs);
+  const selectedSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
   const progress = useChallengesStore((s) => s.progress);
 
   const sorted = [...tracks].sort((a, b) => {

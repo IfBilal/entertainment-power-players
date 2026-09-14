@@ -14,17 +14,22 @@ const secureStoreAdapter: SupportedStorage = {
   removeItem: (key) => SecureStore.deleteItemAsync(key),
 };
 
-const supabaseUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
-const supabaseAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
+const configuredUrl = process.env.EXPO_PUBLIC_SUPABASE_URL ?? '';
+const configuredAnonKey = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY ?? '';
 
-export const isSupabaseConfigured = supabaseUrl.length > 0 && supabaseAnonKey.length > 0;
+export const isSupabaseConfigured = configuredUrl.length > 0 && configuredAnonKey.length > 0;
 
 /**
- * Not yet used by any screen — Week 1 screens run entirely on local mock
- * data (src/services/mock/*). Wiring real reads/writes into the screens is
- * Week 2 (Auth + Directory) / Week 3 (Tracker, Challenges, Inspiration)
- * scope. This client is ready for that work.
+ * `createClient` throws on an empty/invalid URL, which would crash the app at
+ * import time if `.env` is missing or misconfigured (and breaks unit tests,
+ * which have no env). Fall back to a syntactically valid placeholder so the
+ * module always imports; `isSupabaseConfigured` is the real signal, and any
+ * request made against the placeholder simply fails at call time instead of
+ * taking the whole app down on startup.
  */
+const supabaseUrl = isSupabaseConfigured ? configuredUrl : 'http://localhost:54321';
+const supabaseAnonKey = isSupabaseConfigured ? configuredAnonKey : 'public-anon-key-placeholder';
+
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
     storage: secureStoreAdapter,

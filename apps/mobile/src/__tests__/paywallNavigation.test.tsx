@@ -3,6 +3,7 @@ import { SafeAreaProvider, type Metrics } from 'react-native-safe-area-context';
 import { fireEvent, render, screen } from '@testing-library/react-native';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { useAppStore } from '../store/useAppStore';
+import { useAuthStore } from '../store/useAuthStore';
 
 const testMetrics: Metrics = {
   insets: { top: 0, left: 0, right: 0, bottom: 0 },
@@ -21,7 +22,17 @@ function renderApp() {
 
 describe('Paywall reached from a locked screen (root-level modal)', () => {
   beforeEach(() => {
-    useAppStore.setState({ hasOnboarded: true, isPro: false, selectedTrackSlugs: [] });
+    useAppStore.setState({ isPro: false });
+    // Signed in with tracks already picked == fully onboarded, so
+    // RootNavigator renders the Main tabs directly (no Splash/auth wait).
+    // `hydrated: true` stops RootNavigator's hydrate() from kicking off a
+    // real Supabase session lookup during the test.
+    useAuthStore.setState({
+      status: 'signedIn',
+      userId: 'test-user',
+      selectedTrackSlugs: ['fashion'],
+      hydrated: true,
+    });
   });
 
   it('returns to the exact locked screen it was opened from after subscribing, not to a different tab', async () => {

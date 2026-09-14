@@ -77,12 +77,9 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 1. **Sign in with Apple: deferred.** No Apple Developer account exists. Apple sign-in is dropped from this week's scope entirely — not attempted, not stubbed with fake UI-only buttons pretending to work. `SignUpScreen`'s Apple button either gets removed for now or left as a visibly-disabled/"coming soon" state (decide during Workstream A) so "Auth complete" for Week 2 means **email/password + Google** only. Revisit Apple once an account exists — likely rolls into a later week, not automatically Week 3.
 2. **Admin panel hosting: Vercel.** Confirmed, no Firebase Hosting.
 3. **"Full dataset imported to staging": placeholder data, for now.** No real client contact list exists yet. Same approach as `docs/contacts-import-template.csv` (already a placeholder) — I'll generate ~100-150 realistic-but-fake contacts (plausible names/roles like "Casting Director"/"A&R Manager", spread across the 5 categories and a handful of cities) purely to build and test search/filter/pagination/jump-bar against something dataset-shaped. Clearly placeholder, swapped out wholesale when real client data arrives — not treated as real content.
-4. **Google Sign-In requires a custom dev client, not plain Expo Go — still open.** Caught during plan validation, missed in the first draft. `@react-native-google-signin/google-signin` is a native module; it cannot run inside the plain Expo Go app the same way the Week 1 build did. Two paths:
-   - **EAS dev client** (`eas build --profile development`) — a custom build of the app with the native module baked in, installed once on your device/simulator, then `expo start --dev-client` for fast-refresh development same as before. Standard approach, ~10-20 min one-time build.
-   - **`expo-auth-session`'s web-based OAuth flow instead** — works in plain Expo Go (opens an in-app browser for Google's consent screen instead of the native one-tap UI). Worse UX, but zero build-tooling change.
-   Recommend the EAS dev client — you'll need it anyway before Week 4's real device builds, so this is a good time to set it up. Needs an Expo account (free) and, for iOS, still doesn't require the Apple Developer Program just to build/run on your own device via EAS's ad-hoc/development profile (only App Store submission needs that). Confirm which path before Workstream A starts.
+4. **Google Sign-In build tooling: EAS dev client.** `@react-native-google-signin/google-signin` is a native module and can't run in plain Expo Go — a one-time custom dev-client build (`eas build --profile development`) bakes it in; after that, `expo start --dev-client` + QR-scan-and-reload development continues exactly as before. Only needs a new build if another new native module is added later; regular JS/React changes never require a rebuild. Also needed eventually for Week 4 real-device builds anyway, so this isn't wasted setup.
 
-Also per handbook §8 ("No new dependency without approval") — flagging the new mobile dependencies this week needs before building: `@react-native-google-signin/google-signin`, and if the web-based path above is chosen instead, `expo-auth-session` + `expo-web-browser`.
+Per handbook §8 ("No new dependency without approval") — new mobile dependency this week: `@react-native-google-signin/google-signin`. Flagged and approved via the above.
 
 ---
 
@@ -194,4 +191,6 @@ This plan was independently validated (a second agent fact-checked every claim a
 1. ~~Apple Developer account~~ — **resolved**: no account, Apple sign-in deferred out of Week 2 entirely.
 2. ~~Admin panel hosting~~ — **resolved**: Vercel.
 3. ~~Full dataset~~ — **resolved**: placeholder data (~100-150 fake-but-realistic contacts), swapped for real client data whenever it arrives.
-4. Google Sign-In build tooling — **still open**: EAS dev client (recommended) vs. web-based OAuth fallback in plain Expo Go. See decision #4 above.
+4. ~~Google Sign-In build tooling~~ — **resolved**: EAS dev client.
+
+**All four decisions resolved — ready to start building.**

@@ -19,7 +19,9 @@ Status: **planning document, not yet built.** Written from a full re-read of `do
 
 > - Category grid showing the five categories with their admin-set icons. Contact counts per category.
 > - Contact list inside a category: alphabetical, sticky letter headers, A–Z jump bar down the right edge **that scrolls to the section**.
-> - Search across all categories by name, company or role. **Debounced 300 ms.** Query `nameLower` with a prefix match, plus company and role. If the dataset is under roughly 5,000 records, load once and filter in memory; above that, query the database and add the composite indexes.
+> - Search across all categories by name, company or role. **Debounced 300 ms.** Query `nameLower` with a prefix match, plus company and role. If the dataset is under roughly 5,000 records, load once and filter in memory; above that, query [the database] and add the composite indexes.
+
+(Handbook's literal word here is "Firestore" — bracketed above per the Week 1 migration, same convention as the Auth Architecture quote below.)
 > - Filter sheet inside a category: role and city, **built from the values actually present in the data**.
 > - Contact detail: full record, tap to call, tap to email, tap to open website. Any field that is empty is hidden entirely, not shown as a blank row.
 > - Favourite toggle **on both the list row and the detail screen**.
@@ -89,9 +91,10 @@ Per handbook §8 ("No new dependency without approval") — new mobile dependenc
 
 **Files touched:** `apps/mobile/src/features/onboarding/*` (wire real calls instead of UI-only), new `apps/mobile/src/services/supabase/auth.ts` (thin wrapper functions), new `apps/mobile/src/store/useAuthStore.ts` or extend `useAppStore` with a real session, `apps/mobile/src/features/profile/ProfileHomeScreen.tsx` (real log out + delete account).
 
+- **Step 0 — EAS dev client build** (do this first, before any Google sign-in code): `eas build --profile development` per decision #4. Nothing involving `@react-native-google-signin/google-signin` can be tested in plain Expo Go until this exists and is installed on the test device/simulator.
 - **Email/password sign up + log in** — `supabase.auth.signUp` / `signInWithPassword`. Wire `SignUpScreen`, `LoginScreen`.
 - **Forgot password** — `supabase.auth.resetPasswordForEmail`, wire `ForgotPasswordScreen`. Needs a redirect URL configured (deep link back into the app, or a simple "check your email" confirmation screen for v1 — a full deep-link password-reset flow is more involved; recommend the "check your email" version for now unless you want the full deep link).
-- **Sign in with Google** — Supabase's OAuth flow via `expo-auth-session` (standard Expo + Supabase pattern for native Google sign-in) or the simpler `supabase.auth.signInWithIdToken` with `@react-native-google-signin/google-signin`. Recommend the latter — it's the native Google One Tap-style flow, better UX than an in-app browser redirect.
+- **Sign in with Google** — `supabase.auth.signInWithIdToken` with `@react-native-google-signin/google-signin` (native module, requires the dev client from Step 0 — decision #4, resolved in favor of this over the `expo-auth-session` web-popup alternative).
 - **Sign in with Apple** — **deferred, not built this week** (no Apple Developer account exists — see decision #1). Remove or visibly disable the Apple button on `SignUpScreen` rather than leaving a fake-functional one.
 - **Log out** — `supabase.auth.signOut()`, reset local Zustand state, `RootNavigator` returns to Onboarding.
 - **Delete account** — cannot be done from the client directly (a user can't delete their own `auth.users` row). Needs a new Edge Function `delete-account` (service-role, verifies the caller's own JWT first) that deletes the `auth.users` row — `profiles`, `profile_entitlements`, `favorites`, `challenge_progress`, `activity`, `goals` all cascade-delete automatically (already `on delete cascade` in the Week 1 schema). Mirrors the handbook's "Delete account removes the user document and all subcollections through a Cloud Function" (§4.7), adapted to Postgres cascade + an Edge Function trigger.
@@ -125,6 +128,7 @@ Per handbook §8 ("No new dependency without approval") — new mobile dependenc
   **Recommend (2)** — the spec explicitly wants a preview *before* committing, which the current Edge Function doesn't support (it writes immediately). This means duplicating `parseContactsCsv`/`chunk` into `apps/admin/src/lib/` (same pattern already used to fork it from `functions/` into `supabase/functions/` in Week 1 — copy, don't share via fragile cross-package imports).
 - **Categories UI**: name/order/icon fields, icon picker sourced from the same bundled Ionicons set already chosen in Week 1 (`apps/mobile/src/theme/icons.ts` — `categoryIconOptions`). Consider extracting that icon list into a small shared JSON/constants file both apps can read (or just duplicate it — five categories, low churn).
 - **"Changes appear in the app immediately, no app update"**: since the mobile app will be querying Supabase live (Workstream B), this is naturally true — no extra work beyond Workstream B being done first.
+- **Deploy to Vercel** (decision #2): `vercel link` + `vercel env add` for the Supabase URL/anon key, then `vercel --prod` once the panel is functional. Do this at the end of Workstream C, not as a separate afterthought — "someone non-technical can add a contact through the panel" (the acceptance line) implies the panel is actually reachable at a URL, not just running on `localhost`.
 
 ### Workstream D — Data & indexes
 
@@ -148,7 +152,7 @@ Per handbook §8 ("No new dependency without approval") — new mobile dependenc
 - **RLS tests**: extend the intent already covered in Week 1's advisor checks — add explicit test cases for "a free (non-pro) authenticated user gets zero contacts back" and "a user cannot read another user's favorites/activity", run against local Postgres via `supabase db start` + `supabase migration up --local`, matching the Week 1 CI job.
 - **Edge Function tests** (Deno): add tests for the new `delete-account` function's auth-boundary behavior (rejects without a valid JWT, only deletes the caller's own account).
 - **Admin panel tests**: at minimum, unit tests for the CSV preview/column-mapping logic (once extracted) — mirror `csvImport.test.ts`.
-- **Manual device verification** (I cannot do this myself): sign up a real account on-device, browse a real category, favourite/unfavourite, mark a contact as contacted, log out, log back in and confirm state persisted; separately, log into the admin panel, add a contact, and confirm it appears in the app "without a restart."
+- **Manual device verification** (I cannot do this myself): **prerequisite — the EAS dev client (Workstream A, Step 0) must be built and installed before Google sign-in can be tested at all; plain Expo Go will not run it.** Once that's in place: sign up a real account on-device, browse a real category, favourite/unfavourite, mark a contact as contacted, log out, log back in and confirm state persisted; separately, log into the admin panel, add a contact, and confirm it appears in the app "without a restart."
 
 ## 8. Acceptance criteria
 
@@ -179,6 +183,7 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [ ] Contacts: create, edit, soft-delete, restore all work; `nameLower`/`sortKey` computed automatically, never typed by hand
 - [ ] CSV bulk upload: shows column-mapping step, previews first 10 rows, reports per-row errors by row number, imports valid rows even when others fail
 - [ ] Categories: name/order/icon editable, icon picker works
+- [ ] Deployed to Vercel and reachable at a real URL, not just `localhost`
 
 **The literal "done when" line**
 - [ ] The real directory is browsable on a physical device (not just a simulator) — sign up, browse, no crashes

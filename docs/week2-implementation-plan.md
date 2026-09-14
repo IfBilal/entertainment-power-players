@@ -63,11 +63,11 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 
 ---
 
-## 4. Decisions needed from you before/while building (flagging now, not guessing)
+## 4. Decisions (resolved 2026-09-14)
 
-1. **Sign in with Apple**: requires your own Apple Developer Program membership ($99/yr) and a Services ID configured in Apple's developer portal, then wired into Supabase's Apple provider. I cannot create this for you — needed before "Auth complete" can include Apple for real. Google sign-in is already enabled and doesn't need this.
-2. **Admin panel hosting**: the handbook says "deployed to Firebase Hosting" (no longer applicable post-migration). Needs a replacement — Vercel and Netlify both deploy a Vite static site for free with zero config. Recommend Vercel (fastest to wire up, I can do it via CLI same as the Supabase/Firebase setup). Confirm before Phase 3.
-3. **"Full dataset imported to staging"**: no real client contact list exists yet. Options: (a) you provide a real CSV, or (b) I generate a larger realistic synthetic dataset (~100–200 rows across the 5 categories) purely to exercise search/filter/pagination/indexes properly, clearly labeled as placeholder data, replaced later with the real list. Recommend (b) now, swapped for (a) whenever you have it — flag which you want.
+1. **Sign in with Apple: deferred.** No Apple Developer account exists. Apple sign-in is dropped from this week's scope entirely — not attempted, not stubbed with fake UI-only buttons pretending to work. `SignUpScreen`'s Apple button either gets removed for now or left as a visibly-disabled/"coming soon" state (decide during Workstream A) so "Auth complete" for Week 2 means **email/password + Google** only. Revisit Apple once an account exists — likely rolls into a later week, not automatically Week 3.
+2. **Admin panel hosting: Vercel.** Confirmed, no Firebase Hosting.
+3. **"Full dataset imported to staging": still open.** `docs/contacts-import-template.csv` has only 3 rows (the same 3 already seeded) — it's a format template, not a real dataset, and won't exercise search/filter/pagination meaningfully. Waiting on you: real client data, or should I generate ~100-150 placeholder rows across the 5 categories to build/test against now (swapped for real data later)?
 
 ---
 
@@ -80,7 +80,7 @@ On Supabase this maps to: `profile_entitlements.is_admin` / `is_pro`, checked by
 - **Email/password sign up + log in** — `supabase.auth.signUp` / `signInWithPassword`. Wire `SignUpScreen`, `LoginScreen`.
 - **Forgot password** — `supabase.auth.resetPasswordForEmail`, wire `ForgotPasswordScreen`. Needs a redirect URL configured (deep link back into the app, or a simple "check your email" confirmation screen for v1 — a full deep-link password-reset flow is more involved; recommend the "check your email" version for now unless you want the full deep link).
 - **Sign in with Google** — Supabase's OAuth flow via `expo-auth-session` (standard Expo + Supabase pattern for native Google sign-in) or the simpler `supabase.auth.signInWithIdToken` with `@react-native-google-signin/google-signin`. Recommend the latter — it's the native Google One Tap-style flow, better UX than an in-app browser redirect.
-- **Sign in with Apple** — `expo-apple-authentication` → `supabase.auth.signInWithIdToken({provider: 'apple', ...})`. Blocked on decision #1 above.
+- **Sign in with Apple** — **deferred, not built this week** (no Apple Developer account exists — see decision #1). Remove or visibly disable the Apple button on `SignUpScreen` rather than leaving a fake-functional one.
 - **Log out** — `supabase.auth.signOut()`, reset local Zustand state, `RootNavigator` returns to Onboarding.
 - **Delete account** — cannot be done from the client directly (a user can't delete their own `auth.users` row). Needs a new Edge Function `delete-account` (service-role, verifies the caller's own JWT first) that deletes the `auth.users` row — `profiles`, `profile_entitlements`, `favorites`, `challenge_progress`, `activity`, `goals` all cascade-delete automatically (already `on delete cascade` in the Week 1 schema). Mirrors the handbook's "Delete account removes the user document and all subcollections through a Cloud Function" (§4.7), adapted to Postgres cascade + an Edge Function trigger.
 - **Session persistence + auto-login**: `RootNavigator` checks for an existing Supabase session on launch (via `supabase.auth.getSession()` / `onAuthStateChange`) and skips Onboarding if already logged in, going straight to Main.
@@ -146,7 +146,7 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [ ] Sign up with email/password creates a real Supabase user; profile + entitlement rows auto-created (trigger already built in Week 1)
 - [ ] Log in with email/password works; wrong password shows an error, not a crash
 - [ ] Google sign-in works on a real device
-- [ ] Apple sign-in works on a real device (blocked on decision #1)
+- [ ] Apple sign-in — **out of scope this week** (no Apple Developer account); button removed/disabled, not faked
 - [ ] Forgot password sends a real reset email
 - [ ] Log out clears the session and returns to Onboarding
 - [ ] Delete account removes the auth user and all their data (verified via the Supabase dashboard, not just the app UI disappearing)
@@ -172,8 +172,8 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [ ] The real directory is browsable on a physical device (not just a simulator) — sign up, browse, no crashes
 - [ ] A non-technical person can add a contact through the admin panel and see it appear in the app **without restarting the app**
 
-## 9. Open questions to resolve before starting (recap)
+## 9. Open questions — status
 
-1. Apple Developer account timeline — do you have one, or should Apple sign-in wait?
-2. Admin panel hosting — Vercel OK, or a different preference?
-3. Full dataset — real client data coming, or should I synthesize placeholder data now?
+1. ~~Apple Developer account~~ — **resolved**: no account, Apple sign-in deferred out of Week 2 entirely.
+2. ~~Admin panel hosting~~ — **resolved**: Vercel.
+3. Full dataset — **still open**: real client data, or should I generate placeholder rows now?

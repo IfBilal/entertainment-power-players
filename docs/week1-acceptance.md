@@ -54,7 +54,7 @@ Both halves are now fully verified, not just written:
 - `apps/mobile`: `npx tsc --noEmit` clean; `npm test` → 34 tests passing across 9 suites (pure logic: nameLower/sortKey, week-key ISO rollover incl. year boundary, quote-of-the-day determinism, paywall gating, challenge single/counter state machine, contact search/filter/grouping; component smoke tests; navigation reachability tests for all 5 tabs + onboarding).
 - `supabase/functions/import-contacts-csv`: 17 Deno test steps passing (CSV parsing/validation/column-mapping against the real sample CSV, shared `nameLower`/`sortKey` derivation) — confirmed via `deno test --allow-read` in a real Deno runtime (Docker), matching what CI runs.
 - Database: schema + RLS verified against both the live project and a fresh local Postgres (via `supabase db start` + `supabase migration up --local`) — migrations apply cleanly from scratch either way.
-- CI (GitHub Actions, `.github/workflows/ci.yml`): 3 jobs — mobile (typecheck + tests), edge-functions (Deno tests), database (local Postgres schema/RLS check via Supabase CLI).
+- CI (GitHub Actions, `.github/workflows/ci.yml`): 4 jobs as of Week 2 — mobile (typecheck + tests), admin panel (typecheck + tests), edge-functions (Deno tests), database (local Postgres schema/RLS check via Supabase CLI).
 
 ---
 

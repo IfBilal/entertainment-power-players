@@ -1,4 +1,4 @@
-import { useRef, useState, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent, type DragEvent } from 'react';
 import { supabase } from '../lib/supabase';
 import {
   KNOWN_COLUMNS,
@@ -27,11 +27,10 @@ export function ImportPage() {
   const [categorySlugs, setCategorySlugs] = useState<Set<string>>(new Set());
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [dragOver, setDragOver] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
-  async function handleFile(e: ChangeEvent<HTMLInputElement>) {
-    const file = e.target.files?.[0];
-    if (!file) return;
+  async function handleFile(file: File) {
     setError(null);
     setFileName(file.name);
 
@@ -50,6 +49,18 @@ export function ImportPage() {
     setParsed(parsedCsv);
     setMapping(suggestMapping(parsedCsv.headers));
     setStage('map');
+  }
+
+  function onInputChange(e: ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (file) handleFile(file);
+  }
+
+  function onDrop(e: DragEvent<HTMLLabelElement>) {
+    e.preventDefault();
+    setDragOver(false);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handleFile(file);
   }
 
   const report: ValidationReport | null =
@@ -98,8 +109,27 @@ export function ImportPage() {
 
       {stage === 'pick' ? (
         <div className="card stack">
-          <label htmlFor="csv">CSV file</label>
-          <input id="csv" ref={fileInput} type="file" accept=".csv,text/csv" onChange={handleFile} />
+          <label
+            htmlFor="csv"
+            className={`dropzone${dragOver ? ' dragover' : ''}`}
+            style={{ marginBottom: 0 }}
+            onDragOver={(e) => {
+              e.preventDefault();
+              setDragOver(true);
+            }}
+            onDragLeave={() => setDragOver(false)}
+            onDrop={onDrop}
+          >
+            <div className="pill-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <path d="M17 8l-5-5-5 5M12 3v12" />
+              </svg>
+            </div>
+            <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Drag & drop your CSV here</p>
+            <p className="muted small">or click to browse</p>
+            <input id="csv" ref={fileInput} type="file" accept=".csv,text/csv" onChange={onInputChange} />
+          </label>
           {error ? <p className="error small">{error}</p> : null}
           <p className="muted small">
             Expected columns: {KNOWN_COLUMNS.join(', ')}. Anything else is reported as unmapped rather than silently
@@ -234,7 +264,14 @@ export function ImportPage() {
 
       {stage === 'done' && result ? (
         <div className="card stack">
-          <h2 className="success">Imported {result.imported} contacts</h2>
+          <div className="row" style={{ gap: '0.75rem' }}>
+            <div className="pill-icon" style={{ background: 'var(--success-soft)', color: 'var(--success)' }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M20 6L9 17l-5-5" />
+              </svg>
+            </div>
+            <h2 className="success" style={{ margin: 0 }}>Imported {result.imported} contacts</h2>
+          </div>
           {result.failed.length > 0 ? (
             <>
               <p className="muted small">{result.failed.length} rows were skipped:</p>

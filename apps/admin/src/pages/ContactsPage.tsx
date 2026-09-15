@@ -145,9 +145,24 @@ export function ContactsPage() {
       <div className="row between">
         <div>
           <h1>Contacts</h1>
-          <p className="muted small">{visible.length} shown · {contacts.filter((c) => c.active).length} active</p>
+          <p className="muted small">The directory your subscribers browse in the app</p>
         </div>
-        <button onClick={openCreate}>Add contact</button>
+        <button onClick={openCreate}>+ Add contact</button>
+      </div>
+
+      <div className="stat-row">
+        <div className="stat">
+          <div className="num">{contacts.filter((c) => c.active).length}</div>
+          <div className="label">Active</div>
+        </div>
+        <div className="stat">
+          <div className="num">{categories.length}</div>
+          <div className="label">Categories</div>
+        </div>
+        <div className="stat">
+          <div className="num">{contacts.filter((c) => !c.active).length}</div>
+          <div className="label">Deleted</div>
+        </div>
       </div>
 
       <div className="card stack">
@@ -173,7 +188,15 @@ export function ContactsPage() {
         {loading ? <p className="muted small">Loading…</p> : null}
 
         {!loading && visible.length === 0 ? (
-          <p className="muted small">No contacts match.</p>
+          <div className="empty-state">
+            <div className="pill-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <circle cx="11" cy="11" r="7" />
+                <path d="M21 21l-4.3-4.3" />
+              </svg>
+            </div>
+            <p>No contacts match your search.</p>
+          </div>
         ) : (
           <table>
             <thead>
@@ -190,7 +213,27 @@ export function ContactsPage() {
               {visible.map((c) => (
                 <tr key={c.id} className={c.active ? '' : 'inactive'}>
                   <td>
-                    {c.name} {c.active ? null : <span className="badge">DELETED</span>}
+                    <div className="row" style={{ gap: '0.6rem' }}>
+                      <span
+                        style={{
+                          width: 28,
+                          height: 28,
+                          borderRadius: '50%',
+                          background: 'var(--accent-soft)',
+                          color: 'var(--accent-deep)',
+                          display: 'grid',
+                          placeItems: 'center',
+                          fontSize: '0.75rem',
+                          fontWeight: 700,
+                          flexShrink: 0,
+                        }}
+                      >
+                        {c.name.charAt(0).toUpperCase()}
+                      </span>
+                      <span>
+                        {c.name} {c.active ? null : <span className="badge">DELETED</span>}
+                      </span>
+                    </div>
                   </td>
                   <td>{categories.find((cat) => cat.slug === c.category_slug)?.name ?? c.category_slug}</td>
                   <td>{c.role}</td>

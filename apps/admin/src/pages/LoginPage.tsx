@@ -20,10 +20,13 @@ export function LoginPage() {
 
   return (
     <div className="centered">
-      <form className="card narrow stack" onSubmit={handleSubmit}>
+      <form className="auth-card stack" onSubmit={handleSubmit}>
         <div>
-          <h1>Power Players</h1>
-          <p className="muted small">Admin panel</p>
+          <div className="auth-wordmark">
+            <span className="mark">P</span>
+            <h1>Power Players</h1>
+          </div>
+          <p className="muted small">Sign in to manage the directory</p>
         </div>
 
         <div>
@@ -45,7 +48,7 @@ export function LoginPage() {
 
         {error ? <p className="error small">{error}</p> : null}
 
-        <button type="submit" disabled={submitting || !email || !password}>
+        <button type="submit" disabled={submitting || !email || !password} style={{ width: '100%' }}>
           {submitting ? 'Signing in…' : 'Log in'}
         </button>
       </form>
@@ -57,8 +60,14 @@ export function LoginPage() {
 export function NoAccessPage({ email }: { email: string | null }) {
   return (
     <div className="centered">
-      <div className="card narrow stack">
-        <h1>No access</h1>
+      <div className="auth-card stack">
+        <div className="pill-icon" style={{ background: 'var(--danger-soft)', color: 'var(--danger)' }}>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <circle cx="12" cy="12" r="10" />
+            <path d="M4.9 4.9l14.2 14.2" />
+          </svg>
+        </div>
+        <h1 style={{ fontSize: '1.4rem' }}>No access</h1>
         <p className="muted">
           {email ? `${email} isn't an admin account.` : 'This account is not an admin account.'} Contact whoever
           manages the directory if you think that's wrong.

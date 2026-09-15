@@ -60,7 +60,25 @@ export function CategoriesPage() {
       {categories.map((category) => (
         <div key={category.slug} className="card stack">
           <div className="row between">
-            <h2>{category.name}</h2>
+            <div className="row" style={{ gap: '0.7rem' }}>
+              <span
+                style={{
+                  width: 34,
+                  height: 34,
+                  borderRadius: 10,
+                  background: 'var(--accent-soft)',
+                  color: 'var(--accent-deep)',
+                  display: 'grid',
+                  placeItems: 'center',
+                  fontFamily: 'var(--font-serif)',
+                  fontWeight: 700,
+                  flexShrink: 0,
+                }}
+              >
+                {category.name.charAt(0).toUpperCase()}
+              </span>
+              <h2 style={{ margin: 0 }}>{category.name}</h2>
+            </div>
             <span className="muted small">{category.slug}</span>
           </div>
 

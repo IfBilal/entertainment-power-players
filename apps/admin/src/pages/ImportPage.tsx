@@ -28,27 +28,37 @@ export function ImportPage() {
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
+  const [processing, setProcessing] = useState(false);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
     setError(null);
     setFileName(file.name);
+    // The gap between picking a file and reaching the mapping screen has a
+    // real network call in it (loading categories below) -- without a
+    // visible loading state here, the dropzone just sits there for a few
+    // seconds looking like the file was never picked up at all.
+    setProcessing(true);
 
-    const text = await file.text();
-    const parsedCsv = parseCsv(text);
-    if (parsedCsv.headers.length === 0) {
-      setError('That file has no readable header row.');
-      return;
+    try {
+      const text = await file.text();
+      const parsedCsv = parseCsv(text);
+      if (parsedCsv.headers.length === 0) {
+        setError('That file has no readable header row.');
+        return;
+      }
+
+      // Load valid categories so unknown ones are caught at validation time,
+      // not by a foreign-key error mid-import.
+      const { data } = await supabase.from('categories').select('slug');
+      setCategorySlugs(new Set((data ?? []).map((c: { slug: string }) => c.slug)));
+
+      setParsed(parsedCsv);
+      setMapping(suggestMapping(parsedCsv.headers));
+      setStage('map');
+    } finally {
+      setProcessing(false);
     }
-
-    // Load valid categories so unknown ones are caught at validation time,
-    // not by a foreign-key error mid-import.
-    const { data } = await supabase.from('categories').select('slug');
-    setCategorySlugs(new Set((data ?? []).map((c: { slug: string }) => c.slug)));
-
-    setParsed(parsedCsv);
-    setMapping(suggestMapping(parsedCsv.headers));
-    setStage('map');
   }
 
   function onInputChange(e: ChangeEvent<HTMLInputElement>) {
@@ -112,23 +122,38 @@ export function ImportPage() {
           <label
             htmlFor="csv"
             className={`dropzone${dragOver ? ' dragover' : ''}`}
-            style={{ marginBottom: 0 }}
+            style={{ marginBottom: 0, cursor: processing ? 'default' : 'pointer' }}
             onDragOver={(e) => {
+              if (processing) return;
               e.preventDefault();
               setDragOver(true);
             }}
             onDragLeave={() => setDragOver(false)}
-            onDrop={onDrop}
+            onDrop={processing ? undefined : onDrop}
           >
-            <div className="pill-icon">
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <path d="M17 8l-5-5-5 5M12 3v12" />
-              </svg>
-            </div>
-            <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Drag & drop your CSV here</p>
-            <p className="muted small">or click to browse</p>
-            <input id="csv" ref={fileInput} type="file" accept=".csv,text/csv" onChange={onInputChange} />
+            {processing ? (
+              <>
+                <div className="pill-icon spin">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 12a9 9 0 1 1-9-9" />
+                  </svg>
+                </div>
+                <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Reading {fileName}…</p>
+                <p className="muted small">Checking columns against your categories</p>
+              </>
+            ) : (
+              <>
+                <div className="pill-icon">
+                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <path d="M17 8l-5-5-5 5M12 3v12" />
+                  </svg>
+                </div>
+                <p style={{ fontWeight: 600, marginBottom: '0.25rem' }}>Drag & drop your CSV here</p>
+                <p className="muted small">or click to browse</p>
+              </>
+            )}
+            <input id="csv" ref={fileInput} type="file" accept=".csv,text/csv" onChange={onInputChange} disabled={processing} />
           </label>
           {error ? <p className="error small">{error}</p> : null}
           <p className="muted small">

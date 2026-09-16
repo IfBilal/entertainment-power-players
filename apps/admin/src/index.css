@@ -221,6 +221,8 @@ tr.inactive td { opacity: 0.45; }
   place-items: center;
   flex-shrink: 0;
 }
+.pill-icon.spin svg { animation: pill-spin 0.8s linear infinite; }
+@keyframes pill-spin { to { transform: rotate(360deg); } }
 
 .stat-row { display: flex; gap: 1.5rem; flex-wrap: wrap; }
 .stat {

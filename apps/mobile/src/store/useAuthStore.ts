@@ -29,6 +29,8 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
   }
 }
 
+const HYDRATE_TIMEOUT_MS = 6000;
+
 export const useAuthStore = create<AuthState>((set, get) => ({
   status: 'loading',
   userId: null,
@@ -39,9 +41,29 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (get().hydrated) return () => undefined;
     set({ hydrated: true });
 
+    // A rejected promise is not the only way this can go wrong -- a request
+    // that never resolves *or* rejects (a silently dropped connection, a
+    // flaky captive-portal-style network, some storage adapters on first
+    // read) leaves status stuck at 'loading' forever just the same, and a
+    // .catch() alone does nothing for that case. Race against a hard
+    // timeout so the splash screen always moves on within a few seconds
+    // regardless of what's actually stalling underneath. Confirmed live:
+    // reported stuck on the splash screen after a restart, even after the
+    // .catch()-only fix.
+    let settled = false;
+    const timeout = setTimeout(() => {
+      if (settled) return;
+      settled = true;
+      console.warn('[auth] getSession timed out after', HYDRATE_TIMEOUT_MS, 'ms, falling back to signedOut');
+      set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+    }, HYDRATE_TIMEOUT_MS);
+
     supabase.auth
       .getSession()
       .then(({ data }) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
         const session = data.session;
         if (session) {
           set({ status: 'signedIn', userId: session.user.id });
@@ -51,6 +73,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         }
       })
       .catch((error) => {
+        if (settled) return;
+        settled = true;
+        clearTimeout(timeout);
         // A network failure here (unreachable Supabase, DNS, offline) must
         // not leave status stuck at 'loading' forever -- that strands the
         // user on the splash screen with no way forward. Fail safe to

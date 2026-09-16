@@ -18,12 +18,35 @@ export function SplashScreen({ navigation }: Props) {
   const minDelayElapsed = useRef(false);
   const navigated = useRef(false);
 
+  // The min-display timer below fires exactly once, from a useEffect with an
+  // empty dep array -- its callback closure is frozen at mount time. Reading
+  // `status`/`selectedTrackSlugs` directly from that closure meant it always
+  // saw whatever they were on first render (typically 'loading'), forever,
+  // no matter how much time passed or how many times the real values
+  // changed. If auth resolved *before* the timer fired -- common, and more
+  // likely the faster the connection -- the other effect (which does see
+  // fresh values) would run first but bail out because minDelayElapsed
+  // wasn't set yet, and then the timer's stale closure would run and match
+  // neither branch. Nothing ever called tryNavigate again after that:
+  // permanently stuck on this screen. Confirmed live, repeatedly, worst on
+  // fast connections (USB) rather than slow ones (Wi-Fi) -- backwards from
+  // what a network-flakiness explanation would predict, which is what
+  // pointed at a timing bug here instead. Refs are mutable and read fresh on
+  // every call regardless of which closure captured them, so routing both
+  // callers through these instead of the raw state variables fixes it.
+  const statusRef = useRef(status);
+  const tracksRef = useRef(selectedTrackSlugs);
+  statusRef.current = status;
+  tracksRef.current = selectedTrackSlugs;
+
   function tryNavigate() {
     if (navigated.current || !minDelayElapsed.current) return;
-    if (status === 'signedOut') {
+    const currentStatus = statusRef.current;
+    const currentTracks = tracksRef.current;
+    if (currentStatus === 'signedOut') {
       navigated.current = true;
       navigation.replace('IntroSlides');
-    } else if (status === 'signedIn' && (selectedTrackSlugs?.length ?? 0) === 0) {
+    } else if (currentStatus === 'signedIn' && (currentTracks?.length ?? 0) === 0) {
       navigated.current = true;
       navigation.replace('TrackPicker');
     }

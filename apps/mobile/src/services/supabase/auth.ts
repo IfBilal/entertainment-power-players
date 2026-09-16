@@ -1,8 +1,29 @@
 import { supabase } from './client';
 
+/** Thrown by signUpWithEmail when the email already belongs to a confirmed account. */
+export class EmailAlreadyRegisteredError extends Error {
+  constructor() {
+    super('An account with this email already exists. Try logging in instead.');
+    this.name = 'EmailAlreadyRegisteredError';
+  }
+}
+
 export async function signUpWithEmail(email: string, password: string) {
   const { data, error } = await supabase.auth.signUp({ email, password });
   if (error) throw error;
+
+  // Supabase deliberately returns a 200 with a synthetic user rather than an
+  // error when the email already belongs to a *confirmed* account -- this
+  // stops attackers from using the signup endpoint to enumerate registered
+  // emails. The documented, enumeration-safe way to detect this case on our
+  // own account (not a probe) is an empty `identities` array on the
+  // response: a genuinely new signup always has exactly one. Without this
+  // check the UI would wrongly say "check your email to confirm" for an
+  // account that's already active.
+  if (data.user && data.user.identities && data.user.identities.length === 0) {
+    throw new EmailAlreadyRegisteredError();
+  }
+
   return data;
 }
 

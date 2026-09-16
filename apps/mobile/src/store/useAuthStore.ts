@@ -39,15 +39,25 @@ export const useAuthStore = create<AuthState>((set, get) => ({
     if (get().hydrated) return () => undefined;
     set({ hydrated: true });
 
-    supabase.auth.getSession().then(({ data }) => {
-      const session = data.session;
-      if (session) {
-        set({ status: 'signedIn', userId: session.user.id });
-        loadProfileInto(set, session);
-      } else {
+    supabase.auth
+      .getSession()
+      .then(({ data }) => {
+        const session = data.session;
+        if (session) {
+          set({ status: 'signedIn', userId: session.user.id });
+          loadProfileInto(set, session);
+        } else {
+          set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+        }
+      })
+      .catch((error) => {
+        // A network failure here (unreachable Supabase, DNS, offline) must
+        // not leave status stuck at 'loading' forever -- that strands the
+        // user on the splash screen with no way forward. Fail safe to
+        // signedOut so they at least reach Onboarding/Login and can retry.
+        console.warn('[auth] getSession failed, falling back to signedOut:', error);
         set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
-      }
-    });
+      });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {

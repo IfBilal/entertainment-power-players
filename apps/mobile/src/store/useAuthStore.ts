@@ -29,7 +29,7 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
   }
 }
 
-const HYDRATE_TIMEOUT_MS = 6000;
+const HYDRATE_TIMEOUT_MS = 5000;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
   status: 'loading',

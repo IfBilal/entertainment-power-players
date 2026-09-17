@@ -8,9 +8,11 @@
     "userInterfaceStyle": "light",
     "backgroundColor": "#FBF7F0",
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.entertainmentpowerplayers.app"
     },
     "android": {
+      "package": "com.entertainmentpowerplayers.app",
       "adaptiveIcon": {
         "backgroundColor": "#FBF7F0",
         "foregroundImage": "./assets/android-icon-foreground.png",
@@ -35,6 +37,12 @@
       ],
       "expo-secure-store",
       "@react-native-google-signin/google-signin"
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "84a39bbd-db65-482a-b911-c280240efb87"
+      }
+    },
+    "owner": "bilal06"
   }
 }

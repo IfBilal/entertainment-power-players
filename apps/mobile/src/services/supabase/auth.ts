@@ -33,8 +33,18 @@ export async function signInWithEmail(email: string, password: string) {
   return data;
 }
 
+// Password recovery needs its own destination -- a real page where someone
+// can type a new password -- separate from the plain "you're confirmed"
+// page used for signup. Without an explicit redirectTo here, Supabase falls
+// back to the project's single global Site URL, which is the signup
+// confirmation page: that's the bug reported live (reset email landed on
+// "you're confirmed" with no way to actually set a new password).
+const PASSWORD_RESET_REDIRECT_URL = 'https://entertainment-power-players-confirm.vercel.app/reset.html';
+
 export async function sendPasswordResetEmail(email: string) {
-  const { error } = await supabase.auth.resetPasswordForEmail(email);
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: PASSWORD_RESET_REDIRECT_URL,
+  });
   if (error) throw error;
 }
 

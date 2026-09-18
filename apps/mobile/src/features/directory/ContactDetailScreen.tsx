@@ -4,8 +4,8 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Card, EmptyState, Screen } from '../../components';
-import { colors, spacing } from '../../theme';
-import { fetchContactById, logContactedActivity } from '../../services/supabase/directory';
+import { colors, radius, spacing } from '../../theme';
+import { fetchCategories, fetchContactById, logContactedActivity } from '../../services/supabase/directory';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAuthStore } from '../../store/useAuthStore';
 import { computeWeekKey } from '../../utils/weekKey';
@@ -23,7 +23,9 @@ export function ContactDetailScreen({ route }: Props) {
     queryKey: ['contact', contactId],
     queryFn: () => fetchContactById(contactId),
   });
+  const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
   const contact = contactQuery.data;
+  const categoryName = categoriesQuery.data?.find((c) => c.slug === contact?.categorySlug)?.name;
 
   if (contactQuery.isLoading) {
     return <Screen />;
@@ -53,69 +55,82 @@ export function ContactDetailScreen({ route }: Props) {
     }
   }
 
-  const fields: Array<{ icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; onPress?: () => void }> = [
-    { icon: 'call-outline', label: 'Call', value: contact.phone, onPress: () => contact.phone && Linking.openURL(`tel:${contact.phone}`) },
-    { icon: 'mail-outline', label: 'Email', value: contact.email, onPress: () => contact.email && Linking.openURL(`mailto:${contact.email}`) },
-    { icon: 'globe-outline', label: 'Website', value: contact.website, onPress: () => contact.website && Linking.openURL(contact.website) },
+  type ContactField = { icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; onPress: () => void };
+  const allFields: ContactField[] = [
+    { icon: 'call-outline', label: 'Call', value: contact.phone, onPress: () => { if (contact.phone) Linking.openURL(`tel:${contact.phone}`); } },
+    { icon: 'mail-outline', label: 'Email', value: contact.email, onPress: () => { if (contact.email) Linking.openURL(`mailto:${contact.email}`); } },
+    { icon: 'globe-outline', label: 'Website', value: contact.website, onPress: () => { if (contact.website) Linking.openURL(contact.website); } },
   ];
+  const fields = allFields.filter((f) => Boolean(f.value));
 
   const favorited = isFavorite(contact.id);
+  const contacted = contactedState === 'done';
 
   return (
     <Screen>
+      {categoryName ? (
+        <AppText variant="label" color={colors.textTertiary}>
+          {categoryName.toUpperCase()}
+        </AppText>
+      ) : null}
+
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
-          <AppText variant="title">{contact.name}</AppText>
-          <AppText variant="body" color={colors.textSecondary}>
+          <AppText variant="display" style={styles.name}>{contact.name}</AppText>
+          <AppText variant="body" color={colors.textSecondary} style={styles.role}>
             {contact.role}{contact.company ? ` · ${contact.company}` : ''}
           </AppText>
+          {contact.city ? (
+            <AppText variant="caption" color={colors.textTertiary} style={styles.city}>
+              {contact.city}
+            </AppText>
+          ) : null}
         </View>
-        <Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel="Toggle favourite">
+        <Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel="Toggle favourite" hitSlop={8}>
           <Ionicons name={favorited ? 'heart' : 'heart-outline'} size={26} color={colors.accent} />
         </Pressable>
       </View>
 
-      {contact.city ? (
-        <AppText variant="caption" color={colors.textSecondary} style={styles.city}>
-          {contact.city}
-        </AppText>
-      ) : null}
-
-      <View style={styles.fields}>
-        {fields
-          .filter((f) => Boolean(f.value))
-          .map((f) => (
+      {fields.length > 0 ? (
+        <View style={styles.fields}>
+          {fields.map((f) => (
             <Pressable key={f.label} onPress={f.onPress}>
-              <Card style={styles.fieldCard}>
-                <Ionicons name={f.icon} size={20} color={colors.accent} />
-                <AppText variant="body" style={styles.fieldValue}>
-                  {f.value}
-                </AppText>
+              <Card style={styles.fieldCard} elevation="none">
+                <View style={styles.fieldIconWrap}>
+                  <Ionicons name={f.icon} size={18} color={colors.accent} />
+                </View>
+                <View>
+                  <AppText variant="caption" color={colors.textTertiary}>{f.label}</AppText>
+                  <AppText variant="bodyStrong">{f.value}</AppText>
+                </View>
               </Card>
             </Pressable>
           ))}
-      </View>
+        </View>
+      ) : null}
 
       {contact.notes ? (
-        <Card style={styles.notes}>
-          <AppText variant="caption" color={colors.textSecondary}>
+        <Card style={styles.notes} elevation="none">
+          <AppText variant="caption" color={colors.textTertiary}>
             Notes
           </AppText>
-          <AppText variant="body">{contact.notes}</AppText>
+          <AppText variant="body" style={styles.notesText}>{contact.notes}</AppText>
         </Card>
       ) : null}
 
-      <Pressable onPress={handleMarkContacted} disabled={contactedState === 'saving'}>
-        <Card style={styles.markContacted}>
+      <View style={styles.spacer} />
+
+      <Pressable onPress={handleMarkContacted} disabled={contactedState === 'saving' || contacted}>
+        <View style={[styles.markContacted, contacted && styles.markContactedDone]}>
           <Ionicons
-            name={contactedState === 'done' ? 'checkmark-circle' : 'checkmark-circle-outline'}
+            name={contacted ? 'checkmark-circle' : 'checkmark-circle-outline'}
             size={20}
-            color={contactedState === 'done' ? colors.success : colors.accent}
+            color={contacted ? colors.success : colors.textInverse}
           />
-          <AppText variant="bodyStrong" style={styles.fieldValue}>
-            {contactedState === 'done' ? 'Logged to your tracker' : 'Mark as contacted'}
+          <AppText variant="button" color={contacted ? colors.success : colors.textInverse} style={styles.markContactedText}>
+            {contacted ? 'Logged to your tracker' : 'Mark as contacted'}
           </AppText>
-        </Card>
+        </View>
       </Pressable>
       {contactedState === 'error' ? (
         <AppText variant="caption" color={colors.danger} style={styles.error}>
@@ -127,13 +142,36 @@ export function ContactDetailScreen({ route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' },
+  headerRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', marginTop: spacing.xs },
   headerText: { flex: 1, marginRight: spacing.md },
-  city: { marginTop: spacing.xs },
+  name: { marginTop: spacing.xs },
+  role: { marginTop: spacing.xs },
+  city: { marginTop: 2 },
   fields: { marginTop: spacing.lg, gap: spacing.sm },
-  fieldCard: { flexDirection: 'row', alignItems: 'center' },
-  fieldValue: { marginLeft: spacing.sm },
-  notes: { marginTop: spacing.md },
-  markContacted: { marginTop: spacing.lg, flexDirection: 'row', alignItems: 'center' },
-  error: { marginTop: spacing.xs },
+  fieldCard: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, backgroundColor: colors.surfaceSubtle },
+  fieldIconWrap: {
+    width: 34,
+    height: 34,
+    borderRadius: radius.sm,
+    backgroundColor: colors.surfaceRaised,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  notes: { marginTop: spacing.md, backgroundColor: colors.surfaceSubtle },
+  notesText: { marginTop: spacing.xs },
+  spacer: { flex: 1, minHeight: spacing.lg },
+  markContacted: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    backgroundColor: colors.accent,
+    borderRadius: radius.md,
+    paddingVertical: spacing.md,
+  },
+  markContactedDone: {
+    backgroundColor: colors.successSoft,
+  },
+  markContactedText: {},
+  error: { marginTop: spacing.xs, textAlign: 'center' },
 });

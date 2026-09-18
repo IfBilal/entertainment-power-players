@@ -1,10 +1,9 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Card, EmptyState, ProgressRing, Screen } from '../../components';
+import { AppText, Button, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
+import { applyChallengeAction, tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
 import { useAppStore } from '../../store/useAppStore';
 import { useChallengesStore } from '../../store/useChallengesStore';
 import { useTrackerStore } from '../../store/useTrackerStore';
@@ -13,7 +12,7 @@ import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackDetail'>;
 
-function ChallengeRow({ trackSlug, challenge }: { trackSlug: string; challenge: Challenge }) {
+function ConnectedChallengeRow({ trackSlug, challenge }: { trackSlug: string; challenge: Challenge }) {
   const key = `${trackSlug}_${challenge.order}`;
   const entry = useChallengesStore((s) => s.progress[key]);
   const act = useChallengesStore((s) => s.act);
@@ -30,8 +29,9 @@ function ChallengeRow({ trackSlug, challenge }: { trackSlug: string; challenge: 
   }
 
   function onToggle() {
+    const next = applyChallengeAction(challenge, entry, 'toggle');
     act(trackSlug, challenge, 'toggle');
-    afterComplete(!isComplete);
+    afterComplete(next.status === 'complete' && !isComplete);
   }
 
   function onStep(action: 'increment' | 'decrement') {
@@ -43,36 +43,19 @@ function ChallengeRow({ trackSlug, challenge }: { trackSlug: string; challenge: 
   }
 
   return (
-    <Card style={styles.challengeCard}>
-      <View style={styles.challengeHeader}>
-        <View style={styles.challengeText}>
-          <AppText variant="bodyStrong">{challenge.title}</AppText>
-          <AppText variant="caption" color={colors.textSecondary}>{challenge.description}</AppText>
-        </View>
-        {challenge.type === 'single' ? (
-          <Pressable onPress={onToggle} accessibilityRole="checkbox" accessibilityState={{ checked: isComplete }}>
-            <Ionicons name={isComplete ? 'checkbox' : 'square-outline'} size={26} color={colors.accent} />
-          </Pressable>
-        ) : (
-          <View style={styles.stepper}>
-            <Pressable onPress={() => onStep('decrement')}>
-              <Ionicons name="remove-circle-outline" size={24} color={colors.accent} />
-            </Pressable>
-            <AppText variant="bodyStrong">{count} of {challenge.target}</AppText>
-            <Pressable onPress={() => onStep('increment')}>
-              <Ionicons name="add-circle-outline" size={24} color={colors.accent} />
-            </Pressable>
-          </View>
-        )}
-      </View>
-      <TextInput
-        placeholder="Add a note (optional)"
-        value={note}
-        onChangeText={setNote}
-        style={styles.noteInput}
-        placeholderTextColor={colors.textSecondary}
-      />
-    </Card>
+    <ChallengeRow
+      title={challenge.title}
+      description={challenge.description}
+      type={challenge.type}
+      isComplete={isComplete}
+      count={count}
+      target={challenge.target}
+      note={note}
+      onToggle={onToggle}
+      onIncrement={() => onStep('increment')}
+      onDecrement={() => onStep('decrement')}
+      onNoteChange={setNote}
+    />
   );
 }
 
@@ -95,32 +78,44 @@ export function TrackDetailScreen({ route, navigation }: Props) {
     return (
       <Screen>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
-        <EmptyState icon="lock-closed-outline" title="Pro feature" description="Subscribe to unlock this track's challenges." />
+        <View style={styles.benefits}>
+          <PaywallCard icon="trophy-outline" text="All challenges in this track" />
+          <PaywallCard icon="stats-chart-outline" text="Progress tracked toward your weekly goals" />
+        </View>
         <Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'challenges' })} />
       </Screen>
     );
   }
 
   const { done, total } = trackCompletionCount(track, progress);
+  const complete = total > 0 && done === total;
 
   return (
     <Screen>
       <View style={styles.header}>
         <View style={styles.headerText}>
-          <AppText variant="label" color={colors.textMuted}>TRACK</AppText>
+          <AppText variant="label" color={colors.textTertiary}>TRACK</AppText>
           <AppText variant="title">{track.name}</AppText>
-          <AppText variant="caption" color={colors.textSecondary} style={styles.ringLabel}>
-            {done} of {total} complete
+          <AppText variant="caption" color={complete ? colors.success : colors.textSecondary} style={styles.ringLabel}>
+            {complete ? 'Track complete' : `${done} of ${total} complete`}
           </AppText>
         </View>
         <ProgressRing progress={total > 0 ? done / total : 0} label={`${done}/${total}`} />
       </View>
 
+      {complete ? (
+        <AppText variant="subtitle" style={styles.celebration}>You&apos;ve finished this path. Keep building.</AppText>
+      ) : (
+        <AppText variant="subtitle" style={styles.celebration}>Keep the momentum going.</AppText>
+      )}
+
       <FlatList
-        data={track.challenges.sort((a, b) => a.order - b.order)}
+        data={[...track.challenges].sort((a, b) => a.order - b.order)}
         keyExtractor={(c) => String(c.order)}
         contentContainerStyle={styles.list}
-        renderItem={({ item }) => <ChallengeRow trackSlug={track.slug} challenge={item} />}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={<EmptyState icon="checkmark-done-outline" title="No challenges yet" />}
+        renderItem={({ item }) => <ConnectedChallengeRow trackSlug={track.slug} challenge={item} />}
       />
     </Screen>
   );
@@ -128,18 +123,10 @@ export function TrackDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   heading: { marginBottom: spacing.md },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  benefits: { gap: spacing.sm, marginTop: spacing.lg, marginBottom: spacing.xl },
+  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
   headerText: { flex: 1, marginRight: spacing.md },
   ringLabel: { marginTop: spacing.xs },
+  celebration: { marginTop: spacing.md, marginBottom: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
-  challengeCard: { gap: spacing.sm },
-  challengeHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  challengeText: { flex: 1, marginRight: spacing.sm },
-  stepper: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  noteInput: {
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
-    paddingTop: spacing.xs,
-    color: colors.textPrimary,
-  },
 });

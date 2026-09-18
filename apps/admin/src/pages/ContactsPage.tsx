@@ -161,7 +161,7 @@ export function ContactsPage() {
         </div>
         <div className="stat">
           <div className="num">{contacts.filter((c) => !c.active).length}</div>
-          <div className="label">Deleted</div>
+          <div className="label">Inactive</div>
         </div>
       </div>
 
@@ -180,7 +180,7 @@ export function ContactsPage() {
               onChange={(e) => setShowInactive(e.target.checked)}
               style={{ width: 'auto', marginRight: 6 }}
             />
-            Show deleted
+            Show inactive
           </label>
         </div>
 
@@ -231,7 +231,7 @@ export function ContactsPage() {
                         {c.name.charAt(0).toUpperCase()}
                       </span>
                       <span>
-                        {c.name} {c.active ? null : <span className="badge">DELETED</span>}
+                        {c.name} {c.active ? null : <span className="badge">INACTIVE</span>}
                       </span>
                     </div>
                   </td>
@@ -243,8 +243,16 @@ export function ContactsPage() {
                     <div className="row">
                       <button className="ghost small" onClick={() => openEdit(c)}>Edit</button>
                       {c.active ? (
-                        <button className="ghost small" style={{ color: 'var(--danger)' }} onClick={() => setActive(c, false)}>
-                          Delete
+                        <button
+                          className="ghost small"
+                          style={{ color: 'var(--danger)' }}
+                          onClick={() => {
+                            if (window.confirm(`Deactivate ${c.name}?\n\nThe contact will disappear from the app but can be restored later.`)) {
+                              setActive(c, false);
+                            }
+                          }}
+                        >
+                          Deactivate
                         </button>
                       ) : (
                         <button className="ghost small" onClick={() => setActive(c, true)}>Restore</button>

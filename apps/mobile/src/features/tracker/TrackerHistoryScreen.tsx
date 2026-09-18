@@ -1,6 +1,6 @@
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, EmptyState, Screen } from '../../components';
+import { AppText, EmptyState, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
 
@@ -23,18 +23,29 @@ export function TrackerHistoryScreen() {
       <FlatList
         data={grouped}
         keyExtractor={([weekKey]) => weekKey}
-        ListEmptyComponent={<EmptyState icon="time-outline" title="No activity yet" />}
+        showsVerticalScrollIndicator={false}
+        ListEmptyComponent={
+          <EmptyState
+            icon="time-outline"
+            title="Your week starts here."
+            description="Log your first connection, event, or follow-up and start building momentum."
+          />
+        }
         renderItem={({ item: [weekKey, weekEntries] }) => (
           <View style={styles.group}>
-            <AppText variant="label" color={colors.textSecondary}>{weekKey}</AppText>
-            {weekEntries.map((entry) => (
+            <SectionHeader label={weekKey} />
+            {weekEntries.map((entry, i) => (
               <View key={entry.id} style={styles.row}>
-                <View>
+                <View style={styles.timelineRail}>
+                  <View style={styles.dot} />
+                  {i < weekEntries.length - 1 ? <View style={styles.line} /> : null}
+                </View>
+                <View style={styles.rowContent}>
                   <AppText variant="bodyStrong">{entry.title}</AppText>
                   <AppText variant="caption" color={colors.textSecondary}>{typeLabels[entry.type]}</AppText>
                 </View>
-                <Pressable onPress={() => removeEntry(entry.id)} accessibilityLabel="Delete entry">
-                  <Ionicons name="trash-outline" size={18} color={colors.danger} />
+                <Pressable onPress={() => removeEntry(entry.id)} accessibilityLabel="Delete entry" hitSlop={8}>
+                  <Ionicons name="trash-outline" size={17} color={colors.textTertiary} />
                 </Pressable>
               </View>
             ))}
@@ -47,13 +58,31 @@ export function TrackerHistoryScreen() {
 
 const styles = StyleSheet.create({
   heading: { marginBottom: spacing.sm },
-  group: { marginBottom: spacing.md, gap: spacing.xs },
+  group: { marginBottom: spacing.lg },
   row: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
+    alignItems: 'flex-start',
+  },
+  timelineRail: {
+    width: 16,
     alignItems: 'center',
+  },
+  dot: {
+    width: 7,
+    height: 7,
+    borderRadius: 4,
+    backgroundColor: colors.accent,
+    marginTop: 6,
+  },
+  line: {
+    width: StyleSheet.hairlineWidth,
+    flex: 1,
+    backgroundColor: colors.borderSubtle,
+    marginTop: 2,
+  },
+  rowContent: {
+    flex: 1,
     paddingVertical: spacing.sm,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
+    paddingRight: spacing.sm,
   },
 });

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
 import { CATEGORY_ICON_OPTIONS } from '../lib/categoryIcons';
+import { CategoryIconGlyph } from '../lib/iconGlyphs';
 
 type Category = {
   slug: string;
@@ -61,21 +62,8 @@ export function CategoriesPage() {
         <div key={category.slug} className="card stack">
           <div className="row between">
             <div className="row" style={{ gap: '0.7rem' }}>
-              <span
-                style={{
-                  width: 34,
-                  height: 34,
-                  borderRadius: 10,
-                  background: 'var(--accent-soft)',
-                  color: 'var(--accent-deep)',
-                  display: 'grid',
-                  placeItems: 'center',
-                  fontFamily: 'var(--font-serif)',
-                  fontWeight: 700,
-                  flexShrink: 0,
-                }}
-              >
-                {category.name.charAt(0).toUpperCase()}
+              <span className="pill-icon">
+                <CategoryIconGlyph icon={category.icon} size={17} />
               </span>
               <h2 style={{ margin: 0 }}>{category.name}</h2>
             </div>
@@ -103,20 +91,21 @@ export function CategoriesPage() {
           </div>
 
           <div>
-            <label htmlFor={`icon-${category.slug}`}>Icon</label>
-            <select
-              id={`icon-${category.slug}`}
-              value={category.icon}
-              onChange={(e) => updateLocal(category.slug, { icon: e.target.value })}
-            >
-              {/* Keep whatever is stored selectable even if it predates this list. */}
-              {!CATEGORY_ICON_OPTIONS.includes(category.icon as never) ? (
-                <option value={category.icon}>{category.icon} (current)</option>
-              ) : null}
+            <label>Icon</label>
+            <div className="icon-grid">
               {CATEGORY_ICON_OPTIONS.map((icon) => (
-                <option key={icon} value={icon}>{icon}</option>
+                <button
+                  key={icon}
+                  type="button"
+                  className={`icon-swatch${category.icon === icon ? ' selected' : ''}`}
+                  onClick={() => updateLocal(category.slug, { icon })}
+                  title={icon}
+                  aria-pressed={category.icon === icon}
+                >
+                  <CategoryIconGlyph icon={icon} size={20} />
+                </button>
               ))}
-            </select>
+            </div>
           </div>
 
           <div className="row">

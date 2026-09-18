@@ -17,6 +17,36 @@ const PREVIEW_ROWS = 10;
 
 type Stage = 'pick' | 'map' | 'importing' | 'done';
 
+const STEPS: Array<{ key: Stage | 'validate'; label: string }> = [
+  { key: 'pick', label: 'Upload' },
+  { key: 'map', label: 'Map & preview' },
+  { key: 'validate', label: 'Validate' },
+  { key: 'importing', label: 'Import' },
+  { key: 'done', label: 'Results' },
+];
+
+function stepIndex(stage: Stage): number {
+  if (stage === 'pick') return 0;
+  if (stage === 'map') return 2; // mapping + preview + validation render together on this stage
+  if (stage === 'importing') return 3;
+  return 4;
+}
+
+function ImportStepper({ stage }: { stage: Stage }) {
+  const current = stepIndex(stage);
+  return (
+    <div className="stepper">
+      {STEPS.map((step, i) => (
+        <div key={step.key} className={`stepper-item${i === current ? ' active' : ''}${i < current ? ' done' : ''}`}>
+          <span className="stepper-dot">{i < current ? '✓' : i + 1}</span>
+          <span className="stepper-label">{step.label}</span>
+          {i < STEPS.length - 1 ? <span className="stepper-line" /> : null}
+        </div>
+      ))}
+    </div>
+  );
+}
+
 type ImportResult = { imported: number; failed: ValidationReport['skipped'] };
 
 export function ImportPage() {
@@ -116,6 +146,8 @@ export function ImportPage() {
           others fail.
         </p>
       </div>
+
+      <ImportStepper stage={stage} />
 
       {stage === 'pick' ? (
         <div className="card stack">

@@ -1,7 +1,6 @@
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Card, Screen } from '../../components';
+import { AppText, Card, ProgressRing, Screen, Tag } from '../../components';
 import { colors, spacing } from '../../theme';
 import { tracks, trackCompletionCount } from '../../services/mock/challenges';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -23,24 +22,27 @@ export function TrackListScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title" style={styles.heading}>Challenges</AppText>
+      <AppText variant="label" color={colors.textTertiary}>YOUR PATH</AppText>
+      <AppText variant="display" style={styles.heading}>Build your career, one move at a time.</AppText>
       <FlatList
         data={sorted}
         keyExtractor={(t) => t.slug}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
           const { done, total } = trackCompletionCount(item, progress);
           const isSelected = selectedSlugs.includes(item.slug);
+          const pct = total > 0 ? done / total : 0;
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
               <Card style={styles.row}>
-                <View>
-                  <AppText variant="bodyStrong">{item.name}</AppText>
+                <ProgressRing progress={pct} size={56} strokeWidth={5} label={`${Math.round(pct * 100)}%`} />
+                <View style={styles.text}>
+                  <View style={styles.titleRow}>
+                    <AppText variant="bodyStrong">{item.name}</AppText>
+                    {isSelected ? <Tag label="SELECTED" tone="accent" /> : null}
+                  </View>
                   <AppText variant="caption" color={colors.textSecondary}>{done} of {total} complete</AppText>
-                </View>
-                <View style={styles.rightRow}>
-                  {isSelected ? <Ionicons name="star" size={16} color={colors.accent} style={styles.pin} /> : null}
-                  <Ionicons name="chevron-forward" size={18} color={colors.textSecondary} />
                 </View>
               </Card>
             </Pressable>
@@ -52,9 +54,9 @@ export function TrackListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.md },
-  list: { gap: spacing.sm },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  rightRow: { flexDirection: 'row', alignItems: 'center' },
-  pin: { marginRight: spacing.xs },
+  heading: { marginTop: spacing.xs, marginBottom: spacing.md },
+  list: { gap: spacing.sm, paddingBottom: spacing.lg },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  text: { flex: 1, gap: spacing.xs },
+  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
 });

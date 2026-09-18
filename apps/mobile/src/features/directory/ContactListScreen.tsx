@@ -1,9 +1,9 @@
 import { useMemo, useRef, useState } from 'react';
-import { Modal, Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
+import { Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Card, EmptyState, Screen } from '../../components';
+import { AppText, BottomSheet, Button, ContactRow, ErrorState, PaywallCard, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { fetchCategories, fetchContactsByCategory, type Contact } from '../../services/supabase/directory';
 import {
@@ -70,15 +70,21 @@ export function ContactListScreen({ route, navigation }: Props) {
   if (locked) {
     return (
       <Screen>
-        <AppText variant="title" style={styles.heading}>
-          {category?.name ?? 'Directory'}
+        <AppText variant="label" color={colors.textTertiary}>
+          {category?.name?.toUpperCase() ?? 'DIRECTORY'}
         </AppText>
-        <EmptyState
-          icon="lock-closed-outline"
-          title="Pro feature"
-          description="Subscribe to see the full contact list for this category."
-        />
-        <Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'directory' })} />
+        <AppText variant="title" style={styles.lockedHeading}>
+          Your industry network is waiting.
+        </AppText>
+        <AppText variant="body" color={colors.textSecondary} style={styles.lockedBody}>
+          Unlock the full directory and start building your network.
+        </AppText>
+        <View style={styles.benefits}>
+          <PaywallCard icon="people-outline" text="Access every contact in this category" />
+          <PaywallCard icon="heart-outline" text="Save favourites for quick follow-up" />
+          <PaywallCard icon="checkmark-done-outline" text="Track conversations in your tracker" />
+        </View>
+        <Button label="Unlock directory" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'directory' })} />
       </Screen>
     );
   }
@@ -88,13 +94,16 @@ export function ContactListScreen({ route, navigation }: Props) {
       <View style={styles.header}>
         <AppText variant="title">{category?.name ?? 'Directory'}</AppText>
         <View style={styles.searchRow}>
-          <TextInput
-            placeholder="Search by name, company or role"
-            value={query}
-            onChangeText={setQuery}
-            style={styles.search}
-            placeholderTextColor={colors.textSecondary}
-          />
+          <View style={styles.searchWrap}>
+            <Ionicons name="search-outline" size={17} color={colors.textTertiary} style={styles.searchIcon} />
+            <TextInput
+              placeholder="Search people, companies or roles"
+              value={query}
+              onChangeText={setQuery}
+              style={styles.search}
+              placeholderTextColor={colors.textMuted}
+            />
+          </View>
           <Pressable
             onPress={() => setFilterSheetOpen(true)}
             style={[styles.filterButton, activeFilterCount > 0 && styles.filterButtonActive]}
@@ -124,39 +133,31 @@ export function ContactListScreen({ route, navigation }: Props) {
           onScrollToIndexFailed={() => undefined}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
-              <AppText variant="label" color={colors.textSecondary}>
+              <AppText variant="label" color={colors.textTertiary}>
                 {section.title}
               </AppText>
             </View>
           )}
           renderItem={({ item }) => (
-            <Pressable style={styles.row} onPress={() => navigation.navigate('ContactDetail', { contactId: item.id })}>
-              <View style={styles.rowText}>
-                <AppText variant="bodyStrong">{item.name}</AppText>
-                <AppText variant="caption" color={colors.textSecondary}>
-                  {item.role}{item.company ? ` · ${item.company}` : ''}
-                </AppText>
-              </View>
-              <Pressable
-                onPress={() => toggleFavorite(item.id)}
-                hitSlop={8}
-                accessibilityLabel={isFavorite(item.id) ? 'Remove favourite' : 'Add favourite'}
-              >
-                <Ionicons
-                  name={isFavorite(item.id) ? 'heart' : 'heart-outline'}
-                  size={20}
-                  color={colors.accent}
-                />
-              </Pressable>
-            </Pressable>
+            <ContactRow
+              name={item.name}
+              role={item.role}
+              company={item.company ?? undefined}
+              city={item.city ?? undefined}
+              favorite={isFavorite(item.id)}
+              onPress={() => navigation.navigate('ContactDetail', { contactId: item.id })}
+              onToggleFavorite={() => toggleFavorite(item.id)}
+            />
           )}
           ListEmptyComponent={
-            contactsQuery.isLoading ? null : (
-              <EmptyState
-                icon="search-outline"
-                title="No contacts found"
-                description={query || activeFilterCount > 0 ? 'Try a different search or clear your filters.' : undefined}
-              />
+            contactsQuery.isError ? (
+              <ErrorState title="Couldn't load contacts" description="Check your connection and try again." onRetry={() => contactsQuery.refetch()} />
+            ) : contactsQuery.isLoading ? null : (
+              <AppText variant="body" color={colors.textSecondary} style={styles.emptyText}>
+                {query || activeFilterCount > 0
+                  ? 'No people found. Try a different name, company, or role.'
+                  : 'No contacts in this category yet.'}
+              </AppText>
             )
           }
         />
@@ -165,7 +166,7 @@ export function ContactListScreen({ route, navigation }: Props) {
             const hasSection = sections.some((s) => s.title === letter);
             return (
               <Pressable key={letter} onPress={() => jumpToLetter(letter)} disabled={!hasSection} hitSlop={2}>
-                <AppText variant="caption" color={hasSection ? colors.accent : colors.border}>
+                <AppText variant="caption" color={hasSection ? colors.accent : colors.borderSubtle} style={styles.jumpLetter}>
                   {letter}
                 </AppText>
               </Pressable>
@@ -174,66 +175,71 @@ export function ContactListScreen({ route, navigation }: Props) {
         </View>
       </View>
 
-      <Modal visible={filterSheetOpen} transparent animationType="slide" onRequestClose={() => setFilterSheetOpen(false)}>
-        <Pressable style={styles.backdrop} onPress={() => setFilterSheetOpen(false)}>
-          <Pressable style={styles.sheet} onPress={(e) => e.stopPropagation()}>
-            <AppText variant="subtitle">Filter</AppText>
-
-            <AppText variant="label" color={colors.textMuted} style={styles.filterLabel}>ROLE</AppText>
-            <View style={styles.chips}>
-              {roles.length === 0 ? <AppText variant="caption" color={colors.textSecondary}>No roles in this category</AppText> : null}
-              {roles.map((role) => (
-                <Pressable
-                  key={role}
-                  onPress={() => setFilters((f) => ({ ...f, role: f.role === role ? undefined : role }))}
-                  style={[styles.chip, filters.role === role && styles.chipActive]}
-                >
-                  <AppText variant="caption" color={filters.role === role ? colors.textInverse : colors.textPrimary}>
-                    {role}
-                  </AppText>
-                </Pressable>
-              ))}
-            </View>
-
-            <AppText variant="label" color={colors.textMuted} style={styles.filterLabel}>CITY</AppText>
-            <View style={styles.chips}>
-              {cities.length === 0 ? <AppText variant="caption" color={colors.textSecondary}>No cities in this category</AppText> : null}
-              {cities.map((city) => (
-                <Pressable
-                  key={city}
-                  onPress={() => setFilters((f) => ({ ...f, city: f.city === city ? undefined : city }))}
-                  style={[styles.chip, filters.city === city && styles.chipActive]}
-                >
-                  <AppText variant="caption" color={filters.city === city ? colors.textInverse : colors.textPrimary}>
-                    {city}
-                  </AppText>
-                </Pressable>
-              ))}
-            </View>
-
-            <View style={styles.sheetActions}>
-              <Button label="Clear" variant="secondary" onPress={() => setFilters({})} />
-              <Button label="Done" onPress={() => setFilterSheetOpen(false)} />
-            </View>
+      <BottomSheet visible={filterSheetOpen} onClose={() => setFilterSheetOpen(false)}>
+        <View style={styles.sheetHeader}>
+          <AppText variant="subtitle">Filters</AppText>
+          <Pressable onPress={() => setFilters({})}>
+            <AppText variant="caption" color={colors.accent}>Clear all</AppText>
           </Pressable>
-        </Pressable>
-      </Modal>
+        </View>
+
+        <AppText variant="label" color={colors.textTertiary} style={styles.filterLabel}>ROLE</AppText>
+        <View style={styles.chips}>
+          {roles.length === 0 ? <AppText variant="caption" color={colors.textSecondary}>No roles in this category</AppText> : null}
+          {roles.map((role) => (
+            <Pressable
+              key={role}
+              onPress={() => setFilters((f) => ({ ...f, role: f.role === role ? undefined : role }))}
+              style={[styles.chip, filters.role === role && styles.chipActive]}
+            >
+              <AppText variant="caption" color={filters.role === role ? colors.textInverse : colors.textPrimary}>
+                {role}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
+        <AppText variant="label" color={colors.textTertiary} style={styles.filterLabel}>CITY</AppText>
+        <View style={styles.chips}>
+          {cities.length === 0 ? <AppText variant="caption" color={colors.textSecondary}>No cities in this category</AppText> : null}
+          {cities.map((city) => (
+            <Pressable
+              key={city}
+              onPress={() => setFilters((f) => ({ ...f, city: f.city === city ? undefined : city }))}
+              style={[styles.chip, filters.city === city && styles.chipActive]}
+            >
+              <AppText variant="caption" color={filters.city === city ? colors.textInverse : colors.textPrimary}>
+                {city}
+              </AppText>
+            </Pressable>
+          ))}
+        </View>
+
+        <View style={styles.sheetActions}>
+          <Button label="Apply filters" onPress={() => setFilterSheetOpen(false)} />
+        </View>
+      </BottomSheet>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
-  heading: { paddingHorizontal: spacing.md, marginBottom: spacing.md },
+  lockedHeading: { marginTop: spacing.md },
+  lockedBody: { marginTop: spacing.sm, marginBottom: spacing.lg },
+  benefits: { gap: spacing.sm, marginBottom: spacing.xl },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
+  searchWrap: { flex: 1, position: 'relative', justifyContent: 'center' },
+  searchIcon: { position: 'absolute', left: spacing.sm + 2, zIndex: 1 },
   search: {
-    flex: 1,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
+    paddingLeft: spacing.xl,
+    paddingRight: spacing.md,
     paddingVertical: spacing.sm,
     color: colors.textPrimary,
+    backgroundColor: colors.surfaceRaised,
   },
   filterButton: {
     width: 42,
@@ -253,30 +259,15 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.xs,
   },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: colors.border,
-  },
-  rowText: { flex: 1, marginRight: spacing.sm },
+  emptyText: { paddingHorizontal: spacing.md, paddingVertical: spacing.xl, textAlign: 'center' },
   jumpBar: {
     width: 20,
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
-  backdrop: { flex: 1, backgroundColor: colors.overlay, justifyContent: 'flex-end' },
-  sheet: {
-    backgroundColor: colors.background,
-    borderTopLeftRadius: radius.xl,
-    borderTopRightRadius: radius.xl,
-    padding: spacing.lg,
-    gap: spacing.xs,
-  },
+  jumpLetter: { fontSize: 10, lineHeight: 13 },
+  sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   filterLabel: { marginTop: spacing.md },
   chips: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.xs, marginTop: spacing.xs },
   chip: {

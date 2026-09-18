@@ -2,9 +2,13 @@ import { BrowserRouter, NavLink, Navigate, Route, Routes } from 'react-router-do
 import { supabase, isSupabaseConfigured } from './lib/supabase';
 import { useAdminAuth } from './lib/useAdminAuth';
 import { LoginPage, NoAccessPage } from './pages/LoginPage';
+import { HomePage } from './pages/HomePage';
 import { ContactsPage } from './pages/ContactsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ImportPage } from './pages/ImportPage';
+import { QuotesPage } from './pages/QuotesPage';
+import { TracksPage } from './pages/TracksPage';
+import { TrackChallengesPage } from './pages/TrackChallengesPage';
 
 export default function App() {
   const auth = useAdminAuth();
@@ -45,6 +49,10 @@ export default function App() {
             <span className="mark">P</span>
             Power Players
           </div>
+          <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
+            <HomeIcon />
+            Home
+          </NavLink>
           <NavLink to="/contacts" className={({ isActive }) => (isActive ? 'active' : '')}>
             <ContactsIcon />
             Contacts
@@ -57,6 +65,14 @@ export default function App() {
             <CategoriesIcon />
             Categories
           </NavLink>
+          <NavLink to="/quotes" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <QuotesIcon />
+            Quotes
+          </NavLink>
+          <NavLink to="/tracks" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <TracksIcon />
+            Tracks
+          </NavLink>
           <div className="spacer" />
           <div className="account stack" style={{ gap: '0.5rem' }}>
             <p className="muted small" style={{ margin: 0, wordBreak: 'break-all' }}>{auth.email}</p>
@@ -68,14 +84,27 @@ export default function App() {
 
         <main className="content">
           <Routes>
+            <Route path="/" element={<HomePage />} />
             <Route path="/contacts" element={<ContactsPage />} />
             <Route path="/import" element={<ImportPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
-            <Route path="*" element={<Navigate to="/contacts" replace />} />
+            <Route path="/quotes" element={<QuotesPage />} />
+            <Route path="/tracks" element={<TracksPage />} />
+            <Route path="/tracks/:slug" element={<TrackChallengesPage />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </main>
       </div>
     </BrowserRouter>
+  );
+}
+
+function HomeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M3 11l9-7 9 7" />
+      <path d="M5 10v10h14V10" />
+    </svg>
   );
 }
 
@@ -106,6 +135,23 @@ function CategoriesIcon() {
       <rect x="14" y="3" width="7" height="7" rx="1.5" />
       <rect x="3" y="14" width="7" height="7" rx="1.5" />
       <rect x="14" y="14" width="7" height="7" rx="1.5" />
+    </svg>
+  );
+}
+
+function QuotesIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M7 8h1a3 3 0 0 1 0 6H5V9a4 4 0 0 1 4-4M17 8h1a3 3 0 0 1 0 6h-3V9a4 4 0 0 1 4-4" />
+    </svg>
+  );
+}
+
+function TracksIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v5l3.5 2" />
     </svg>
   );
 }

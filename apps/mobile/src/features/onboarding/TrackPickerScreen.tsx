@@ -43,20 +43,27 @@ export function TrackPickerScreen(_props: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">Pick your tracks</AppText>
+      <AppText variant="display">Choose your path.</AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
-        Choose one or more — you can change this later in Profile.
+        Pick the areas you want to focus on. You can change them later in Profile.
       </AppText>
       <FlatList
         data={tracks}
         keyExtractor={(t) => t.slug}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
+        showsVerticalScrollIndicator={false}
         renderItem={({ item }) => {
           const isSelected = selected.includes(item.slug);
           return (
-            <Pressable style={[styles.row, isSelected && styles.rowSelected]} onPress={() => toggle(item.slug)}>
-              <AppText variant="bodyStrong">{item.name}</AppText>
-              {isSelected ? <Ionicons name="checkmark-circle" size={22} color={colors.accent} /> : <Ionicons name="ellipse-outline" size={22} color={colors.border} />}
+            <Pressable style={[styles.card, isSelected && styles.cardSelected]} onPress={() => toggle(item.slug)}>
+              {isSelected ? (
+                <View style={styles.check}>
+                  <Ionicons name="checkmark-circle" size={22} color={colors.accent} />
+                </View>
+              ) : null}
+              <AppText variant="bodyStrong" style={styles.cardLabel}>{item.name}</AppText>
             </Pressable>
           );
         }}
@@ -72,20 +79,30 @@ export function TrackPickerScreen(_props: Props) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.md },
+  subtitle: { marginTop: spacing.sm, marginBottom: spacing.md },
   list: { gap: spacing.sm, paddingBottom: spacing.md },
-  error: { marginBottom: spacing.sm },
-  row: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    borderWidth: 1,
+  row: { gap: spacing.sm },
+  card: {
+    flex: 1,
+    minHeight: 96,
+    justifyContent: 'flex-end',
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.md,
+    backgroundColor: colors.surfaceRaised,
   },
-  rowSelected: {
+  cardSelected: {
     borderColor: colors.accent,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accentFaint,
   },
+  check: {
+    position: 'absolute',
+    top: spacing.sm,
+    right: spacing.sm,
+  },
+  cardLabel: {
+    marginTop: spacing.sm,
+  },
+  error: { marginBottom: spacing.sm },
 });

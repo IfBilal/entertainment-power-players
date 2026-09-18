@@ -1,8 +1,7 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Card, Screen } from '../../components';
+import { AppText, Divider, Screen, SectionHeader, SettingsRow, Tag } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { tracks } from '../../services/mock/challenges';
 import { deleteAccount, signOut } from '../../services/supabase/auth';
@@ -20,6 +19,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
   const setSelectedTrackSlugs = useAuthStore((s) => s.setSelectedTrackSlugs);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [tracksOpen, setTracksOpen] = useState(false);
+  const [notificationsOn, setNotificationsOn] = useState(true);
 
   async function toggleTrack(slug: string) {
     if (!userId) return;
@@ -55,7 +56,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
   function confirmDeleteAccount() {
     Alert.alert(
       'Delete account?',
-      'This permanently deletes your account and all your data. This cannot be undone.',
+      'This permanently deletes your account and all your data, and signs you out. This cannot be undone.',
       [
         { text: 'Cancel', style: 'cancel' },
         {
@@ -79,53 +80,79 @@ export function ProfileHomeScreen({ navigation }: Props) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AppText variant="title" style={styles.heading}>Profile</AppText>
+        <AppText variant="label" color={colors.textTertiary}>YOUR PROFILE</AppText>
 
-        <Card style={styles.card}>
-          <View style={styles.subRow}>
-            <AppText variant="bodyStrong">Subscription</AppText>
-            {isPro ? (
-              <View style={styles.proBadge}>
-                <AppText variant="label" color={colors.accentDeep}>PRO</AppText>
-              </View>
-            ) : null}
+        <View style={styles.identity}>
+          <View style={styles.avatar}>
+            <AppText variant="bodyStrong" color={colors.textInverse}>
+              {(userId ?? '?').slice(0, 1).toUpperCase()}
+            </AppText>
           </View>
-          <AppText variant="caption" color={colors.textSecondary}>
-            {isPro ? 'Renews monthly' : 'Free plan'}
-          </AppText>
-          <Button
-            label={isPro ? 'Manage subscription' : 'Upgrade to Pro'}
+          <View style={styles.identityText}>
+            <AppText variant="title">Your account</AppText>
+            {isPro ? <Tag label="PRO" tone="accent" /> : <Tag label="FREE" tone="neutral" />}
+          </View>
+        </View>
+
+        <View style={styles.section}>
+          <SectionHeader label="YOUR CAREER" />
+          <SettingsRow
+            icon="flag-outline"
+            title="Your tracks"
+            subtitle={`${selectedTrackSlugs.length} selected · pinned to Challenges`}
+            onPress={() => setTracksOpen((v) => !v)}
+          />
+          {tracksOpen ? (
+            <View style={styles.trackList}>
+              {tracks.map((track) => {
+                const isSelected = selectedTrackSlugs.includes(track.slug);
+                return (
+                  <SettingsRow
+                    key={track.slug}
+                    icon={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
+                    title={track.name}
+                    onPress={() => toggleTrack(track.slug)}
+                    trailing={null}
+                  />
+                );
+              })}
+            </View>
+          ) : null}
+        </View>
+
+        <View style={styles.section}>
+          <SectionHeader label="SUBSCRIPTION" />
+          <SettingsRow
+            icon="sparkles-outline"
+            title={isPro ? 'Power Players Pro' : 'Free plan'}
+            subtitle={isPro ? 'Renews monthly · manage anytime' : 'Upgrade for full access'}
             onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })}
           />
-        </Card>
+        </View>
 
-        <Card style={styles.card}>
-          <AppText variant="bodyStrong">Your tracks</AppText>
-          <AppText variant="caption" color={colors.textSecondary}>
-            Pinned to the top of Challenges. Tap to change.
-          </AppText>
-          {tracks.map((track) => {
-            const isSelected = selectedTrackSlugs.includes(track.slug);
-            return (
-              <Pressable key={track.slug} style={styles.trackRow} onPress={() => toggleTrack(track.slug)}>
-                <AppText variant="body">{track.name}</AppText>
-                <Ionicons
-                  name={isSelected ? 'checkmark-circle' : 'ellipse-outline'}
-                  size={20}
-                  color={isSelected ? colors.accent : colors.border}
-                />
-              </Pressable>
-            );
-          })}
-        </Card>
+        <View style={styles.section}>
+          <SectionHeader label="PREFERENCES" />
+          <SettingsRow
+            icon="notifications-outline"
+            title="Weekly digest"
+            subtitle="A summary of your momentum each week"
+            trailing={
+              <Switch
+                value={notificationsOn}
+                onValueChange={setNotificationsOn}
+                trackColor={{ true: colors.accent, false: colors.border }}
+                thumbColor={colors.surfaceRaised}
+              />
+            }
+          />
+        </View>
 
-        <Card style={styles.card}>
-          <AppText variant="bodyStrong">Notifications</AppText>
-          <View style={styles.row}>
-            <AppText variant="body">Weekly digest</AppText>
-            <Switch value onValueChange={() => undefined} trackColor={{ true: colors.accent, false: colors.border }} thumbColor={colors.surfaceRaised} />
-          </View>
-        </Card>
+        <View style={styles.section}>
+          <SectionHeader label="ABOUT" />
+          <SettingsRow icon="shield-checkmark-outline" title="Privacy policy" onPress={() => undefined} />
+          <SettingsRow icon="document-text-outline" title="Terms of service" onPress={() => undefined} />
+          <SettingsRow icon="help-circle-outline" title="Contact support" onPress={() => undefined} />
+        </View>
 
         {error ? (
           <AppText variant="caption" color={colors.danger} style={styles.error}>
@@ -133,12 +160,12 @@ export function ProfileHomeScreen({ navigation }: Props) {
           </AppText>
         ) : null}
 
-        <View style={styles.links}>
-          <Button label="Privacy policy" variant="ghost" onPress={() => undefined} />
-          <Button label="Terms of service" variant="ghost" onPress={() => undefined} />
-          <Button label="Contact support" variant="ghost" onPress={() => undefined} />
-          <Button label="Log out" variant="secondary" onPress={handleLogOut} disabled={busy} />
-          <Button label="Delete account" variant="destructive" onPress={confirmDeleteAccount} disabled={busy} />
+        <Divider tone="subtle" style={styles.divider} />
+
+        <View style={styles.section}>
+          <SectionHeader label="ACCOUNT" />
+          <SettingsRow icon="log-out-outline" title="Log out" onPress={handleLogOut} trailing={null} />
+          <SettingsRow icon="trash-outline" title="Delete account" tone="danger" onPress={confirmDeleteAccount} trailing={null} />
         </View>
       </ScrollView>
     </Screen>
@@ -147,24 +174,18 @@ export function ProfileHomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-  heading: { marginBottom: spacing.md },
-  card: { marginBottom: spacing.sm, gap: spacing.xs },
-  subRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
-  proBadge: {
-    backgroundColor: colors.accentSoft,
-    paddingHorizontal: spacing.xs + 2,
-    paddingVertical: 2,
-    borderRadius: radius.sm,
-  },
-  row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
-  trackRow: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
+  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md, marginBottom: spacing.lg },
+  avatar: {
+    width: 52,
+    height: 52,
+    borderRadius: radius.pill,
+    backgroundColor: colors.accent,
     alignItems: 'center',
-    paddingVertical: spacing.sm,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: colors.border,
+    justifyContent: 'center',
   },
+  identityText: { gap: spacing.xs },
+  section: { marginBottom: spacing.lg },
+  trackList: { paddingLeft: spacing.md },
+  divider: { marginBottom: spacing.lg },
   error: { marginBottom: spacing.sm },
-  links: { marginTop: spacing.xs, gap: spacing.xs },
 });

@@ -33,13 +33,13 @@ describe('MainTabNavigator', () => {
     await renderWithProviders(<MainTabNavigator />);
 
     // Directory is the initial tab — its screen heading confirms it rendered.
-    expect(await screen.findByText('Who you should know')).toBeTruthy();
+    expect(await screen.findByText('People worth knowing.')).toBeTruthy();
 
     for (const tab of ['Tracker', 'Challenges', 'Inspiration', 'Profile']) {
       fireEvent.press(screen.getByText(tab));
     }
 
-    // Profile tab renders its "Subscription" card once selected.
-    expect(await screen.findByText('Subscription')).toBeTruthy();
+    // Profile tab renders its "SUBSCRIPTION" section once selected.
+    expect(await screen.findByText('SUBSCRIPTION')).toBeTruthy();
   });
 });

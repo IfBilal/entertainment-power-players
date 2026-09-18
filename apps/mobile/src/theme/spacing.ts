@@ -10,10 +10,12 @@ export const spacing = {
 export type SpacingToken = keyof typeof spacing;
 
 export const radius = {
-  sm: 8,
+  xs: 6,
+  sm: 10,
   md: 14,
   lg: 18,
   xl: 24,
+  xxl: 30,
   pill: 999,
 } as const;
 

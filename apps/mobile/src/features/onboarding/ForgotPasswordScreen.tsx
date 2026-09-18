@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, FormField, Screen } from '../../components';
+import { colors, spacing } from '../../theme';
 import { sendPasswordResetEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
@@ -30,7 +30,8 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   if (sent) {
     return (
       <Screen>
-        <AppText variant="title">Check your email</AppText>
+        <AppText variant="label" color={colors.textTertiary}>CHECK YOUR EMAIL</AppText>
+        <AppText variant="display" style={styles.heading}>You're ready to keep building.</AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
           We sent a password reset link to {email.trim()}. Open it on this device to set a new password, then log in.
         </AppText>
@@ -41,25 +42,21 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">Reset your password</AppText>
+      <AppText variant="label" color={colors.textTertiary}>RESET PASSWORD</AppText>
+      <AppText variant="display" style={styles.heading}>Choose a new password to get back in.</AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
         We'll email you a reset link.
       </AppText>
       <View style={styles.form}>
-        <TextInput
-          placeholder="Email"
+        <FormField
+          label="EMAIL"
+          placeholder="you@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
+          error={error ?? undefined}
         />
-        {error ? (
-          <AppText variant="caption" color={colors.danger}>
-            {error}
-          </AppText>
-        ) : null}
         <Button label="Send reset link" onPress={handleSend} disabled={submitting || !email} />
       </View>
     </Screen>
@@ -67,14 +64,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginTop: spacing.xs, marginBottom: spacing.lg },
-  form: { gap: spacing.sm },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    color: colors.textPrimary,
-  },
+  heading: { marginTop: spacing.xs },
+  subtitle: { marginTop: spacing.sm, marginBottom: spacing.lg },
+  form: { gap: spacing.md },
 });

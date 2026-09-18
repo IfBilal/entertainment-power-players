@@ -35,7 +35,7 @@ export function ProgressRing({ progress, size = 84, strokeWidth = 8, label }: Pr
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke={colors.surface}
+          stroke={colors.surfaceStrong}
           strokeWidth={strokeWidth}
           fill="none"
         />

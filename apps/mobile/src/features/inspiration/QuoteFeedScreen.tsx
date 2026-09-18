@@ -1,6 +1,5 @@
-import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Card, Screen } from '../../components';
+import { FlatList, Share, StyleSheet, View } from 'react-native';
+import { AppText, QuoteCard, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
 import { mockQuotes, quoteOfTheDay, type Quote } from '../../services/mock/quotes';
 import { useFavoritesStore } from '../../store/useFavoritesStore';
@@ -14,39 +13,43 @@ export function QuoteFeedScreen() {
     Share.share({ message: `"${quote.text}" — ${quote.author}` }).catch(() => undefined);
   }
 
-  function renderQuote(quote: Quote, isFeatured = false) {
-    const isFavorite = favoriteIds.has(quote.id);
-    return (
-      <Card key={quote.id} style={isFeatured ? styles.featuredCard : styles.card}>
-        <AppText variant={isFeatured ? 'subtitle' : 'body'}>&ldquo;{quote.text}&rdquo;</AppText>
-        <View style={styles.footer}>
-          <AppText variant="caption" color={colors.textSecondary}>— {quote.author}</AppText>
-          <View style={styles.actions}>
-            <Pressable onPress={() => toggleQuote(quote.id)} accessibilityLabel="Save quote">
-              <Ionicons name={isFavorite ? 'heart' : 'heart-outline'} size={18} color={colors.accent} />
-            </Pressable>
-            <Pressable onPress={() => shareQuote(quote)} accessibilityLabel="Share quote">
-              <Ionicons name="share-outline" size={18} color={colors.accent} />
-            </Pressable>
-          </View>
-        </View>
-      </Card>
-    );
-  }
-
   return (
     <Screen>
-      <AppText variant="title" style={styles.heading}>Inspiration</AppText>
+      <AppText variant="label" color={colors.textTertiary}>INSPIRATION</AppText>
+      <AppText variant="display" style={styles.heading}>Keep going.</AppText>
+
       <FlatList
         data={mockQuotes.filter((q) => q.id !== featured?.id)}
         keyExtractor={(q) => q.id}
-        ListHeaderComponent={featured ? (
-          <View style={styles.featuredWrap}>
-            <AppText variant="label" color={colors.textSecondary}>QUOTE OF THE DAY</AppText>
-            {renderQuote(featured, true)}
-          </View>
-        ) : null}
-        renderItem={({ item }) => renderQuote(item)}
+        showsVerticalScrollIndicator={false}
+        ListHeaderComponent={
+          featured ? (
+            <View style={styles.featuredWrap}>
+              <SectionHeader label="QUOTE OF THE DAY" />
+              <QuoteCard
+                variant="hero"
+                text={featured.text}
+                author={featured.author}
+                isFavorite={favoriteIds.has(featured.id)}
+                onToggleFavorite={() => toggleQuote(featured.id)}
+                onShare={() => shareQuote(featured)}
+              />
+              <View style={styles.moreLabel}>
+                <SectionHeader label="MORE TO EXPLORE" />
+              </View>
+            </View>
+          ) : null
+        }
+        renderItem={({ item }) => (
+          <QuoteCard
+            variant="feed"
+            text={item.text}
+            author={item.author}
+            isFavorite={favoriteIds.has(item.id)}
+            onToggleFavorite={() => toggleQuote(item.id)}
+            onShare={() => shareQuote(item)}
+          />
+        )}
         contentContainerStyle={styles.list}
       />
     </Screen>
@@ -54,11 +57,8 @@ export function QuoteFeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.md },
-  list: { gap: spacing.sm },
-  featuredWrap: { marginBottom: spacing.md, gap: spacing.xs },
-  featuredCard: { backgroundColor: colors.accent + '15' },
-  card: {},
-  footer: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm },
-  actions: { flexDirection: 'row', gap: spacing.md },
+  heading: { marginTop: spacing.xs, marginBottom: spacing.md },
+  list: { gap: spacing.sm, paddingBottom: spacing.lg },
+  featuredWrap: { marginBottom: spacing.sm, gap: spacing.xs },
+  moreLabel: { marginTop: spacing.lg },
 });

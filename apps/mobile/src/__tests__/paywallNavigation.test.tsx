@@ -47,31 +47,31 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     fireEvent.press(await screen.findByText('Fashion'));
 
     // Free user hits the paywall gate on the contact list.
-    expect(await screen.findByText('Pro feature')).toBeTruthy();
-    fireEvent.press(screen.getByText('See plans'));
+    expect(await screen.findByText('Your industry network is waiting.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Unlock directory'));
 
     // Root-level paywall modal appears.
-    expect(await screen.findByText('Open every door')).toBeTruthy();
-    fireEvent.press(screen.getByText('Subscribe'));
+    expect(await screen.findByText('Build your industry network.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Start membership'));
 
     // Back on the Fashion contact list -- now unlocked, not bounced to another tab/screen.
-    expect(await screen.findByPlaceholderText('Search by name, company or role')).toBeTruthy();
-    expect(screen.queryByText('Pro feature')).toBeNull();
+    expect(await screen.findByPlaceholderText('Search people, companies or roles')).toBeTruthy();
+    expect(screen.queryByText('Your industry network is waiting.')).toBeNull();
   });
 
-  it('returns to Profile (not Directory) when opened from Profile > Upgrade to Pro', async () => {
+  it('returns to Profile (not Directory) when opened from Profile > Free plan', async () => {
     await renderWithProviders(<RootNavigator />);
 
     // Switch to the Profile tab.
     fireEvent.press(await screen.findByText('Profile'));
-    expect(await screen.findByText('Upgrade to Pro')).toBeTruthy();
-    fireEvent.press(screen.getByText('Upgrade to Pro'));
+    expect(await screen.findByText('Free plan')).toBeTruthy();
+    fireEvent.press(screen.getByText('Free plan'));
 
-    expect(await screen.findByText('Open every door')).toBeTruthy();
-    fireEvent.press(screen.getByText('Subscribe'));
+    expect(await screen.findByText('Build your industry network.')).toBeTruthy();
+    fireEvent.press(screen.getByText('Start membership'));
 
     // Should land back on Profile, showing the now-Pro state -- not on Directory.
-    expect(await screen.findByText('Renews monthly')).toBeTruthy();
-    expect(screen.queryByText('Who you should know')).toBeNull();
+    expect(await screen.findByText('Power Players Pro')).toBeTruthy();
+    expect(screen.queryByText('People worth knowing.')).toBeNull();
   });
 });

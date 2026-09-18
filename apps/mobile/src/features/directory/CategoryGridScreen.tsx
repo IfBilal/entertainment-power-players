@@ -1,9 +1,8 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Card, EmptyState, Screen } from '../../components';
-import { colors, radius, spacing, type IoniconName } from '../../theme';
+import { AppText, CategoryCard, ErrorState, Screen, Skeleton } from '../../components';
+import { colors, spacing, type IoniconName } from '../../theme';
 import { fetchCategories, fetchCategoryCounts } from '../../services/supabase/directory';
 import type { DirectoryStackParamList } from '../../navigation/types';
 
@@ -15,75 +14,85 @@ export function CategoryGridScreen({ navigation }: Props) {
 
   const categories = categoriesQuery.data ?? [];
   const counts = countsQuery.data ?? {};
+  const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
 
   return (
-    <Screen>
-      <AppText variant="label" color={colors.textMuted} style={styles.eyebrow}>
-        DIRECTORY
-      </AppText>
-      <AppText variant="title" style={styles.heading}>
-        Who you should know
-      </AppText>
-
-      {categoriesQuery.isError ? (
-        <EmptyState
-          icon="cloud-offline-outline"
-          title="Couldn't load categories"
-          description="Check your connection and pull to try again."
-        />
-      ) : (
-        <FlatList
-          data={categories}
-          keyExtractor={(c) => c.slug}
-          numColumns={2}
-          columnWrapperStyle={styles.row}
-          contentContainerStyle={styles.grid}
-          refreshing={categoriesQuery.isFetching}
-          onRefresh={() => {
-            categoriesQuery.refetch();
-            countsQuery.refetch();
-          }}
-          ListEmptyComponent={
-            categoriesQuery.isLoading ? null : <EmptyState icon="folder-open-outline" title="No categories yet" />
-          }
-          renderItem={({ item }) => {
-            const count = counts[item.slug];
-            return (
-              <Pressable style={styles.cell} onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}>
-                <Card style={styles.card}>
-                  <View style={styles.iconWrap}>
-                    <Ionicons name={item.icon as IoniconName} size={22} color={colors.accent} />
-                  </View>
-                  <AppText variant="bodyStrong" style={styles.cardTitle}>
-                    {item.name}
-                  </AppText>
-                  <AppText variant="caption" color={colors.textSecondary}>
-                    {count === undefined ? '—' : `${count} contact${count === 1 ? '' : 's'}`}
-                  </AppText>
-                </Card>
-              </Pressable>
-            );
-          }}
-        />
-      )}
+    <Screen padded={false}>
+      <FlatList
+        data={categories}
+        keyExtractor={(c) => c.slug}
+        numColumns={2}
+        columnWrapperStyle={styles.row}
+        contentContainerStyle={styles.grid}
+        refreshing={categoriesQuery.isFetching}
+        onRefresh={() => {
+          categoriesQuery.refetch();
+          countsQuery.refetch();
+        }}
+        ListHeaderComponent={
+          <View style={styles.header}>
+            <AppText variant="label" color={colors.textTertiary}>
+              YOUR INDUSTRY
+            </AppText>
+            <AppText variant="display" style={styles.heading}>
+              People worth knowing.
+            </AppText>
+            <AppText variant="body" color={colors.textSecondary} style={styles.subheading}>
+              Explore the people shaping entertainment
+              {total > 0 ? ` — ${total}+ industry contacts` : ''}.
+            </AppText>
+          </View>
+        }
+        ListEmptyComponent={
+          categoriesQuery.isError ? (
+            <ErrorState
+              title="Couldn't load categories"
+              description="Check your connection and pull to try again."
+              onRetry={() => categoriesQuery.refetch()}
+            />
+          ) : categoriesQuery.isLoading ? (
+            <View style={styles.skeletonGrid}>
+              {[0, 1, 2, 3].map((i) => (
+                <Skeleton key={i} height={132} radius={18} style={styles.skeletonCard} />
+              ))}
+            </View>
+          ) : (
+            <AppText variant="body" color={colors.textSecondary} style={styles.empty}>
+              No categories yet.
+            </AppText>
+          )
+        }
+        renderItem={({ item }) => (
+          <View style={styles.cell}>
+            <CategoryCard
+              name={item.name}
+              icon={item.icon as IoniconName}
+              count={counts[item.slug]}
+              onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}
+            />
+          </View>
+        )}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  eyebrow: { marginTop: spacing.xs },
-  heading: { marginBottom: spacing.md },
-  grid: { gap: spacing.sm, paddingBottom: spacing.lg },
+  header: {
+    paddingHorizontal: spacing.md,
+    paddingTop: spacing.sm,
+  },
+  heading: {
+    marginTop: spacing.xs,
+  },
+  subheading: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  grid: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
   row: { gap: spacing.sm },
   cell: { flex: 1 },
-  card: { alignItems: 'flex-start', minHeight: 112, borderRadius: radius.lg },
-  iconWrap: {
-    width: 40,
-    height: 40,
-    borderRadius: radius.md,
-    backgroundColor: colors.accentSoft,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  cardTitle: { marginTop: spacing.sm },
+  skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
+  skeletonCard: { flexBasis: '48%', flexGrow: 1 },
+  empty: { paddingHorizontal: spacing.md, paddingVertical: spacing.xl, textAlign: 'center' },
 });

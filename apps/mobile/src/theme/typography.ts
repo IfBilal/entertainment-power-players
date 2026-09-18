@@ -7,10 +7,12 @@ import { fontFamilies } from './fonts';
  * with a real bold font file produces faux-bold artifacts on some platforms.
  */
 export const typography = {
+  hero: { fontFamily: fontFamilies.serifSemiBold, fontSize: 40, lineHeight: 46, letterSpacing: -0.6 },
   display: { fontFamily: fontFamilies.serifSemiBold, fontSize: 34, lineHeight: 40, letterSpacing: -0.4 },
   title: { fontFamily: fontFamilies.serifSemiBold, fontSize: 24, lineHeight: 30, letterSpacing: -0.2 },
   titleItalic: { fontFamily: fontFamilies.serifSemiBoldItalic, fontSize: 24, lineHeight: 30 },
   subtitle: { fontFamily: fontFamilies.serifMedium, fontSize: 19, lineHeight: 25 },
+  numeric: { fontFamily: fontFamilies.serifSemiBold, fontSize: 32, lineHeight: 36, letterSpacing: -0.4 },
   body: { fontFamily: fontFamilies.sansRegular, fontSize: 15.5, lineHeight: 22 },
   bodyStrong: { fontFamily: fontFamilies.sansSemiBold, fontSize: 15.5, lineHeight: 22 },
   caption: { fontFamily: fontFamilies.sansRegular, fontSize: 13, lineHeight: 18 },

@@ -42,12 +42,12 @@ describe('RootNavigator auth routing', () => {
     useAuthStore.setState({ status: 'signedIn', userId: 'u1', selectedTrackSlugs: [], hydrated: true });
     await renderWithProviders(<RootNavigator />);
     expect(screen.getByText('Power Players')).toBeTruthy();
-    expect(screen.queryByText('Who you should know')).toBeNull();
+    expect(screen.queryByText('People worth knowing.')).toBeNull();
   });
 
   it('shows Main once signed in with at least one track picked', async () => {
     useAuthStore.setState({ status: 'signedIn', userId: 'u1', selectedTrackSlugs: ['fashion'], hydrated: true });
     await renderWithProviders(<RootNavigator />);
-    expect(await screen.findByText('Who you should know')).toBeTruthy();
+    expect(await screen.findByText('People worth knowing.')).toBeTruthy();
   });
 });

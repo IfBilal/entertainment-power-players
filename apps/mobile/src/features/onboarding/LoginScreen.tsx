@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, FormField, Screen } from '../../components';
+import { colors, spacing } from '../../theme';
 import { signInWithEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
@@ -34,31 +34,26 @@ export function LoginScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">Log in</AppText>
+      <AppText variant="label" color={colors.textTertiary}>WELCOME BACK</AppText>
+      <AppText variant="display" style={styles.heading}>Keep building.</AppText>
       <View style={styles.form}>
-        <TextInput
-          placeholder="Email"
+        <FormField
+          label="EMAIL"
+          placeholder="you@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
         />
-        <TextInput
-          placeholder="Password"
+        <FormField
+          label="PASSWORD"
+          placeholder="••••••••"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
+          error={error ?? undefined}
         />
-        {error ? (
-          <AppText variant="caption" color={colors.danger}>
-            {error}
-          </AppText>
-        ) : null}
-        <Button label="Log in" onPress={handleLogin} disabled={submitting || !email || !password} />
+        <Button label="Continue" onPress={handleLogin} disabled={submitting || !email || !password} />
         <Button label="Forgot password?" variant="ghost" onPress={() => navigation.navigate('ForgotPassword')} />
       </View>
     </Screen>
@@ -66,16 +61,6 @@ export function LoginScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  form: {
-    marginTop: spacing.lg,
-    gap: spacing.sm,
-  },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    color: colors.textPrimary,
-  },
+  heading: { marginTop: spacing.xs, marginBottom: spacing.lg },
+  form: { gap: spacing.md },
 });

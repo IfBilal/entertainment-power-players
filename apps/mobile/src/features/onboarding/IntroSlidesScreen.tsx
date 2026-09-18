@@ -1,16 +1,29 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Screen } from '../../components';
-import { colors, spacing } from '../../theme';
+import { colors, radius, spacing, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'IntroSlides'>;
 
-const slides = [
-  { title: 'Build your directory', body: 'A categorised contact book of the people who matter to your career.' },
-  { title: 'Track your progress', body: 'Log contacts, events and follow-ups every week and watch the trend.' },
-  { title: 'Take on challenges', body: 'Six tracks of career actions, one tick at a time.' },
+const slides: Array<{ icons: IoniconName[]; title: string; body: string }> = [
+  {
+    icons: ['git-network-outline'],
+    title: 'Your career is built through connections.',
+    body: 'Discover the people, actions and opportunities that move you forward.',
+  },
+  {
+    icons: ['glasses-outline', 'film-outline', 'game-controller-outline', 'musical-notes-outline', 'trophy-outline'],
+    title: 'Know your industry.',
+    body: 'Explore people across Fashion, Film/TV, Gaming, Music and Sports.',
+  },
+  {
+    icons: ['stats-chart-outline'],
+    title: 'Make progress every week.',
+    body: 'Track your conversations, events and follow-ups.',
+  },
 ];
 
 export function IntroSlidesScreen({ navigation }: Props) {
@@ -32,7 +45,12 @@ export function IntroSlidesScreen({ navigation }: Props) {
         <Button label="Skip" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
       </View>
       <View style={styles.body}>
-        <AppText variant="title">{slide.title}</AppText>
+        <View style={styles.motif}>
+          {slide.icons.map((icon) => (
+            <Ionicons key={icon} name={icon} size={slide.icons.length > 1 ? 34 : 72} color={colors.accent} style={styles.motifIcon} />
+          ))}
+        </View>
+        <AppText variant="display" style={styles.title}>{slide.title}</AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
           {slide.body}
         </AppText>
@@ -55,6 +73,20 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'center',
   },
+  motif: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    alignItems: 'center',
+    gap: spacing.md,
+    marginBottom: spacing.xl,
+    opacity: 0.9,
+  },
+  motifIcon: {
+    opacity: 0.85,
+  },
+  title: {
+    marginBottom: spacing.xs,
+  },
   slideBody: {
     marginTop: spacing.sm,
   },
@@ -67,7 +99,7 @@ const styles = StyleSheet.create({
   dot: {
     width: 8,
     height: 8,
-    borderRadius: 4,
+    borderRadius: radius.pill,
     backgroundColor: colors.border,
   },
   dotActive: {

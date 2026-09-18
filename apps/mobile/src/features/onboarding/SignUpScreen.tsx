@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, Divider, FormField, Screen } from '../../components';
+import { colors, spacing } from '../../theme';
 import { signInWithGoogle, signUpWithEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
@@ -55,35 +55,37 @@ export function SignUpScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">Create your account</AppText>
+      <AppText variant="label" color={colors.textTertiary}>GET STARTED</AppText>
+      <AppText variant="display" style={styles.heading}>Build your career here.</AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
         Join the directory, tracker and challenges.
       </AppText>
 
       <View style={styles.form}>
-        <TextInput
-          placeholder="Email"
+        <FormField
+          label="EMAIL"
+          placeholder="you@example.com"
           autoCapitalize="none"
           keyboardType="email-address"
           value={email}
           onChangeText={setEmail}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
         />
-        <TextInput
-          placeholder="Password"
+        <FormField
+          label="PASSWORD"
+          placeholder="••••••••"
           secureTextEntry
           value={password}
           onChangeText={setPassword}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
+          error={error ?? undefined}
         />
-        {error ? (
-          <AppText variant="caption" color={colors.danger}>
-            {error}
-          </AppText>
-        ) : null}
         <Button label="Sign up with email" onPress={handleEmailSignUp} disabled={submitting || !email || !password} />
+
+        <View style={styles.dividerRow}>
+          <Divider tone="subtle" style={styles.dividerLine} />
+          <AppText variant="caption" color={colors.textTertiary}>or continue with</AppText>
+          <Divider tone="subtle" style={styles.dividerLine} />
+        </View>
+
         <Button label="Continue with Google" variant="secondary" onPress={handleGoogleSignUp} disabled={submitting} />
       </View>
 
@@ -95,20 +97,21 @@ export function SignUpScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  heading: { marginTop: spacing.xs },
   subtitle: {
-    marginTop: spacing.xs,
+    marginTop: spacing.sm,
     marginBottom: spacing.xl,
   },
   form: {
+    gap: spacing.md,
+  },
+  dividerRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
     gap: spacing.sm,
   },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    color: colors.textPrimary,
+  dividerLine: {
+    flex: 1,
   },
   footer: {
     marginTop: 'auto',

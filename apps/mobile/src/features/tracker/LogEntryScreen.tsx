@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, FormField, Screen } from '../../components';
+import { spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
 import type { TrackerStackParamList } from '../../navigation/types';
 
@@ -26,19 +26,17 @@ export function LogEntryScreen({ route, navigation }: Props) {
     <Screen>
       <AppText variant="title">Log {typeLabels[type]}</AppText>
       <View style={styles.form}>
-        <TextInput
-          placeholder={type === 'event' ? 'Event name' : 'Name'}
+        <FormField
+          label={type === 'event' ? 'EVENT NAME' : 'NAME'}
+          placeholder={type === 'event' ? 'e.g. Industry mixer' : 'e.g. Jane Doe'}
           value={title}
           onChangeText={setTitle}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
         />
-        <TextInput
-          placeholder="Notes (optional)"
+        <FormField
+          label="NOTES (OPTIONAL)"
+          placeholder="Anything worth remembering"
           value={notes}
           onChangeText={setNotes}
-          style={styles.input}
-          placeholderTextColor={colors.textSecondary}
           multiline
         />
         <Button label="Save" onPress={save} disabled={!title.trim()} />
@@ -48,13 +46,5 @@ export function LogEntryScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  form: { marginTop: spacing.lg, gap: spacing.sm },
-  input: {
-    borderWidth: 1,
-    borderColor: colors.border,
-    borderRadius: radius.md,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    color: colors.textPrimary,
-  },
+  form: { marginTop: spacing.lg, gap: spacing.md },
 });

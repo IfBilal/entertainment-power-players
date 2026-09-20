@@ -193,6 +193,31 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .centered { min-height: 100vh; display: grid; place-items: center; padding: 2rem; position: relative; overflow: hidden; }
 .narrow { width: 100%; max-width: 400px; }
 
+/* Subtle connection-dot motif behind auth/login screens (spec: "brand motif
+   -- connections", low-contrast, never a developer diagram, "almost
+   imperceptible"). Four faint nodes only -- no lines crossing the screen. */
+.centered::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background-image:
+    radial-gradient(circle at 14% 20%, var(--border-strong) 0, var(--border-strong) 2px, transparent 2px),
+    radial-gradient(circle at 87% 26%, var(--border-strong) 0, var(--border-strong) 2px, transparent 2px),
+    radial-gradient(circle at 22% 84%, var(--border-strong) 0, var(--border-strong) 2px, transparent 2px),
+    radial-gradient(circle at 80% 80%, var(--border-strong) 0, var(--border-strong) 2px, transparent 2px);
+  opacity: 0.4;
+}
+
+.eyebrow {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--accent);
+  margin-bottom: 0.6rem;
+}
+
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.92rem; }
 th, td { text-align: left; padding: 0.75rem 0.6rem; border-bottom: 1px solid var(--border); }
 th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--text-muted); }

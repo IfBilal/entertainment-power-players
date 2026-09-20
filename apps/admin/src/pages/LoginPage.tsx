@@ -22,6 +22,7 @@ export function LoginPage() {
     <div className="centered">
       <form className="auth-card stack" onSubmit={handleSubmit}>
         <div>
+          <div className="eyebrow">Admin access</div>
           <div className="auth-wordmark">
             <span className="mark">P</span>
             <h1>Power Players</h1>

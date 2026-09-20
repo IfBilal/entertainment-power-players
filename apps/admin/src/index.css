@@ -218,6 +218,119 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   margin-bottom: 0.6rem;
 }
 
+/* Login screen: a dark editorial visual panel (brand story + motion) next to
+   the actual form, so the page doesn't read as a bare, empty forms screen. */
+.auth-shell {
+  min-height: 100vh;
+  display: flex;
+}
+
+.auth-visual {
+  flex: 1.15;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(160deg, #2b2013 0%, var(--ink) 45%, var(--accent-deep) 135%);
+  color: #fbf7f0;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: 3rem;
+}
+
+.auth-visual .visual-brand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  font-family: var(--font-serif);
+  font-size: 1.1rem;
+  font-weight: 600;
+}
+.auth-visual .visual-brand .mark {
+  width: 34px;
+  height: 34px;
+  border-radius: 10px;
+  background: rgba(251, 247, 240, 0.14);
+  display: grid;
+  place-items: center;
+  font-family: var(--font-serif);
+}
+
+.auth-visual .visual-copy {
+  position: relative;
+  z-index: 1;
+  max-width: 420px;
+}
+.auth-visual .visual-copy h2 {
+  font-size: 2.1rem;
+  line-height: 1.22;
+  color: #fff9f2;
+}
+.auth-visual .visual-copy p {
+  color: rgba(251, 247, 240, 0.7);
+  margin-top: 0.75rem;
+}
+
+.auth-visual .visual-foot {
+  position: relative;
+  z-index: 1;
+  font-size: 0.78rem;
+  color: rgba(251, 247, 240, 0.45);
+  margin: 0;
+}
+
+.auth-orbit-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.motif-lines line {
+  stroke: rgba(251, 247, 240, 0.22);
+  stroke-width: 1;
+  stroke-dasharray: 5 7;
+  animation: motif-dash 14s linear infinite;
+}
+@keyframes motif-dash {
+  to { stroke-dashoffset: -120; }
+}
+.motif-nodes circle {
+  fill: rgba(251, 247, 240, 0.75);
+  transform-box: fill-box;
+  transform-origin: center;
+  animation: motif-pulse 4.5s ease-in-out infinite;
+}
+@keyframes motif-pulse {
+  0%, 100% { opacity: 0.4; transform: scale(0.85); }
+  50% { opacity: 1; transform: scale(1.15); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .motif-lines line, .motif-nodes circle { animation: none; }
+}
+
+.auth-panel {
+  flex: 1;
+  display: grid;
+  place-items: center;
+  padding: 2rem;
+  background: var(--bg-texture), var(--bg);
+}
+
+.auth-panel .auth-card {
+  animation: card-rise 0.5s ease both;
+}
+@keyframes card-rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 860px) {
+  .auth-shell { flex-direction: column; }
+  .auth-visual { flex: none; min-height: 240px; padding: 2rem; }
+  .auth-visual .visual-copy h2 { font-size: 1.5rem; }
+}
+
 table { width: 100%; border-collapse: separate; border-spacing: 0; font-size: 0.92rem; }
 th, td { text-align: left; padding: 0.75rem 0.6rem; border-bottom: 1px solid var(--border); }
 th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--text-muted); }

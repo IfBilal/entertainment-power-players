@@ -1,8 +1,9 @@
 import { useRef } from 'react';
-import { Animated, Pressable, StyleSheet, type PressableProps } from 'react-native';
+import { Animated, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { AppText } from './AppText';
-import { colors, radius, spacing } from '../theme';
+import { colors, gradients, radius, spacing } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 type ButtonSize = 'md' | 'lg';
@@ -12,11 +13,24 @@ type ButtonProps = Omit<PressableProps, 'style'> & {
   variant?: ButtonVariant;
   size?: ButtonSize;
   haptics?: boolean;
+  /** Stretch to the container width — the default for the mockups' CTAs. */
+  fullWidth?: boolean;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
 
-export function Button({ label, variant = 'primary', size = 'md', disabled, haptics = true, onPressIn, onPressOut, onPress, ...rest }: ButtonProps) {
+export function Button({
+  label,
+  variant = 'primary',
+  size = 'md',
+  disabled,
+  haptics = true,
+  fullWidth,
+  onPressIn,
+  onPressOut,
+  onPress,
+  ...rest
+}: ButtonProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   function handlePressIn(e: Parameters<NonNullable<PressableProps['onPressIn']>>[0]) {
@@ -31,10 +45,14 @@ export function Button({ label, variant = 'primary', size = 'md', disabled, hapt
 
   function handlePress(e: Parameters<NonNullable<PressableProps['onPress']>>[0]) {
     if (haptics && !disabled) {
-      Haptics.impactAsync(variant === 'destructive' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+      Haptics.impactAsync(
+        variant === 'destructive' ? Haptics.ImpactFeedbackStyle.Medium : Haptics.ImpactFeedbackStyle.Light,
+      ).catch(() => undefined);
     }
     onPress?.(e);
   }
+
+  const sizeStyle = size === 'lg' ? styles.lg : styles.base;
 
   return (
     <AnimatedPressable
@@ -44,17 +62,31 @@ export function Button({ label, variant = 'primary', size = 'md', disabled, hapt
       onPressOut={handlePressOut}
       onPress={handlePress}
       style={[
-        styles.base,
-        size === 'lg' && styles.lg,
-        variantStyles[variant],
+        styles.shell,
+        fullWidth && styles.fullWidth,
         disabled && styles.disabled,
         { transform: [{ scale }] },
       ]}
       {...rest}
     >
-      <AppText variant="button" color={labelColor(variant)}>
-        {label}
-      </AppText>
+      {variant === 'primary' ? (
+        <LinearGradient
+          colors={[...gradients.brand.colors]}
+          start={gradients.brand.start}
+          end={gradients.brand.end}
+          style={[styles.surface, sizeStyle]}
+        >
+          <AppText variant="button" color={labelColor(variant)}>
+            {label}
+          </AppText>
+        </LinearGradient>
+      ) : (
+        <View style={[styles.surface, sizeStyle, variantStyles[variant]]}>
+          <AppText variant="button" color={labelColor(variant)}>
+            {label}
+          </AppText>
+        </View>
+      )}
     </AnimatedPressable>
   );
 }
@@ -62,23 +94,34 @@ export function Button({ label, variant = 'primary', size = 'md', disabled, hapt
 function labelColor(variant: ButtonVariant) {
   switch (variant) {
     case 'primary':
+      // Dark ink on the bright gradient — white would vanish on the lime end.
       return colors.textInverse;
     case 'destructive':
       return colors.danger;
     case 'secondary':
-      return colors.ink;
+      return colors.textPrimary;
     default:
-      return colors.accent;
+      return colors.accentSoftText;
   }
 }
 
 const styles = StyleSheet.create({
-  base: {
+  shell: {
     borderRadius: radius.pill,
-    paddingVertical: spacing.sm + 4,
-    paddingHorizontal: spacing.lg,
+    overflow: 'hidden',
+    alignSelf: 'flex-start',
+  },
+  fullWidth: {
+    alignSelf: 'stretch',
+  },
+  surface: {
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: radius.pill,
+  },
+  base: {
+    paddingVertical: spacing.sm + 4,
+    paddingHorizontal: spacing.lg,
   },
   lg: {
     paddingVertical: spacing.md,
@@ -90,9 +133,7 @@ const styles = StyleSheet.create({
 });
 
 const variantStyles = StyleSheet.create({
-  primary: {
-    backgroundColor: colors.accent,
-  },
+  primary: {},
   secondary: {
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,
@@ -103,5 +144,7 @@ const variantStyles = StyleSheet.create({
   },
   destructive: {
     backgroundColor: colors.dangerSoft,
+    borderWidth: 1,
+    borderColor: colors.danger,
   },
 });

@@ -64,20 +64,21 @@ export type GradientToken = keyof typeof gradients;
  * device size.
  */
 export const auroras = {
-  /** Default: lime top-left, orange bottom-right. */
+  /** Default: lime top-left, orange bottom-right. Blobs run well past the
+   *  screen edge so only the soft middle of the falloff is ever visible. */
   standard: [
-    { color: 'rgba(144, 208, 16, 0.18)', top: '-18%', left: '-28%', size: '85%' },
-    { color: 'rgba(240, 80, 0, 0.16)', bottom: '-22%', right: '-30%', size: '80%' },
+    { color: 'rgba(144, 208, 16, 0.42)', top: '-38%', left: '-45%', size: '115%' },
+    { color: 'rgba(240, 80, 0, 0.38)', bottom: '-38%', right: '-45%', size: '110%' },
   ],
   /** Warmer, for auth and onboarding screens. */
   warm: [
-    { color: 'rgba(240, 160, 16, 0.20)', top: '-22%', right: '-25%', size: '80%' },
-    { color: 'rgba(240, 80, 0, 0.18)', bottom: '-20%', left: '-28%', size: '85%' },
+    { color: 'rgba(240, 160, 16, 0.45)', top: '-40%', right: '-42%', size: '115%' },
+    { color: 'rgba(240, 80, 0, 0.42)', bottom: '-36%', left: '-45%', size: '115%' },
   ],
   /** Cooler/greener, for content-dense screens where accent should recede. */
   subtle: [
-    { color: 'rgba(144, 208, 16, 0.10)', top: '-20%', left: '-30%', size: '75%' },
-    { color: 'rgba(16, 128, 16, 0.10)', bottom: '-25%', right: '-30%', size: '75%' },
+    { color: 'rgba(144, 208, 16, 0.26)', top: '-42%', left: '-48%', size: '110%' },
+    { color: 'rgba(16, 128, 16, 0.26)', bottom: '-42%', right: '-48%', size: '110%' },
   ],
 } as const;
 

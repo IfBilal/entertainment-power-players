@@ -1,14 +1,25 @@
 import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, type ViewProps } from 'react-native';
+import { Animated, StyleSheet, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { colors, spacing } from '../theme';
+import { Aurora } from './Aurora';
+import { colors, spacing, type AuroraToken } from '../theme';
 
 type ScreenProps = ViewProps & {
   padded?: boolean;
   animateIn?: boolean;
+  /** Corner light-leaks behind the content. `false` for screens that supply
+   *  their own backdrop (onboarding photography, the share card). */
+  aurora?: AuroraToken | false;
 };
 
-export function Screen({ padded = true, animateIn = true, style, children, ...rest }: ScreenProps) {
+export function Screen({
+  padded = true,
+  animateIn = true,
+  aurora = 'standard',
+  style,
+  children,
+  ...rest
+}: ScreenProps) {
   const opacity = useRef(new Animated.Value(animateIn ? 0 : 1)).current;
   const translateY = useRef(new Animated.Value(animateIn ? 10 : 0)).current;
 
@@ -21,26 +32,33 @@ export function Screen({ padded = true, animateIn = true, style, children, ...re
   }, [animateIn]);
 
   return (
-    <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
-      <Animated.View
-        style={[
-          styles.container,
-          padded && styles.padded,
-          style,
-          animateIn && { opacity, transform: [{ translateY }] },
-        ]}
-        {...rest}
-      >
-        {children}
-      </Animated.View>
-    </SafeAreaView>
+    <View style={styles.root}>
+      {aurora !== false ? <Aurora variant={aurora} /> : null}
+      <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
+        <Animated.View
+          style={[
+            styles.container,
+            padded && styles.padded,
+            style,
+            animateIn && { opacity, transform: [{ translateY }] },
+          ]}
+          {...rest}
+        >
+          {children}
+        </Animated.View>
+      </SafeAreaView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safeArea: {
+  root: {
     flex: 1,
     backgroundColor: colors.background,
+  },
+  safeArea: {
+    flex: 1,
+    backgroundColor: 'transparent',
   },
   container: {
     flex: 1,

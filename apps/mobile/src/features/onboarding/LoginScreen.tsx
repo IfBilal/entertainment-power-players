@@ -1,12 +1,34 @@
 import { useState } from 'react';
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Divider, FormField, Logo, Screen } from '../../components';
-import { colors, spacing } from '../../theme';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { AppText, Button, FormField, Logo, Screen } from '../../components';
+import { colors, radius, spacing } from '../../theme';
 import { signInWithEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Login'>;
+
+/** Apple / Google row from the mockup: dark pill, hairline border, brand glyph
+ *  then label, both centred as a group. */
+function SocialButton({
+  icon,
+  label,
+  color,
+  onPress,
+}: {
+  icon: 'logo-apple' | 'logo-google';
+  label: string;
+  color: string;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable style={styles.social} onPress={onPress} accessibilityRole="button">
+      <Ionicons name={icon} size={19} color={color} />
+      <AppText variant="bodyStrong">{label}</AppText>
+    </Pressable>
+  );
+}
 
 export function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
@@ -40,7 +62,7 @@ export function LoginScreen({ navigation }: Props) {
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <Logo variant="mark" width={132} />
+          <Logo variant="mark" width={124} />
           <AppText variant="display" style={styles.heading}>
             Welcome back
           </AppText>
@@ -54,6 +76,7 @@ export function LoginScreen({ navigation }: Props) {
             label="Email address"
             placeholder="you@domain.com"
             autoCapitalize="none"
+            autoComplete="email"
             keyboardType="email-address"
             value={email}
             onChangeText={setEmail}
@@ -62,10 +85,14 @@ export function LoginScreen({ navigation }: Props) {
             label="Password"
             placeholder="Enter your password"
             secureTextEntry
+            autoComplete="current-password"
             value={password}
             onChangeText={setPassword}
             error={error ?? undefined}
           />
+        </View>
+
+        <View style={styles.ctaWrap}>
           <Button
             label={submitting ? 'Signing in…' : 'Log In'}
             size="lg"
@@ -73,75 +100,114 @@ export function LoginScreen({ navigation }: Props) {
             onPress={handleLogin}
             disabled={submitting || !email || !password}
           />
-          <View style={styles.center}>
-            <Button
-              label="Forgot password?"
-              variant="ghost"
-              onPress={() => navigation.navigate('ForgotPassword')}
-            />
-          </View>
         </View>
+
+        <Pressable
+          onPress={() => navigation.navigate('ForgotPassword')}
+          style={styles.forgot}
+          accessibilityRole="button"
+        >
+          <AppText variant="body" color={colors.textSecondary}>
+            Forgot password?
+          </AppText>
+        </Pressable>
 
         <View style={styles.dividerRow}>
-          <Divider style={styles.dividerLine} />
-          <AppText variant="caption" color={colors.textTertiary}>
+          <View style={styles.rule} />
+          <AppText variant="body" color={colors.textSecondary}>
             or
           </AppText>
-          <Divider style={styles.dividerLine} />
+          <View style={styles.rule} />
         </View>
 
-        <Button
-          label="Continue with Google"
-          variant="secondary"
-          size="lg"
-          fullWidth
-          onPress={() => navigation.navigate('SignUp')}
-        />
+        <View style={styles.socials}>
+          <SocialButton
+            icon="logo-apple"
+            label="Continue with Apple"
+            color={colors.textPrimary}
+            onPress={() => navigation.navigate('SignUp')}
+          />
+          <SocialButton
+            icon="logo-google"
+            label="Continue with Google"
+            color="#EA4335"
+            onPress={() => navigation.navigate('SignUp')}
+          />
+        </View>
 
-        <View style={styles.footer}>
-          <AppText variant="caption" color={colors.textSecondary}>
+        <Pressable
+          onPress={() => navigation.navigate('SignUp')}
+          style={styles.footer}
+          accessibilityRole="button"
+        >
+          <AppText variant="body" color={colors.textSecondary}>
             Don't have an account?{' '}
           </AppText>
-          <Button label="Sign up" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
-        </View>
+          <AppText variant="bodyStrong" color={colors.accentAmber}>
+            Sign up
+          </AppText>
+        </Pressable>
       </ScrollView>
     </Screen>
   );
 }
 
+// Vertical rhythm mirrors the measured mockup: logo top ~55pt, headline ~158pt,
+// CTA ~419pt, socials ~592/653pt on a 390x844 screen.
 const styles = StyleSheet.create({
   content: {
     flexGrow: 1,
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.lg,
   },
   header: {
     alignItems: 'center',
     marginTop: spacing.lg,
-    marginBottom: spacing.xl,
-    gap: spacing.xs,
   },
   heading: {
-    marginTop: spacing.sm,
+    marginTop: spacing.lg,
+    marginBottom: spacing.xs,
   },
   form: {
+    marginTop: spacing.lg + 4,
     gap: spacing.md,
   },
-  center: {
+  ctaWrap: {
+    marginTop: spacing.lg,
+  },
+  forgot: {
     alignSelf: 'center',
+    paddingVertical: spacing.md,
   },
   dividerRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
-    marginVertical: spacing.lg,
+    gap: spacing.md,
+    marginTop: spacing.xs,
+    marginBottom: spacing.lg,
   },
-  dividerLine: {
+  rule: {
     flex: 1,
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.borderStrong,
+  },
+  socials: {
+    gap: spacing.sm + 4,
+  },
+  social: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm + 2,
+    height: 46,
+    borderRadius: radius.pill,
+    borderWidth: 1,
+    borderColor: colors.borderStrong,
+    backgroundColor: colors.surfaceSubtle,
   },
   footer: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: spacing.lg,
+    marginTop: spacing.lg + 4,
   },
 });

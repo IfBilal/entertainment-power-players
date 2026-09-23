@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import { Pressable, StyleSheet, TextInput, View, type TextInputProps } from 'react-native';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
 import { colors, radius, spacing } from '../theme';
 
@@ -9,35 +10,56 @@ type FormFieldProps = TextInputProps & {
 };
 
 /**
- * Labeled input with visible label above the field (spec §17 — never rely
- * solely on placeholders), accent focus border + soft glow, calm error state.
+ * Labelled input, sized to the mockups: 44pt tall, label above the field in
+ * plain sentence case (not the uppercase micro-label the old theme used), and
+ * a reveal toggle whenever the field is a password.
  */
-export function FormField({ label, error, style, onFocus, onBlur, ...rest }: FormFieldProps) {
+export function FormField({ label, error, style, onFocus, onBlur, secureTextEntry, ...rest }: FormFieldProps) {
   const [focused, setFocused] = useState(false);
+  const [revealed, setRevealed] = useState(false);
+  const isPassword = Boolean(secureTextEntry);
 
   return (
     <View style={styles.container}>
-      <AppText variant="captionStrong" color={colors.textSecondary} style={styles.label}>
+      <AppText variant="label" color={colors.textPrimary} style={styles.label}>
         {label}
       </AppText>
-      <TextInput
+      <View
         style={[
-          styles.input,
-          focused && styles.inputFocused,
-          Boolean(error) && styles.inputError,
-          style,
+          styles.field,
+          focused && styles.fieldFocused,
+          Boolean(error) && styles.fieldError,
         ]}
-        placeholderTextColor={colors.textMuted}
-        onFocus={(e) => {
-          setFocused(true);
-          onFocus?.(e);
-        }}
-        onBlur={(e) => {
-          setFocused(false);
-          onBlur?.(e);
-        }}
-        {...rest}
-      />
+      >
+        <TextInput
+          style={[styles.input, style]}
+          placeholderTextColor={colors.textMuted}
+          secureTextEntry={isPassword && !revealed}
+          onFocus={(e) => {
+            setFocused(true);
+            onFocus?.(e);
+          }}
+          onBlur={(e) => {
+            setFocused(false);
+            onBlur?.(e);
+          }}
+          {...rest}
+        />
+        {isPassword ? (
+          <Pressable
+            onPress={() => setRevealed((v) => !v)}
+            hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={revealed ? 'Hide password' : 'Show password'}
+          >
+            <Ionicons
+              name={revealed ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.textTertiary}
+            />
+          </Pressable>
+        ) : null}
+      </View>
       {error ? (
         <AppText variant="caption" color={colors.danger} style={styles.error}>
           {error}
@@ -49,30 +71,33 @@ export function FormField({ label, error, style, onFocus, onBlur, ...rest }: For
 
 const styles = StyleSheet.create({
   container: {
-    gap: spacing.xs,
+    gap: spacing.xs + 2,
   },
   label: {
-    letterSpacing: 0.2,
+    letterSpacing: 0,
   },
-  input: {
+  field: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm,
+    height: 44,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 4,
-    minHeight: 50,
-    color: colors.textPrimary,
-    backgroundColor: colors.surfaceRaised,
+    backgroundColor: colors.surfaceSubtle,
   },
-  inputFocused: {
-    borderColor: colors.accent,
-    shadowColor: colors.accent,
-    shadowOpacity: 0.12,
-    shadowRadius: 6,
-    shadowOffset: { width: 0, height: 0 },
+  fieldFocused: {
+    borderColor: colors.accentLime,
   },
-  inputError: {
+  fieldError: {
     borderColor: colors.danger,
+  },
+  input: {
+    flex: 1,
+    height: '100%',
+    color: colors.textPrimary,
+    fontSize: 15,
   },
   error: {
     marginTop: -2,

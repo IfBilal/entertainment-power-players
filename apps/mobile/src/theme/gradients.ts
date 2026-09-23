@@ -19,13 +19,15 @@ export const gradients = {
    * muddy olive-brown instead.
    */
   brand: {
-    colors: ['#7ED13A', '#9CC523', '#E99D23', '#F85C06'] as const,
-    start: { x: 0, y: 1 },
-    end: { x: 1, y: 0 },
+    colors: ['#75DA3D', '#9CBB2A', '#F27C10', '#FC5D06'] as const,
+    locations: [0, 0.38, 0.62, 1] as const,
+    start: { x: 0, y: 0.5 },
+    end: { x: 1, y: 0.5 },
   },
   /** Same ramp, vertical — for progress fills and tall elements. */
   brandVertical: {
-    colors: ['#7ED13A', '#9CC523', '#E99D23', '#F85C06'] as const,
+    colors: ['#75DA3D', '#9CBB2A', '#F27C10', '#FC5D06'] as const,
+    locations: [0, 0.38, 0.62, 1] as const,
     start: { x: 0, y: 0 },
     end: { x: 0, y: 1 },
   },
@@ -73,18 +75,19 @@ export const auroras = {
   /** Default: lime top-left, orange bottom-right. Blobs run well past the
    *  screen edge so only the soft middle of the falloff is ever visible. */
   standard: [
-    { color: 'rgba(144, 208, 16, 0.42)', top: '-38%', left: '-45%', size: '115%' },
-    { color: 'rgba(240, 80, 0, 0.38)', bottom: '-38%', right: '-45%', size: '110%' },
+    { color: 'rgba(144, 208, 16, 0.20)', top: '-48%', left: '-52%', size: '120%' },
+    { color: 'rgba(240, 80, 0, 0.16)', bottom: '-48%', right: '-52%', size: '115%' },
   ],
-  /** Warmer, for auth and onboarding screens. */
+  /** Warmer, for auth and onboarding screens. In the mockups this is barely
+   *  there — a faint wash at the very corners, not a coloured stain. */
   warm: [
-    { color: 'rgba(240, 160, 16, 0.45)', top: '-40%', right: '-42%', size: '115%' },
-    { color: 'rgba(240, 80, 0, 0.42)', bottom: '-36%', left: '-45%', size: '115%' },
+    { color: 'rgba(240, 160, 16, 0.18)', top: '-50%', right: '-50%', size: '115%' },
+    { color: 'rgba(240, 80, 0, 0.15)', bottom: '-50%', left: '-52%', size: '115%' },
   ],
   /** Cooler/greener, for content-dense screens where accent should recede. */
   subtle: [
-    { color: 'rgba(144, 208, 16, 0.26)', top: '-42%', left: '-48%', size: '110%' },
-    { color: 'rgba(16, 128, 16, 0.26)', bottom: '-42%', right: '-48%', size: '110%' },
+    { color: 'rgba(144, 208, 16, 0.12)', top: '-50%', left: '-52%', size: '110%' },
+    { color: 'rgba(16, 128, 16, 0.12)', bottom: '-50%', right: '-52%', size: '110%' },
   ],
 } as const;
 

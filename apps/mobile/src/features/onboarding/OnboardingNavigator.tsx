@@ -16,7 +16,9 @@ export function OnboardingNavigator() {
       <Stack.Screen name="Splash" component={SplashScreen} />
       <Stack.Screen name="IntroSlides" component={IntroSlidesScreen} />
       <Stack.Screen name="SignUp" component={SignUpScreen} />
-      <Stack.Screen name="Login" component={LoginScreen} options={{ headerShown: true, title: '' }} />
+      {/* Login owns its whole canvas in the mockup -- logo centred at the top,
+          no chrome above it -- so it renders its own layout with no header. */}
+      <Stack.Screen name="Login" component={LoginScreen} />
       <Stack.Screen name="ForgotPassword" component={ForgotPasswordScreen} options={{ headerShown: true, title: '' }} />
       <Stack.Screen name="TrackPicker" component={TrackPickerScreen} />
     </Stack.Navigator>

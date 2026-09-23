@@ -72,6 +72,7 @@ export function Button({
       {variant === 'primary' ? (
         <LinearGradient
           colors={[...gradients.brand.colors]}
+          locations={[...gradients.brand.locations]}
           start={gradients.brand.start}
           end={gradients.brand.end}
           style={[styles.surface, sizeStyle]}
@@ -119,12 +120,14 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.pill,
   },
+  // Heights measured off the mockups: the primary CTA is 50pt tall and the
+  // secondary/social buttons 46pt.
   base: {
-    paddingVertical: spacing.sm + 4,
+    height: 46,
     paddingHorizontal: spacing.lg,
   },
   lg: {
-    paddingVertical: spacing.md,
+    height: 50,
     paddingHorizontal: spacing.xl,
   },
   disabled: {

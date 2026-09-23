@@ -3,6 +3,7 @@ import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
+import Svg, { Circle, Defs, LinearGradient as SvgGradient, Path, Stop } from 'react-native-svg';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, IconTile, Screen } from '../../components';
 import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
@@ -30,7 +31,7 @@ const slides: Slide[] = [
     photo: true,
   },
   {
-    title: 'Track Your Progress.',
+    title: 'Track Your\nProgress.',
     body: 'Keep a log of your contacts, events and follow-ups. Stay on top of your goals.',
     stat: true,
   },
@@ -47,44 +48,92 @@ const slides: Slide[] = [
   },
 ];
 
-/** Mockup 3: a small stat card floating over a rising trend line. */
+/**
+ * Mockup 3: a tilted panel carrying a rising trend line, with the stat rows
+ * overlapping its lower half.
+ */
 function StatPreview() {
   const rows: Array<{ icon: IoniconName; label: string; value: string; tone: GradientToken }> = [
     { icon: 'people-outline', label: 'Contacts', value: '12', tone: 'brand' },
-    { icon: 'calendar-outline', label: 'Events', value: '3', tone: 'green' },
-    { icon: 'repeat-outline', label: 'Follow-ups', value: '5', tone: 'ember' },
+    { icon: 'bookmark-outline', label: 'Events', value: '3', tone: 'green' },
+    { icon: 'leaf-outline', label: 'Follow-ups', value: '5', tone: 'ember' },
   ];
 
   return (
-    <View style={styles.preview}>
-      <LinearGradient
-        colors={['rgba(144,208,16,0.16)', 'rgba(240,80,0,0.10)']}
-        start={{ x: 0, y: 1 }}
-        end={{ x: 1, y: 0 }}
-        style={StyleSheet.absoluteFill}
-      />
-      {rows.map((r) => (
-        <View key={r.label} style={styles.previewRow}>
-          <IconTile icon={r.icon} tone={r.tone} size="sm" soft />
-          <AppText variant="body" style={styles.previewLabel}>
-            {r.label}
-          </AppText>
-          <AppText variant="bodyStrong">{r.value}</AppText>
-        </View>
-      ))}
+    <View style={styles.previewWrap}>
+      <View style={styles.chartPanel}>
+        <LinearGradient
+          colors={['rgba(144,208,16,0.14)', 'rgba(5,15,17,0.2)']}
+          start={{ x: 0, y: 0 }}
+          end={{ x: 1, y: 1 }}
+          style={StyleSheet.absoluteFill}
+        />
+        <Svg width="100%" height="100%" viewBox="0 0 300 150">
+          <Defs>
+            <SvgGradient id="trend" x1="0" y1="1" x2="1" y2="0">
+              <Stop offset="0" stopColor="#75DA3D" />
+              <Stop offset="0.65" stopColor="#9CBB2A" />
+              <Stop offset="1" stopColor="#FC5D06" />
+            </SvgGradient>
+          </Defs>
+          <Path
+            d="M8 126 L46 112 L74 118 L104 96 L134 102 L164 70 L196 84 L226 40 L262 52 L292 14"
+            stroke="url(#trend)"
+            strokeWidth={3}
+            fill="none"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <Circle cx={196} cy={84} r={6} fill="#F0C010" />
+          <Circle cx={292} cy={14} r={5} fill="#FC5D06" />
+        </Svg>
+      </View>
+
+      <View style={styles.statCard}>
+        {rows.map((r) => (
+          <View key={r.label} style={styles.previewRow}>
+            <IconTile icon={r.icon} tone={r.tone} size="sm" soft />
+            <AppText variant="body" style={styles.previewLabel}>
+              {r.label}
+            </AppText>
+            <AppText variant="bodyStrong">{r.value}</AppText>
+          </View>
+        ))}
+      </View>
     </View>
   );
 }
 
-/** Mockup 4: a loose scatter of category tiles. */
+/**
+ * Mockup 4: wide dark cards carrying a single outlined glyph, cascading down
+ * and alternating left/right rather than sitting in a row. Each card is nearly
+ * black with a coloured edge and a faint wash — the colour comes from the
+ * glyph and the border, not a filled tile.
+ */
 function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
   return (
     <View style={styles.scatter}>
-      {tiles.map((t, i) => (
-        <View key={t.icon} style={[styles.scatterItem, i % 2 === 1 && styles.scatterItemOffset]}>
-          <IconTile icon={t.icon} tone={t.tone} size="lg" />
-        </View>
-      ))}
+      {tiles.map((t, i) => {
+        const warm = t.tone === 'ember';
+        const hue = warm ? colors.accentOrange : colors.accentLime;
+        return (
+          <View
+            key={t.icon}
+            style={[
+              styles.cascadeCard,
+              { marginLeft: (i % 2 === 0 ? 0 : 74) + i * 6, borderColor: `${hue}55` },
+            ]}
+          >
+            <LinearGradient
+              colors={[`${hue}26`, 'rgba(5,15,17,0.15)']}
+              start={{ x: 0, y: 0 }}
+              end={{ x: 1, y: 1 }}
+              style={StyleSheet.absoluteFill}
+            />
+            <Ionicons name={t.icon} size={38} color={hue} />
+          </View>
+        );
+      })}
     </View>
   );
 }
@@ -129,16 +178,19 @@ export function IntroSlidesScreen({ navigation }: Props) {
           </AppText>
         </View>
 
-        <View style={styles.body}>
-          {slide.stat ? <StatPreview /> : null}
-          {slide.tiles ? <TileScatter tiles={slide.tiles} /> : null}
-
+        {/* The photo slide stacks headline-last over the image; the two
+            illustrated slides lead with the headline and put the graphic
+            underneath, as mockups 3 and 4 do. */}
+        <View style={slide.photo ? styles.body : styles.bodyTop}>
           <AppText variant="hero" style={styles.title}>
             {slide.title}
           </AppText>
           <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
             {slide.body}
           </AppText>
+
+          {slide.stat ? <StatPreview /> : null}
+          {slide.tiles ? <TileScatter tiles={slide.tiles} /> : null}
         </View>
 
         <Button label={isLast ? 'Get Started' : 'Next'} onPress={next} size="lg" fullWidth />
@@ -181,6 +233,10 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-end',
     paddingBottom: spacing.lg,
   },
+  bodyTop: {
+    flex: 1,
+    paddingTop: spacing.xl,
+  },
   title: {
     // Measured off the mockup: ~30px over ~36pt lines, tighter than the
     // default hero so four lines still clear the body copy.
@@ -192,14 +248,27 @@ const styles = StyleSheet.create({
     marginTop: spacing.sm,
     maxWidth: 330,
   },
-  preview: {
+  previewWrap: {
+    marginTop: spacing.xxl,
+  },
+  chartPanel: {
+    height: 150,
     borderRadius: radius.xl,
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
+    // Slight tilt, as the mockup's panel sits off-axis behind the stat card.
+    transform: [{ rotate: '-2deg' }],
+  },
+  statCard: {
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.surface,
     padding: spacing.md,
-    gap: spacing.sm,
-    marginBottom: spacing.xl,
+    gap: spacing.sm + 2,
+    marginTop: -spacing.xl - spacing.xs,
+    marginHorizontal: spacing.sm,
   },
   previewRow: {
     flexDirection: 'row',
@@ -210,16 +279,18 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   scatter: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: spacing.sm + 4,
-    marginBottom: spacing.xl,
+    marginTop: spacing.xxl,
   },
-  scatterItem: {
-    transform: [{ rotate: '-4deg' }],
-  },
-  scatterItemOffset: {
-    transform: [{ rotate: '5deg' }, { translateY: 10 }],
+  cascadeCard: {
+    width: 165,
+    height: 88,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+    // Each card overlaps the one above it, as the mockup's stack does.
+    marginTop: -spacing.lg,
   },
   dots: {
     flexDirection: 'row',

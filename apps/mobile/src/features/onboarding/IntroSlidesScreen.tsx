@@ -23,7 +23,9 @@ type Slide = {
 
 const slides: Slide[] = [
   {
-    title: 'Real Connections.\nBigger Opportunities.',
+    // The mockup breaks this across four narrow lines rather than two wide
+    // ones, which is what gives the slide its poster-like proportions.
+    title: 'Real\nConnections.\nBigger\nOpportunities.',
     body: 'Join a community of industry professionals, creators and decision makers.',
     photo: true,
   },
@@ -101,12 +103,17 @@ export function IntroSlidesScreen({ navigation }: Props) {
     <Screen aurora={slide.photo ? false : 'warm'} padded={false}>
       {slide.photo ? (
         <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          <Image source={concertPhoto} style={StyleSheet.absoluteFill} contentFit="cover" />
-          {/* Fades the photo into the app background so it reads as a backdrop
-              rather than a pasted-in rectangle, and keeps the headline legible. */}
+          {/* `contain` rather than `cover`: the source is 1290x2000 (0.645)
+              against a ~0.46 phone, so cover crops the sides hard and throws
+              most of the crowd away. Containing it keeps the full frame, and
+              the letterboxed edges fall under the scrim and the background. */}
+          <Image source={concertPhoto} style={styles.photo} contentFit="contain" />
+          {/* Scrim stays clear of the upper half so the stage and crowd read as
+              brightly as they do in the mockup, then ramps hard behind the
+              headline block in the lower third. */}
           <LinearGradient
-            colors={[...gradients.photoScrim.colors]}
-            locations={[0, 0.45, 0.78]}
+            colors={['rgba(5,15,17,0)', 'rgba(5,15,17,0.10)', 'rgba(5,15,17,0.92)', '#050F11']}
+            locations={[0, 0.34, 0.60, 0.74]}
             style={StyleSheet.absoluteFill}
           />
         </View>
@@ -114,13 +121,12 @@ export function IntroSlidesScreen({ navigation }: Props) {
 
       <View style={styles.inner}>
         <View style={styles.topRow}>
-          <AppText variant="captionStrong" color={colors.accentLime}>
+          <AppText variant="bodyStrong" color={colors.accentAmber}>
             {index + 1}
-            <AppText variant="captionStrong" color={colors.textTertiary}>
+            <AppText variant="bodyStrong" color={colors.textTertiary}>
               {` / ${slides.length}`}
             </AppText>
           </AppText>
-          <Button label="Skip" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
         </View>
 
         <View style={styles.body}>
@@ -135,13 +141,14 @@ export function IntroSlidesScreen({ navigation }: Props) {
           </AppText>
         </View>
 
+        <Button label={isLast ? 'Get Started' : 'Next'} onPress={next} size="lg" fullWidth />
+
+        {/* The mockup puts the progress dots *below* the CTA, not above it. */}
         <View style={styles.dots}>
           {slides.map((s, i) => (
             <View key={s.title} style={[styles.dot, i === index && styles.dotActive]} />
           ))}
         </View>
-
-        <Button label={isLast ? 'Get Started' : 'Next'} onPress={next} size="lg" fullWidth />
       </View>
     </Screen>
   );
@@ -157,17 +164,33 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
+    paddingTop: spacing.sm,
+  },
+  photo: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    // Contained at full width the frame is ~1.55x as tall as it is wide, so it
+    // ends around 62% of the screen -- which is where the mockup's crowd line
+    // sits, with the headline block starting just below it.
+    height: '78%',
   },
   body: {
     flex: 1,
     justifyContent: 'flex-end',
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.lg,
   },
   title: {
+    // Measured off the mockup: ~30px over ~36pt lines, tighter than the
+    // default hero so four lines still clear the body copy.
+    fontSize: 30,
+    lineHeight: 36,
     marginBottom: spacing.xs,
   },
   slideBody: {
     marginTop: spacing.sm,
+    maxWidth: 330,
   },
   preview: {
     borderRadius: radius.xl,
@@ -202,7 +225,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'center',
     gap: spacing.xs,
-    marginBottom: spacing.lg,
+    marginTop: spacing.md,
   },
   dot: {
     width: 8,

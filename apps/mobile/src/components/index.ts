@@ -3,6 +3,7 @@ export { Screen } from './Screen';
 export { Aurora } from './Aurora';
 export { Avatar, initials } from './Avatar';
 export { IconTile } from './IconTile';
+export { Logo } from './Logo';
 export { Button } from './Button';
 export { Card } from './Card';
 export { EmptyState } from './EmptyState';

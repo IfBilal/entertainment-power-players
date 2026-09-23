@@ -42,6 +42,10 @@ describe('SplashScreen: auth resolving faster than the minimum display time', ()
     // Once the minimum display time has actually elapsed, navigation must
     // still happen -- this is the assertion that fails (times out) against
     // the pre-fix stale-closure version.
-    await waitFor(() => expect(screen.getByText('Your career is built through connections.')).toBeTruthy(), { timeout: 3000 });
+    //
+    // Asserts on the slide's "Skip" control rather than its headline: the
+    // headline is marketing copy that changes with the design, and this test
+    // is about navigation, not wording.
+    await waitFor(() => expect(screen.getByText('Skip')).toBeTruthy(), { timeout: 3000 });
   });
 });

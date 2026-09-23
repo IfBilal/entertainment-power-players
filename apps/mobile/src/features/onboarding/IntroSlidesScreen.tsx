@@ -1,30 +1,91 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing, type IoniconName } from '../../theme';
+import { AppText, Button, IconTile, Screen } from '../../components';
+import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'IntroSlides'>;
 
-const slides: Array<{ icons: IoniconName[]; title: string; body: string }> = [
+const concertPhoto = require('../../../assets/onboarding-concert.png');
+
+type Slide = {
+  title: string;
+  body: string;
+  /** Slide 1 is photographic (mockup 2); the rest are built from components. */
+  photo?: boolean;
+  tiles?: Array<{ icon: IoniconName; tone: GradientToken }>;
+  stat?: boolean;
+};
+
+const slides: Slide[] = [
   {
-    icons: ['git-network-outline'],
-    title: 'Your career is built through connections.',
-    body: 'Discover the people, actions and opportunities that move you forward.',
+    title: 'Real Connections.\nBigger Opportunities.',
+    body: 'Join a community of industry professionals, creators and decision makers.',
+    photo: true,
   },
   {
-    icons: ['glasses-outline', 'film-outline', 'game-controller-outline', 'musical-notes-outline', 'trophy-outline'],
-    title: 'Know your industry.',
-    body: 'Explore people across Fashion, Film/TV, Gaming, Music and Sports.',
+    title: 'Track Your Progress.',
+    body: 'Keep a log of your contacts, events and follow-ups. Stay on top of your goals.',
+    stat: true,
   },
   {
-    icons: ['stats-chart-outline'],
-    title: 'Make progress every week.',
-    body: 'Track your conversations, events and follow-ups.',
+    title: 'Take on Challenges.',
+    body: 'Complete industry-backed challenges and build your career, one step at a time.',
+    tiles: [
+      { icon: 'film-outline', tone: 'ember' },
+      { icon: 'musical-notes-outline', tone: 'green' },
+      { icon: 'game-controller-outline', tone: 'ember' },
+      { icon: 'basketball-outline', tone: 'green' },
+      { icon: 'glasses-outline', tone: 'brand' },
+    ],
   },
 ];
+
+/** Mockup 3: a small stat card floating over a rising trend line. */
+function StatPreview() {
+  const rows: Array<{ icon: IoniconName; label: string; value: string; tone: GradientToken }> = [
+    { icon: 'people-outline', label: 'Contacts', value: '12', tone: 'brand' },
+    { icon: 'calendar-outline', label: 'Events', value: '3', tone: 'green' },
+    { icon: 'repeat-outline', label: 'Follow-ups', value: '5', tone: 'ember' },
+  ];
+
+  return (
+    <View style={styles.preview}>
+      <LinearGradient
+        colors={['rgba(144,208,16,0.16)', 'rgba(240,80,0,0.10)']}
+        start={{ x: 0, y: 1 }}
+        end={{ x: 1, y: 0 }}
+        style={StyleSheet.absoluteFill}
+      />
+      {rows.map((r) => (
+        <View key={r.label} style={styles.previewRow}>
+          <IconTile icon={r.icon} tone={r.tone} size="sm" soft />
+          <AppText variant="body" style={styles.previewLabel}>
+            {r.label}
+          </AppText>
+          <AppText variant="bodyStrong">{r.value}</AppText>
+        </View>
+      ))}
+    </View>
+  );
+}
+
+/** Mockup 4: a loose scatter of category tiles. */
+function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
+  return (
+    <View style={styles.scatter}>
+      {tiles.map((t, i) => (
+        <View key={t.icon} style={[styles.scatterItem, i % 2 === 1 && styles.scatterItemOffset]}>
+          <IconTile icon={t.icon} tone={t.tone} size="lg" />
+        </View>
+      ))}
+    </View>
+  );
+}
 
 export function IntroSlidesScreen({ navigation }: Props) {
   const [index, setIndex] = useState(0);
@@ -32,63 +93,110 @@ export function IntroSlidesScreen({ navigation }: Props) {
   const isLast = index === slides.length - 1;
 
   function next() {
-    if (isLast) {
-      navigation.navigate('SignUp');
-    } else {
-      setIndex((i) => i + 1);
-    }
+    if (isLast) navigation.navigate('SignUp');
+    else setIndex((i) => i + 1);
   }
 
   return (
-    <Screen>
-      <View style={styles.skipRow}>
-        <Button label="Skip" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
-      </View>
-      <View style={styles.body}>
-        <View style={styles.motif}>
-          {slide.icons.map((icon) => (
-            <Ionicons key={icon} name={icon} size={slide.icons.length > 1 ? 34 : 72} color={colors.accent} style={styles.motifIcon} />
+    <Screen aurora={slide.photo ? false : 'warm'} padded={false}>
+      {slide.photo ? (
+        <View style={StyleSheet.absoluteFill} pointerEvents="none">
+          <Image source={concertPhoto} style={StyleSheet.absoluteFill} contentFit="cover" />
+          {/* Fades the photo into the app background so it reads as a backdrop
+              rather than a pasted-in rectangle, and keeps the headline legible. */}
+          <LinearGradient
+            colors={[...gradients.photoScrim.colors]}
+            locations={[0, 0.45, 0.78]}
+            style={StyleSheet.absoluteFill}
+          />
+        </View>
+      ) : null}
+
+      <View style={styles.inner}>
+        <View style={styles.topRow}>
+          <AppText variant="captionStrong" color={colors.accentLime}>
+            {index + 1}
+            <AppText variant="captionStrong" color={colors.textTertiary}>
+              {` / ${slides.length}`}
+            </AppText>
+          </AppText>
+          <Button label="Skip" variant="ghost" onPress={() => navigation.navigate('SignUp')} />
+        </View>
+
+        <View style={styles.body}>
+          {slide.stat ? <StatPreview /> : null}
+          {slide.tiles ? <TileScatter tiles={slide.tiles} /> : null}
+
+          <AppText variant="hero" style={styles.title}>
+            {slide.title}
+          </AppText>
+          <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
+            {slide.body}
+          </AppText>
+        </View>
+
+        <View style={styles.dots}>
+          {slides.map((s, i) => (
+            <View key={s.title} style={[styles.dot, i === index && styles.dotActive]} />
           ))}
         </View>
-        <AppText variant="display" style={styles.title}>{slide.title}</AppText>
-        <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
-          {slide.body}
-        </AppText>
+
+        <Button label={isLast ? 'Get Started' : 'Next'} onPress={next} size="lg" fullWidth />
       </View>
-      <View style={styles.dots}>
-        {slides.map((s, i) => (
-          <View key={s.title} style={[styles.dot, i === index && styles.dotActive]} />
-        ))}
-      </View>
-      <Button label={isLast ? 'Get started' : 'Next'} onPress={next} />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  skipRow: {
-    alignItems: 'flex-end',
+  inner: {
+    flex: 1,
+    paddingHorizontal: spacing.md,
+    paddingBottom: spacing.md,
+  },
+  topRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
   },
   body: {
     flex: 1,
-    justifyContent: 'center',
-  },
-  motif: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    alignItems: 'center',
-    gap: spacing.md,
-    marginBottom: spacing.xl,
-    opacity: 0.9,
-  },
-  motifIcon: {
-    opacity: 0.85,
+    justifyContent: 'flex-end',
+    paddingBottom: spacing.xl,
   },
   title: {
     marginBottom: spacing.xs,
   },
   slideBody: {
     marginTop: spacing.sm,
+  },
+  preview: {
+    borderRadius: radius.xl,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+    padding: spacing.md,
+    gap: spacing.sm,
+    marginBottom: spacing.xl,
+  },
+  previewRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: spacing.sm + 4,
+  },
+  previewLabel: {
+    flex: 1,
+  },
+  scatter: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: spacing.sm + 4,
+    marginBottom: spacing.xl,
+  },
+  scatterItem: {
+    transform: [{ rotate: '-4deg' }],
+  },
+  scatterItemOffset: {
+    transform: [{ rotate: '5deg' }, { translateY: 10 }],
   },
   dots: {
     flexDirection: 'row',
@@ -100,9 +208,10 @@ const styles = StyleSheet.create({
     width: 8,
     height: 8,
     borderRadius: radius.pill,
-    backgroundColor: colors.border,
+    backgroundColor: colors.borderStrong,
   },
   dotActive: {
-    backgroundColor: colors.accent,
+    backgroundColor: colors.accentLime,
+    width: 20,
   },
 });

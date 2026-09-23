@@ -43,9 +43,10 @@ describe('SplashScreen: auth resolving faster than the minimum display time', ()
     // still happen -- this is the assertion that fails (times out) against
     // the pre-fix stale-closure version.
     //
-    // Asserts on the slide's "Skip" control rather than its headline: the
-    // headline is marketing copy that changes with the design, and this test
-    // is about navigation, not wording.
-    await waitFor(() => expect(screen.getByText('Skip')).toBeTruthy(), { timeout: 3000 });
+    // Anchors on the slide's advance button rather than headline copy or
+    // secondary chrome: both of those move with the design (the revamp
+    // rewrote the headline, then dropped the Skip link), whereas the slide
+    // cannot function without a way forward. This test is about navigation.
+    await waitFor(() => expect(screen.getByText('Next')).toBeTruthy(), { timeout: 3000 });
   });
 });

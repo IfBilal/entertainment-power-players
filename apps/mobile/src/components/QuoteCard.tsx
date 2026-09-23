@@ -49,7 +49,7 @@ const styles = StyleSheet.create({
   },
   feedCard: {},
   mark: {
-    fontFamily: fontFamilies.serifSemiBold,
+    fontFamily: fontFamilies.displayBold,
     fontSize: 30,
     lineHeight: 30,
     marginBottom: -spacing.xs,

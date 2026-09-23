@@ -5,8 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
-    "userInterfaceStyle": "light",
-    "backgroundColor": "#FBF7F0",
+    "userInterfaceStyle": "dark",
+    "backgroundColor": "#050F11",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.entertainmentpowerplayers.app"
@@ -14,7 +14,7 @@
     "android": {
       "package": "com.entertainmentpowerplayers.app",
       "adaptiveIcon": {
-        "backgroundColor": "#FBF7F0",
+        "backgroundColor": "#050F11",
         "foregroundImage": "./assets/android-icon-foreground.png",
         "backgroundImage": "./assets/android-icon-background.png",
         "monochromeImage": "./assets/android-icon-monochrome.png"
@@ -30,13 +30,14 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#FBF7F0",
+          "backgroundColor": "#050F11",
           "image": "./assets/icon.png",
           "imageWidth": 120
         }
       ],
       "expo-secure-store",
-      "@react-native-google-signin/google-signin"
+      "@react-native-google-signin/google-signin",
+      "expo-image"
     ],
     "extra": {
       "eas": {

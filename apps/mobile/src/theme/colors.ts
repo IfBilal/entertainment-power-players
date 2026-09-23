@@ -1,45 +1,57 @@
 /**
- * Warm editorial palette: cream paper background, warm near-black ink, one
- * confident terracotta accent — deliberately not the default-indigo "AI app"
- * look. One accent colour used consistently, per handbook §4.8.
+ * EPP dark theme. Near-black surfaces carrying a green-teal undertone (sampled
+ * from the client mockups, docs/ui-*.png) with the brand's lime->orange
+ * gradient as the single source of accent. Both accent hues come straight out
+ * of the logo (docs/brand-logo-mark.png): lime #90D010 and orange #F05000.
+ *
+ * Surfaces are deliberately not pure black — #050F11 rather than #000 — so the
+ * aurora light-leaks and card borders have something to sit against.
  */
 export const colors = {
-  // Surfaces — layered warm neutrals, not a single flat cream
-  background: '#FBF7F0',
-  surface: '#F3ECDD',
-  surfaceSubtle: '#F5EFE6',
-  surfaceStrong: '#EEE5D9',
-  surfaceRaised: '#FFFFFF',
-  border: '#E6DAC3',
-  borderSubtle: '#EAE2D8',
-  borderStrong: '#D8C7A5',
+  // Surfaces — a near-black ramp with a green-teal cast
+  background: '#050F11',
+  backgroundDeep: '#000A0C',
+  surface: '#0B1A17',
+  surfaceSubtle: '#091412',
+  surfaceStrong: '#12211C',
+  surfaceRaised: '#14231E',
+  surfaceTranslucent: 'rgba(255, 255, 255, 0.04)',
 
-  // Ink
-  ink: '#221B14',
-  textPrimary: '#221B14',
-  textSecondary: '#6F6252',
-  textTertiary: '#8B8075',
-  textMuted: '#9C8F7B',
-  textInverse: '#FBF7F0',
+  // Hairline borders — alpha over the dark ground, never a solid grey
+  border: 'rgba(255, 255, 255, 0.08)',
+  borderSubtle: 'rgba(255, 255, 255, 0.05)',
+  borderStrong: 'rgba(255, 255, 255, 0.14)',
 
-  // Accent — burnt terracotta, kept scarce (spec §5: terracotta = action/progress/importance)
-  accent: '#B0501C',
-  accentDeep: '#8A3D14',
-  accentSoft: '#F1DCC5',
-  accentFaint: '#F5E4DA',
-  accentSoftText: '#7A3611',
+  // Ink — white ramped down by opacity rather than greying toward the bg
+  ink: '#FFFFFF',
+  textPrimary: '#FFFFFF',
+  textSecondary: 'rgba(255, 255, 255, 0.68)',
+  textTertiary: 'rgba(255, 255, 255, 0.50)',
+  textMuted: 'rgba(255, 255, 255, 0.38)',
+  textInverse: '#06120E',
 
-  // Feedback — used sparingly, never as decoration
-  success: '#3E7A4C',
-  successSoft: '#E1EFE1',
-  danger: '#A5342A',
-  dangerSoft: '#F4DFDA',
-  warning: '#B08120',
-  warningSoft: '#F1E5C7',
-  info: '#526B73',
-  infoSoft: '#DCE7E9',
+  // Accent — the brand gradient's two ends, plus the amber from the star
+  accent: '#90D010',
+  accentLime: '#90D010',
+  accentOrange: '#F05000',
+  accentAmber: '#F0A010',
+  accentDeep: '#108010',
+  accentSoft: 'rgba(144, 208, 16, 0.16)',
+  accentFaint: 'rgba(144, 208, 16, 0.08)',
+  accentSoftText: '#B6E64A',
+  accentOrangeSoft: 'rgba(240, 80, 0, 0.16)',
 
-  overlay: 'rgba(34, 27, 20, 0.55)',
+  // Feedback — tuned for legibility on a dark ground
+  success: '#6FD13B',
+  successSoft: 'rgba(111, 209, 59, 0.14)',
+  danger: '#FF6B5A',
+  dangerSoft: 'rgba(255, 107, 90, 0.14)',
+  warning: '#F0A010',
+  warningSoft: 'rgba(240, 160, 16, 0.14)',
+  info: '#5FC8D8',
+  infoSoft: 'rgba(95, 200, 216, 0.14)',
+
+  overlay: 'rgba(0, 6, 8, 0.72)',
 } as const;
 
 export type ColorToken = keyof typeof colors;

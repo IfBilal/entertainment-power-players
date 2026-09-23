@@ -1,8 +1,8 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Aurora, Logo } from '../../components';
+import { colors, spacing } from '../../theme';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
@@ -74,15 +74,16 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
+      <Aurora variant="warm" />
       <Animated.View style={[styles.mark, { opacity, transform: [{ scale }] }]}>
-        <View style={styles.badge}>
-          <AppText variant="title" color={colors.textInverse}>PP</AppText>
-        </View>
-        <AppText variant="display" style={styles.wordmark}>
-          Power Players
+        <Logo variant="full" width={230} />
+      </Animated.View>
+      <Animated.View style={[styles.taglineWrap, { opacity }]}>
+        <AppText variant="body" color={colors.textSecondary} style={styles.tagline}>
+          Real Connections.
         </AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.tagline}>
-          Build your career in entertainment
+          Bigger Opportunities.
         </AppText>
       </Animated.View>
     </View>
@@ -99,20 +100,14 @@ const styles = StyleSheet.create({
   mark: {
     alignItems: 'center',
   },
-  badge: {
-    width: 56,
-    height: 56,
-    borderRadius: radius.lg,
-    backgroundColor: colors.accent,
+  /** The mockup sets the tagline low on the screen, well clear of the logo,
+   *  rather than directly beneath it. */
+  taglineWrap: {
+    position: 'absolute',
+    bottom: spacing.xxl,
     alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: spacing.md,
-  },
-  wordmark: {
-    textAlign: 'center',
   },
   tagline: {
-    marginTop: spacing.sm,
     textAlign: 'center',
   },
 });

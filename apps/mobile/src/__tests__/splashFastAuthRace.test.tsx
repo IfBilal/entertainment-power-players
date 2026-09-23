@@ -31,7 +31,7 @@ describe('SplashScreen: auth resolving faster than the minimum display time', ()
   it('still navigates once the minimum display time elapses, not stuck forever', async () => {
     useAuthStore.setState({ status: 'loading', userId: null, selectedTrackSlugs: null, hydrated: true });
     await renderWithProviders(<RootNavigator />);
-    expect(screen.getByText('Power Players')).toBeTruthy();
+    expect(screen.getByLabelText('Entertainment Power Players')).toBeTruthy();
 
     // Auth resolves almost immediately -- far faster than the splash
     // screen's ~1.1s minimum display timer.

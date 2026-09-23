@@ -20,6 +20,6 @@ describe('OnboardingNavigator', () => {
         </NavigationContainer>
       </SafeAreaProvider>,
     );
-    expect(screen.getByText('Power Players')).toBeTruthy();
+    expect(screen.getByLabelText('Entertainment Power Players')).toBeTruthy();
   });
 });

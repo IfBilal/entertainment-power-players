@@ -29,19 +29,19 @@ describe('RootNavigator auth routing', () => {
   it('shows Onboarding (Splash) while auth state is still loading', async () => {
     useAuthStore.setState({ status: 'loading', userId: null, selectedTrackSlugs: null, hydrated: true });
     await renderWithProviders(<RootNavigator />);
-    expect(screen.getByText('Power Players')).toBeTruthy();
+    expect(screen.getByLabelText('Entertainment Power Players')).toBeTruthy();
   });
 
   it('shows Onboarding when signed out', async () => {
     useAuthStore.setState({ status: 'signedOut', userId: null, selectedTrackSlugs: null, hydrated: true });
     await renderWithProviders(<RootNavigator />);
-    expect(screen.getByText('Power Players')).toBeTruthy();
+    expect(screen.getByLabelText('Entertainment Power Players')).toBeTruthy();
   });
 
   it('keeps a signed-in user with no tracks picked in Onboarding, not Main', async () => {
     useAuthStore.setState({ status: 'signedIn', userId: 'u1', selectedTrackSlugs: [], hydrated: true });
     await renderWithProviders(<RootNavigator />);
-    expect(screen.getByText('Power Players')).toBeTruthy();
+    expect(screen.getByLabelText('Entertainment Power Players')).toBeTruthy();
     expect(screen.queryByText('People worth knowing.')).toBeNull();
   });
 

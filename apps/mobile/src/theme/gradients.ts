@@ -11,19 +11,25 @@ import { colors } from './colors';
  * pair below is the ~100deg sweep used on buttons.
  */
 export const gradients = {
-  /** Primary CTA: lime -> orange, left to right with a slight rise. */
+  /**
+   * Primary CTA. Sampled off the mockups' buttons, which run
+   * #76D138 -> #98BE2B -> #E99D23 -> #FB5B05: the ramp passes through amber
+   * rather than interpolating lime straight to orange. That middle stop is
+   * what makes it read as a glow — a direct two-stop blend goes through a
+   * muddy olive-brown instead.
+   */
   brand: {
-    colors: [colors.accentLime, colors.accentOrange] as const,
+    colors: ['#7ED13A', '#9CC523', '#E99D23', '#F85C06'] as const,
     start: { x: 0, y: 1 },
     end: { x: 1, y: 0 },
   },
-  /** Same hues, vertical — for progress fills and tall elements. */
+  /** Same ramp, vertical — for progress fills and tall elements. */
   brandVertical: {
-    colors: [colors.accentLime, colors.accentOrange] as const,
+    colors: ['#7ED13A', '#9CC523', '#E99D23', '#F85C06'] as const,
     start: { x: 0, y: 0 },
     end: { x: 0, y: 1 },
   },
-  /** Three-stop version passing through amber, for larger surfaces. */
+  /** Warmer weighting, for larger surfaces that should lean orange. */
   brandWarm: {
     colors: [colors.accentLime, colors.accentAmber, colors.accentOrange] as const,
     start: { x: 0, y: 1 },

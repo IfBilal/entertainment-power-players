@@ -2,6 +2,7 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
+import { Avatar } from './Avatar';
 import { colors, spacing } from '../theme';
 
 type ContactRowProps = {
@@ -14,16 +15,20 @@ type ContactRowProps = {
   onToggleFavorite: () => void;
 };
 
-/** Structured editorial list row — not a card per row (spec §22/§57). */
+/**
+ * Directory list row: initials avatar, name, one meta line, favourite toggle.
+ * The mockups put an avatar on every row — see Avatar for why these are
+ * initials on a brand gradient rather than photographs.
+ */
 export function ContactRow({ name, role, company, city, favorite, onPress, onToggleFavorite }: ContactRowProps) {
   const bg = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = bg.interpolate({
     inputRange: [0, 1],
-    outputRange: [colors.background, colors.surfaceSubtle],
+    outputRange: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.05)'],
   });
 
-  const metaLine = [role, company].filter(Boolean).join(' · ');
+  const metaLine = [role, company, city].filter(Boolean).join(' · ');
 
   return (
     <Animated.View style={{ backgroundColor }}>
@@ -33,18 +38,14 @@ export function ContactRow({ name, role, company, city, favorite, onPress, onTog
         onPressOut={() => Animated.timing(bg, { toValue: 0, duration: 150, useNativeDriver: false }).start()}
         style={styles.row}
       >
+        <Avatar name={name} size="md" />
         <View style={styles.text}>
           <AppText variant="bodyStrong" numberOfLines={1}>
             {name}
           </AppText>
           {metaLine ? (
-            <AppText variant="caption" color={colors.textSecondary} numberOfLines={1} style={styles.meta}>
+            <AppText variant="caption" color={colors.textSecondary} numberOfLines={1}>
               {metaLine}
-            </AppText>
-          ) : null}
-          {city ? (
-            <AppText variant="caption" color={colors.textTertiary} numberOfLines={1}>
-              {city}
             </AppText>
           ) : null}
         </View>
@@ -53,7 +54,11 @@ export function ContactRow({ name, role, company, city, favorite, onPress, onTog
           hitSlop={10}
           accessibilityLabel={favorite ? 'Remove favourite' : 'Add favourite'}
         >
-          <Ionicons name={favorite ? 'heart' : 'heart-outline'} size={20} color={colors.accent} />
+          <Ionicons
+            name={favorite ? 'star' : 'star-outline'}
+            size={20}
+            color={favorite ? colors.accentAmber : colors.textTertiary}
+          />
         </Pressable>
       </Pressable>
     </Animated.View>
@@ -64,19 +69,15 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
+    gap: spacing.sm + 4,
     paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm + 6,
+    paddingVertical: spacing.sm + 4,
     minHeight: 72,
     borderBottomWidth: StyleSheet.hairlineWidth,
     borderBottomColor: colors.borderSubtle,
   },
   text: {
     flex: 1,
-    marginRight: spacing.sm,
-    gap: 1,
-  },
-  meta: {
-    marginTop: 1,
+    gap: 2,
   },
 });

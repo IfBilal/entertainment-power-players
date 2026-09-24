@@ -14,6 +14,9 @@ type IconTileProps = {
    *  gradient with a dark glyph. Used for list rows where a solid tile would
    *  overpower the text. */
   soft?: boolean;
+  /** Directory category badges are circular and softly coloured. */
+  circle?: boolean;
+  fillColor?: string;
   style?: ViewStyle;
 };
 
@@ -27,15 +30,23 @@ const dimensions: Record<IconTileSize, { box: number; glyph: number; radius: num
  * The coloured rounded-square icon holders used for categories, challenge
  * tracks and the log-activity rows in the mockups.
  */
-export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, style }: IconTileProps) {
+export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, style }: IconTileProps) {
   const d = dimensions[size];
-  const box: ViewStyle = { width: d.box, height: d.box, borderRadius: d.radius };
+  const box: ViewStyle = { width: d.box, height: d.box, borderRadius: circle ? d.box / 2 : d.radius };
   const gradient = gradients[tone];
 
   if (soft) {
     return (
       <View style={[styles.tile, box, styles.softTile, style]}>
         <Ionicons name={icon} size={d.glyph} color={gradient.colors[0]} />
+      </View>
+    );
+  }
+
+  if (circle) {
+    return (
+      <View style={[styles.tile, box, styles.circle, { backgroundColor: fillColor ?? colors.accentOrangeSoft }, style]}>
+        <Ionicons name={icon} size={d.glyph} color={gradient.colors[gradient.colors.length - 1]} />
       </View>
     );
   }
@@ -62,4 +73,5 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
+  circle: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
 });

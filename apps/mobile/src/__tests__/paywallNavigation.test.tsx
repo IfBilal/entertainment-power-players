@@ -53,27 +53,27 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     fireEvent.press(screen.getByText('Unlock directory'));
 
     // Root-level paywall modal appears.
-    expect(await screen.findByText('Build your industry network.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Start membership'));
+    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
+    fireEvent.press(screen.getByText('Start Free Trial'));
 
     // Back on the Fashion contact list -- now unlocked, not bounced to another tab/screen.
     expect(await screen.findByPlaceholderText('Search people, companies or roles')).toBeTruthy();
     expect(screen.queryByText('Your industry network is waiting.')).toBeNull();
   });
 
-  it('returns to Profile (not Directory) when opened from Profile > Free plan', async () => {
+  it('returns to Profile (not Directory) when opened from Profile > Subscription', async () => {
     await renderWithProviders(<RootNavigator />);
 
     // Switch to the Profile tab.
     fireEvent.press(await screen.findByText('Profile'));
-    expect(await screen.findByText('Free plan')).toBeTruthy();
-    fireEvent.press(screen.getByText('Free plan'));
+    expect(await screen.findByText('Subscription')).toBeTruthy();
+    fireEvent.press(screen.getByText('Subscription'));
 
-    expect(await screen.findByText('Build your industry network.')).toBeTruthy();
-    fireEvent.press(screen.getByText('Start membership'));
+    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
+    fireEvent.press(screen.getByText('Start Free Trial'));
 
     // Should land back on Profile, showing the now-Pro state -- not on Directory.
-    expect(await screen.findByText('Power Players Pro')).toBeTruthy();
+    expect(await screen.findByText('Pro Member')).toBeTruthy();
     expect(screen.queryByText('Quick Access')).toBeNull();
   });
 });

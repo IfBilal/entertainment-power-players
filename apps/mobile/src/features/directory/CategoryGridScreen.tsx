@@ -1,8 +1,9 @@
-import { FlatList, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { AppText, CategoryCard, ErrorState, Screen, Skeleton } from '../../components';
 import { colors, spacing, type IoniconName } from '../../theme';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { fetchCategories, fetchCategoryCounts } from '../../services/supabase/directory';
 import type { DirectoryStackParamList } from '../../navigation/types';
 
@@ -15,14 +16,13 @@ export function CategoryGridScreen({ navigation }: Props) {
   const categories = categoriesQuery.data ?? [];
   const counts = countsQuery.data ?? {};
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
+  const fills: Record<string, string> = { fashion: '#44271A', 'film-tv': '#19372C', gaming: '#24341B', music: '#3A2F14', sports: '#17363A' };
 
   return (
     <Screen padded={false}>
       <FlatList
         data={categories}
         keyExtractor={(c) => c.slug}
-        numColumns={2}
-        columnWrapperStyle={styles.row}
         contentContainerStyle={styles.grid}
         refreshing={categoriesQuery.isFetching}
         onRefresh={() => {
@@ -31,16 +31,12 @@ export function CategoryGridScreen({ navigation }: Props) {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <AppText variant="label" color={colors.textTertiary}>
-              YOUR INDUSTRY
-            </AppText>
-            <AppText variant="display" style={styles.heading}>
-              People worth knowing.
-            </AppText>
-            <AppText variant="body" color={colors.textSecondary} style={styles.subheading}>
-              Explore the people shaping entertainment
-              {total > 0 ? ` — ${total}+ industry contacts` : ''}.
-            </AppText>
+            <View style={styles.titleRow}><AppText variant="title">Directory</AppText><Ionicons name="chevron-down" size={18} color={colors.textSecondary} /></View>
+            <View style={styles.searchRow}>
+              <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
+              <TextInput placeholder="Search categories..." placeholderTextColor={colors.textMuted} style={styles.search} />
+              <Pressable accessibilityLabel="Filter categories"><Ionicons name="options-outline" size={20} color={colors.textSecondary} /></Pressable>
+            </View>
           </View>
         }
         ListEmptyComponent={
@@ -63,14 +59,8 @@ export function CategoryGridScreen({ navigation }: Props) {
           )
         }
         renderItem={({ item }) => (
-          <View style={styles.cell}>
-            <CategoryCard
-              name={item.name}
-              icon={item.icon as IoniconName}
-              count={counts[item.slug]}
-              onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })}
-            />
-          </View>
+          <CategoryCard name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]}
+            onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })} />
         )}
       />
     </Screen>
@@ -82,17 +72,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
   },
-  heading: {
-    marginTop: spacing.xs,
-  },
-  subheading: {
-    marginTop: spacing.sm,
-    marginBottom: spacing.lg,
-  },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
+  searchRow: { height: 42, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  search: { flex: 1, color: colors.textPrimary, fontSize: 14 },
   grid: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
-  row: { gap: spacing.sm },
-  cell: { flex: 1 },
   skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
-  skeletonCard: { flexBasis: '48%', flexGrow: 1 },
+  skeletonCard: { flexBasis: '100%', flexGrow: 1 },
   empty: { paddingHorizontal: spacing.md, paddingVertical: spacing.xl, textAlign: 'center' },
 });

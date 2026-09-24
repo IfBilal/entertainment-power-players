@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Divider, Screen, SectionHeader, SettingsRow, Tag } from '../../components';
+import { AppText, Avatar, Divider, Screen, SettingsRow, Tag } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { tracks } from '../../services/mock/challenges';
 import { deleteAccount, signOut } from '../../services/supabase/auth';
@@ -80,28 +80,14 @@ export function ProfileHomeScreen({ navigation }: Props) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AppText variant="label" color={colors.textTertiary}>YOUR PROFILE</AppText>
-
+        <AppText variant="title">Profile</AppText>
         <View style={styles.identity}>
-          <View style={styles.avatar}>
-            <AppText variant="bodyStrong" color={colors.textInverse}>
-              {(userId ?? '?').slice(0, 1).toUpperCase()}
-            </AppText>
-          </View>
-          <View style={styles.identityText}>
-            <AppText variant="title">Your account</AppText>
-            {isPro ? <Tag label="PRO" tone="accent" /> : <Tag label="FREE" tone="neutral" />}
-          </View>
+          <Avatar name="Bilal Tahir" size="lg" />
+          <View style={styles.identityText}><AppText variant="title">Bilal Tahir</AppText><AppText variant="caption" color={colors.textSecondary}>{isPro ? 'Pro Member' : 'Free Member'}</AppText></View>
         </View>
 
         <View style={styles.section}>
-          <SectionHeader label="YOUR CAREER" />
-          <SettingsRow
-            icon="flag-outline"
-            title="Your tracks"
-            subtitle={`${selectedTrackSlugs.length} selected · pinned to Challenges`}
-            onPress={() => setTracksOpen((v) => !v)}
-          />
+          <SettingsRow icon="flag-outline" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
           {tracksOpen ? (
             <View style={styles.trackList}>
               {tracks.map((track) => {
@@ -121,21 +107,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.section}>
-          <SectionHeader label="SUBSCRIPTION" />
-          <SettingsRow
-            icon="sparkles-outline"
-            title={isPro ? 'Power Players Pro' : 'Free plan'}
-            subtitle={isPro ? 'Renews monthly · manage anytime' : 'Upgrade for full access'}
-            onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })}
-          />
-        </View>
-
-        <View style={styles.section}>
-          <SectionHeader label="PREFERENCES" />
-          <SettingsRow
-            icon="notifications-outline"
-            title="Weekly digest"
-            subtitle="A summary of your momentum each week"
+          <SettingsRow icon="sparkles-outline" title="Subscription" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })} />
+          <SettingsRow icon="notifications-outline" title="Notifications" subtitle="A summary of your momentum each week"
             trailing={
               <Switch
                 value={notificationsOn}
@@ -148,10 +121,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.section}>
-          <SectionHeader label="ABOUT" />
-          <SettingsRow icon="shield-checkmark-outline" title="Privacy policy" onPress={() => undefined} />
-          <SettingsRow icon="document-text-outline" title="Terms of service" onPress={() => undefined} />
-          <SettingsRow icon="help-circle-outline" title="Contact support" onPress={() => undefined} />
+          <SettingsRow icon="shield-checkmark-outline" title="Privacy & Security" onPress={() => undefined} />
+          <SettingsRow icon="help-circle-outline" title="Help & Support" onPress={() => undefined} />
         </View>
 
         {error ? (
@@ -161,9 +132,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
         ) : null}
 
         <Divider tone="subtle" style={styles.divider} />
-
+        <AppText variant="caption" color={colors.textTertiary} style={styles.settings}>Settings</AppText>
         <View style={styles.section}>
-          <SectionHeader label="ACCOUNT" />
           <SettingsRow icon="log-out-outline" title="Log out" onPress={handleLogOut} trailing={null} />
           <SettingsRow icon="trash-outline" title="Delete account" tone="danger" onPress={confirmDeleteAccount} trailing={null} />
         </View>
@@ -175,17 +145,10 @@ export function ProfileHomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
   identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md, marginBottom: spacing.lg },
-  avatar: {
-    width: 52,
-    height: 52,
-    borderRadius: radius.pill,
-    backgroundColor: colors.accent,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
   identityText: { gap: spacing.xs },
   section: { marginBottom: spacing.lg },
   trackList: { paddingLeft: spacing.md },
-  divider: { marginBottom: spacing.lg },
+  divider: { marginBottom: spacing.md },
+  settings: { marginBottom: spacing.xs },
   error: { marginBottom: spacing.sm },
 });

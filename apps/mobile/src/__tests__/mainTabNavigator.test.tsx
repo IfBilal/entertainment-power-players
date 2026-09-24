@@ -44,7 +44,7 @@ describe('MainTabNavigator', () => {
       fireEvent.press(screen.getByLabelText(new RegExp(`^${tab}, tab,`)));
     }
 
-    // Profile tab renders its "SUBSCRIPTION" section once selected.
-    expect(await screen.findByText('SUBSCRIPTION')).toBeTruthy();
+    // Profile tab renders its subscription control once selected.
+    expect(await screen.findByText('Subscription')).toBeTruthy();
   });
 });

@@ -13,6 +13,7 @@ type CategoryCardProps = {
   /** Rotates through the brand gradients so a list of categories reads as a
    *  set rather than six identical tiles (mockup screen 10). */
   tone?: GradientToken;
+  fillColor?: string;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -22,7 +23,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  * The mockups changed this from a 2-up grid tile to a full-width row, which
  * also gives long category names room to breathe.
  */
-export function CategoryCard({ name, icon, count, onPress, tone = 'brand' }: CategoryCardProps) {
+export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillColor }: CategoryCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
@@ -41,7 +42,7 @@ export function CategoryCard({ name, icon, count, onPress, tone = 'brand' }: Cat
       accessibilityRole="button"
       accessibilityLabel={name}
     >
-      <IconTile icon={icon} tone={tone} size="md" />
+      <IconTile icon={icon} tone={tone} size="md" circle fillColor={fillColor} />
       <View style={styles.text}>
         <AppText variant="bodyStrong" numberOfLines={1}>
           {name}

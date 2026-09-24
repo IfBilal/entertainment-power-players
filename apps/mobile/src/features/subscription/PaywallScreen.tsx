@@ -10,9 +10,10 @@ import type { RootStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
 const benefits = [
-  { icon: 'people-outline' as const, text: 'Full contact directory across all five categories' },
-  { icon: 'trophy-outline' as const, text: 'All six career challenge tracks' },
-  { icon: 'stats-chart-outline' as const, text: 'Unlimited tracker history' },
+  { icon: 'people-outline' as const, text: 'Full contact directory' },
+  { icon: 'trophy-outline' as const, text: 'All challenge tracks' },
+  { icon: 'stats-chart-outline' as const, text: 'Advanced tracker & goals' },
+  { icon: 'sparkles-outline' as const, text: 'Exclusive inspiration content' },
 ];
 
 /**
@@ -21,7 +22,7 @@ const benefits = [
  * the paywall gate (src/utils/paywall.ts) can be built and tested now.
  */
 export function PaywallScreen({ navigation }: Props) {
-  const [plan, setPlan] = useState<'monthly' | 'annual'>('annual');
+  const [plan, setPlan] = useState<'monthly' | 'annual'>('monthly');
   const setIsPro = useAppStore((s) => s.setIsPro);
 
   function subscribe() {
@@ -32,16 +33,9 @@ export function PaywallScreen({ navigation }: Props) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <View style={styles.badge}>
-          <Ionicons name="sparkles" size={16} color={colors.accentDeep} />
-          <AppText variant="label" color={colors.accentDeep}>ENTERTAINMENT POWER PLAYERS</AppText>
-        </View>
-        <AppText variant="hero" style={styles.headline}>
-          Build your industry network.
-        </AppText>
-        <AppText variant="body" color={colors.textSecondary} style={styles.subheadline}>
-          Everything you need to turn relationships into a career.
-        </AppText>
+        <Ionicons name="close-outline" size={22} color={colors.textSecondary} style={styles.close} onPress={() => navigation.goBack()} />
+        <AppText variant="display" style={styles.headline}>Unlock the full{`\n`}experience</AppText>
+        <AppText variant="body" color={colors.textSecondary} style={styles.subheadline}>Get access to the complete directory,{`\n`}challenges and more.</AppText>
 
         <View style={styles.benefits}>
           {benefits.map((b) => (
@@ -51,23 +45,23 @@ export function PaywallScreen({ navigation }: Props) {
 
         <View style={styles.plans}>
           <SubscriptionOption
-            label="Annual"
-            price="$59.99 / year"
-            note="Save 20% · billed yearly"
+            label="Yearly"
+            price="$89.99 / year"
+            note="Save 25%"
             selected={plan === 'annual'}
             onPress={() => setPlan('annual')}
           />
           <SubscriptionOption
             label="Monthly"
-            price="$6.99 / month"
+            price="$9.99 / month"
             selected={plan === 'monthly'}
             onPress={() => setPlan('monthly')}
           />
         </View>
 
-        <Button label="Start membership" size="lg" onPress={subscribe} />
+        <Button label="Start Free Trial" size="lg" onPress={subscribe} />
         <View style={styles.footerLinks}>
-          <Button label="Restore purchases" variant="ghost" onPress={() => undefined} />
+          <Button label="Restore Purchase" variant="ghost" onPress={() => undefined} />
           <Button label="Not now" variant="ghost" onPress={() => navigation.goBack()} />
         </View>
       </ScrollView>
@@ -76,7 +70,8 @@ export function PaywallScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
+  content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl, paddingTop: spacing.sm },
+  close: { alignSelf: 'flex-end' },
   badge: {
     flexDirection: 'row',
     alignItems: 'center',

@@ -43,10 +43,9 @@ export function TrackerDashboardScreen({ navigation }: Props) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AppText variant="label" color={colors.textTertiary}>
-          {weekKey}
-        </AppText>
-        <AppText variant="display" style={styles.heading}>Your momentum.</AppText>
+        <AppText variant="title" style={styles.heading}>Tracker</AppText>
+        <View style={styles.tabs}><AppText variant="bodyStrong">This Week</AppText><AppText variant="body" color={colors.textSecondary}>Week History</AppText></View>
+        <AppText variant="caption" color={colors.textSecondary} style={styles.date}>{weekKey}</AppText>
 
         <Card style={styles.momentumCard} elevation="raised">
           <StatCard value={totalActions} label="TOTAL ACTIONS" goal={totalGoal} />
@@ -88,7 +87,9 @@ export function TrackerDashboardScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-  heading: { marginTop: spacing.xs, marginBottom: spacing.md },
+  heading: { marginBottom: spacing.sm },
+  tabs: { flexDirection: 'row', gap: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
+  date: { marginTop: spacing.md, marginBottom: spacing.sm },
   momentumCard: { marginBottom: spacing.md, gap: 0 },
   momentumDivider: { marginVertical: spacing.sm },
   section: { marginTop: spacing.lg, marginBottom: spacing.sm },

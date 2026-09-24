@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
 /*
  * Warm editorial, matching apps/mobile (docs/design-system.md): cream paper,
@@ -9,35 +9,35 @@
  * placeholder.
  */
 :root {
-  --bg: #fbf7f0;
+  --bg: #050f11;
   --bg-texture: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(176, 80, 28, 0.07), transparent 60%),
     radial-gradient(ellipse 700px 600px at 100% 0%, rgba(176, 80, 28, 0.05), transparent 55%);
-  --surface: #f3ecdd;
-  --surface-subtle: #f5efe6;
-  --surface-strong: #eee5d9;
-  --surface-raised: #ffffff;
-  --border: #e6dac3;
-  --border-subtle: #eae2d8;
-  --border-strong: #d8c7a5;
-  --ink: #221b14;
-  --text-secondary: #6f6252;
-  --text-tertiary: #8b8075;
-  --text-muted: #9c8f7b;
-  --accent: #b0501c;
-  --accent-deep: #8a3d14;
-  --accent-soft: #f1dcc5;
-  --accent-faint: #f5e4da;
-  --success: #3e7a4c;
+  --surface: #0b1a17;
+  --surface-subtle: #091412;
+  --surface-strong: #12211c;
+  --surface-raised: #14231e;
+  --border: rgba(255,255,255,0.08);
+  --border-subtle: rgba(255,255,255,0.05);
+  --border-strong: rgba(255,255,255,0.14);
+  --ink: #ffffff;
+  --text-secondary: rgba(255,255,255,0.68);
+  --text-tertiary: rgba(255,255,255,0.50);
+  --text-muted: rgba(255,255,255,0.38);
+  --accent: #90d010;
+  --accent-deep: #75da3d;
+  --accent-soft: rgba(144,208,16,0.16);
+  --accent-faint: rgba(144,208,16,0.08);
+  --success: #6fd13b;
   --success-soft: #e2ecdf;
-  --danger: #a5342a;
+  --danger: #ff6b5a;
   --danger-soft: #f4dfda;
-  --warning: #8a641f;
+  --warning: #f0a010;
   --warning-soft: #f1e5c7;
-  --info: #526b73;
+  --info: #5fc8d8;
   --info-soft: #dce7e9;
 
-  --font-serif: 'Fraunces', Georgia, 'Times New Roman', serif;
-  --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-serif: 'DM Sans', system-ui, sans-serif;
+  --font-sans: 'DM Sans', system-ui, sans-serif;
 
   --shadow-sm: 0 1px 2px rgba(34, 27, 20, 0.04), 0 1px 3px rgba(34, 27, 20, 0.03);
   --shadow-card: 0 2px 8px rgba(34, 27, 20, 0.05), 0 8px 24px rgba(34, 27, 20, 0.04);
@@ -136,7 +136,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .sidebar {
   width: 240px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, var(--surface) 0%, #ede4d0 100%);
+  background: linear-gradient(180deg, #091412 0%, #050f11 100%);
   border-right: 1px solid var(--border);
   padding: 1.75rem 1.1rem;
   display: flex;
@@ -263,7 +263,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   position: relative;
   overflow: hidden;
   background: linear-gradient(160deg, #2b2013 0%, var(--ink) 45%, var(--accent-deep) 135%);
-  color: #fbf7f0;
+  color: #050f11;
   display: flex;
   flex-direction: column;
   justify-content: space-between;

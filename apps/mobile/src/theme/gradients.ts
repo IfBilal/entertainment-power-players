@@ -43,6 +43,27 @@ export const gradients = {
     start: { x: 0, y: 1 },
     end: { x: 1, y: 0 },
   },
+  /**
+   * The three weekly-progress bar fills, sampled off mockup 9: contacts run
+   * amber, events lime, follow-ups orange. Each stays within its own hue
+   * rather than sweeping the full brand ramp, so the three bars stay
+   * distinguishable at a glance.
+   */
+  barAmber: {
+    colors: ['#FE9804', '#FDB90B'] as const,
+    start: { x: 0, y: 0.5 },
+    end: { x: 1, y: 0.5 },
+  },
+  barLime: {
+    colors: ['#5FBF1C', '#77D221'] as const,
+    start: { x: 0, y: 0.5 },
+    end: { x: 1, y: 0.5 },
+  },
+  barOrange: {
+    colors: ['#FA6100', '#FF7A1A'] as const,
+    start: { x: 0, y: 0.5 },
+    end: { x: 1, y: 0.5 },
+  },
   /** Amber -> orange, for the star mark and warning emphasis. */
   ember: {
     colors: [colors.accentAmber, colors.accentOrange] as const,

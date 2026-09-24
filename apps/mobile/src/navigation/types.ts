@@ -10,6 +10,9 @@ export type OnboardingStackParamList = {
 };
 
 export type DirectoryStackParamList = {
+  /** Mockup 9: greeting, weekly progress and quick access. The Directory tab
+   *  opens here, with the category grid one level in. */
+  Home: undefined;
   CategoryGrid: undefined;
   ContactList: { categorySlug: string };
   ContactDetail: { contactId: string };

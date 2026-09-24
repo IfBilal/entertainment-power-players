@@ -10,6 +10,9 @@ type AuthState = {
   userId: string | null;
   /** null = not loaded yet; [] = loaded, no tracks picked (needs TrackPicker) */
   selectedTrackSlugs: string[] | null;
+  /** From the profile row; used to greet the user by name on Home. */
+  displayName: string | null;
+  photoUrl: string | null;
   hydrated: boolean;
   hydrate: () => () => void;
   setSelectedTrackSlugs: (slugs: string[]) => void;
@@ -19,7 +22,11 @@ type AuthState = {
 async function loadProfileInto(set: (partial: Partial<AuthState>) => void, session: Session) {
   try {
     const profile = await fetchProfile(session.user.id);
-    set({ selectedTrackSlugs: profile?.selectedTracks ?? [] });
+    set({
+      selectedTrackSlugs: profile?.selectedTracks ?? [],
+      displayName: profile?.displayName ?? null,
+      photoUrl: profile?.photoUrl ?? null,
+    });
   } catch {
     // Profile row is created by a DB trigger on signup; a transient fetch
     // failure shouldn't block the user out of the app -- treat as "no
@@ -35,6 +42,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   status: 'loading',
   userId: null,
   selectedTrackSlugs: null,
+  displayName: null,
+  photoUrl: null,
   hydrated: false,
 
   hydrate: () => {
@@ -55,7 +64,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (settled) return;
       settled = true;
       console.warn('[auth] getSession timed out after', HYDRATE_TIMEOUT_MS, 'ms, falling back to signedOut');
-      set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+      set({ status: 'signedOut', userId: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
     }, HYDRATE_TIMEOUT_MS);
 
     supabase.auth
@@ -69,7 +78,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           set({ status: 'signedIn', userId: session.user.id });
           loadProfileInto(set, session);
         } else {
-          set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+          set({ status: 'signedOut', userId: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
         }
       })
       .catch((error) => {
@@ -81,7 +90,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // user on the splash screen with no way forward. Fail safe to
         // signedOut so they at least reach Onboarding/Login and can retry.
         console.warn('[auth] getSession failed, falling back to signedOut:', error);
-        set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+        set({ status: 'signedOut', userId: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
       });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -89,7 +98,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         set({ status: 'signedIn', userId: session.user.id });
         loadProfileInto(set, session);
       } else {
-        set({ status: 'signedOut', userId: null, selectedTrackSlugs: null });
+        set({ status: 'signedOut', userId: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
       }
     });
 
@@ -98,5 +107,5 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setSelectedTrackSlugs: (slugs) => set({ selectedTrackSlugs: slugs }),
 
-  reset: () => set({ status: 'signedOut', userId: null, selectedTrackSlugs: null }),
+  reset: () => set({ status: 'signedOut', userId: null, selectedTrackSlugs: null, displayName: null, photoUrl: null }),
 }));

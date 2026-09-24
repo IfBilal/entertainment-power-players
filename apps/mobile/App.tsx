@@ -8,6 +8,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from './src/navigation/RootNavigator';
 import { TrackPickerScreen } from './src/features/onboarding/TrackPickerScreen';
 import { SplashScreen as SplashScreen2 } from './src/features/onboarding/SplashScreen';
+import { HomeScreen } from './src/features/home/HomeScreen';
 import { colors, useAppFonts } from './src/theme';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
@@ -46,6 +47,8 @@ function previewScreen() {
       return <TrackPickerScreen {...props} />;
     case 'Splash':
       return <SplashScreen2 {...props} />;
+    case 'Home':
+      return <HomeScreen {...props} />;
     default:
       return null;
   }

@@ -43,7 +43,9 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
   it('returns to the exact locked screen it was opened from after subscribing, not to a different tab', async () => {
     await renderWithProviders(<RootNavigator />);
 
-    // Directory tab is the initial tab, showing the category grid.
+    // The Directory tab now opens on Home (mockup 9); the category grid is one
+    // level in, via Quick Access.
+    fireEvent.press(await screen.findByLabelText('Directory'));
     fireEvent.press(await screen.findByText('Fashion'));
 
     // Free user hits the paywall gate on the contact list.
@@ -72,6 +74,6 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
 
     // Should land back on Profile, showing the now-Pro state -- not on Directory.
     expect(await screen.findByText('Power Players Pro')).toBeTruthy();
-    expect(screen.queryByText('People worth knowing.')).toBeNull();
+    expect(screen.queryByText('Quick Access')).toBeNull();
   });
 });

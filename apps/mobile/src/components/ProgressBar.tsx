@@ -8,7 +8,7 @@ type ProgressBarProps = {
   height?: number;
   /** Which brand gradient fills the bar — lets the home screen's stacked bars
    *  differentiate contacts / events / follow-ups as they do in the mockups. */
-  tone?: 'brand' | 'green' | 'ember';
+  tone?: 'brand' | 'green' | 'ember' | 'barAmber' | 'barLime' | 'barOrange';
 };
 
 export function ProgressBar({ progress, height = 6, tone = 'brand' }: ProgressBarProps) {

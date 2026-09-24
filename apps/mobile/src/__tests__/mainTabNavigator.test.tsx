@@ -33,10 +33,15 @@ describe('MainTabNavigator', () => {
     await renderWithProviders(<MainTabNavigator />);
 
     // Directory is the initial tab — its screen heading confirms it rendered.
-    expect(await screen.findByText('People worth knowing.')).toBeTruthy();
+    expect(await screen.findByText('Quick Access')).toBeTruthy();
 
+    // Home's Quick Access repeats these labels as plain-text tiles, and tab
+    // screens stay mounted (not unmounted) when inactive, so a bare-text or
+    // bare-label match can hit the Quick Access tile instead of the actual
+    // tab bar button. React Navigation's real tab buttons carry the fuller
+    // "<label>, tab, N of 5" accessibility label, which the tile does not.
     for (const tab of ['Tracker', 'Challenges', 'Inspiration', 'Profile']) {
-      fireEvent.press(screen.getByText(tab));
+      fireEvent.press(screen.getByLabelText(new RegExp(`^${tab}, tab,`)));
     }
 
     // Profile tab renders its "SUBSCRIPTION" section once selected.

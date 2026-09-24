@@ -18,6 +18,7 @@ export function FormField({ label, error, style, onFocus, onBlur, secureTextEntr
   const [focused, setFocused] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const isPassword = Boolean(secureTextEntry);
+  const multiline = Boolean(rest.multiline);
 
   return (
     <View style={styles.container}>
@@ -27,6 +28,7 @@ export function FormField({ label, error, style, onFocus, onBlur, secureTextEntr
       <View
         style={[
           styles.field,
+          multiline && styles.fieldMultiline,
           focused && styles.fieldFocused,
           Boolean(error) && styles.fieldError,
         ]}
@@ -86,6 +88,11 @@ const styles = StyleSheet.create({
     borderRadius: radius.md,
     paddingHorizontal: spacing.md,
     backgroundColor: colors.surfaceSubtle,
+  },
+  fieldMultiline: {
+    height: 88,
+    alignItems: 'flex-start',
+    paddingVertical: spacing.sm,
   },
   fieldFocused: {
     borderColor: colors.accentLime,

@@ -10,8 +10,8 @@
  */
 :root {
   --bg: #050f11;
-  --bg-texture: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(176, 80, 28, 0.07), transparent 60%),
-    radial-gradient(ellipse 700px 600px at 100% 0%, rgba(176, 80, 28, 0.05), transparent 55%);
+  --bg-texture: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(144, 208, 16, 0.07), transparent 60%),
+    radial-gradient(ellipse 700px 600px at 100% 0%, rgba(240, 80, 0, 0.05), transparent 55%);
   --surface: #0b1a17;
   --surface-subtle: #091412;
   --surface-strong: #12211c;
@@ -28,21 +28,21 @@
   --accent-soft: rgba(144,208,16,0.16);
   --accent-faint: rgba(144,208,16,0.08);
   --success: #6fd13b;
-  --success-soft: #e2ecdf;
+  --success-soft: rgba(111, 209, 59, 0.14);
   --danger: #ff6b5a;
-  --danger-soft: #f4dfda;
+  --danger-soft: rgba(255, 107, 90, 0.14);
   --warning: #f0a010;
-  --warning-soft: #f1e5c7;
+  --warning-soft: rgba(240, 160, 16, 0.14);
   --info: #5fc8d8;
-  --info-soft: #dce7e9;
+  --info-soft: rgba(95, 200, 216, 0.14);
 
   --font-serif: 'DM Sans', system-ui, sans-serif;
   --font-sans: 'DM Sans', system-ui, sans-serif;
 
-  --shadow-sm: 0 1px 2px rgba(34, 27, 20, 0.04), 0 1px 3px rgba(34, 27, 20, 0.03);
-  --shadow-card: 0 2px 8px rgba(34, 27, 20, 0.05), 0 8px 24px rgba(34, 27, 20, 0.04);
-  --shadow-raised: 0 6px 20px rgba(34, 27, 20, 0.09), 0 2px 6px rgba(34, 27, 20, 0.06);
-  --shadow-floating: 0 20px 50px rgba(34, 27, 20, 0.18), 0 6px 16px rgba(34, 27, 20, 0.1);
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
+  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.12);
+  --shadow-raised: 0 6px 20px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.16);
+  --shadow-floating: 0 20px 50px rgba(0, 0, 0, 0.48), 0 6px 16px rgba(0, 0, 0, 0.2);
 
   --radius-xs: 6px;
   --radius-sm: 10px;
@@ -90,12 +90,12 @@ button {
   border-radius: 999px;
   border: 1px solid transparent;
   padding: 0.6rem 1.3rem;
-  background: var(--accent);
-  color: #fff9f2;
-  box-shadow: 0 1px 2px rgba(138, 61, 20, 0.25), 0 4px 10px rgba(176, 80, 28, 0.18);
+  background: linear-gradient(100deg, #75da3d 0%, #9cbb2a 38%, #f27c10 68%, #fc5d06 100%);
+  color: #06120e;
+  box-shadow: 0 4px 14px rgba(240, 80, 0, 0.16);
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease;
 }
-button:hover:not(:disabled) { background: var(--accent-deep); box-shadow: 0 2px 6px rgba(138, 61, 20, 0.3), 0 8px 18px rgba(176, 80, 28, 0.22); transform: translateY(-1px); }
+button:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 6px 18px rgba(240, 80, 0, 0.22); transform: translateY(-1px); }
 button:active:not(:disabled) { transform: translateY(0); }
 button:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -111,7 +111,7 @@ button.small { padding: 0.4rem 0.85rem; font-size: 0.82rem; }
 input, select, textarea {
   font: inherit;
   color: var(--ink);
-  background: var(--surface-raised);
+  background: var(--surface);
   border: 1.5px solid var(--border);
   border-radius: var(--radius-sm);
   padding: 0.6rem 0.8rem;
@@ -134,7 +134,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .shell { display: flex; min-height: 100vh; }
 
 .sidebar {
-  width: 240px;
+  width: 224px;
   flex-shrink: 0;
   background: linear-gradient(180deg, #091412 0%, #050f11 100%);
   border-right: 1px solid var(--border);
@@ -148,7 +148,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   align-items: center;
   gap: 0.6rem;
   font-family: var(--font-serif);
-  font-size: 1.15rem;
+  font-size: 1.05rem;
   font-weight: 700;
   color: var(--ink);
   margin-bottom: 1.75rem;
@@ -158,14 +158,15 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   width: 30px;
   height: 30px;
   border-radius: 9px;
-  background: var(--accent);
-  color: #fff9f2;
+  background: transparent;
+  color: var(--accent);
   display: grid;
   place-items: center;
   font-size: 1rem;
   box-shadow: 0 2px 6px rgba(176, 80, 28, 0.35);
   flex-shrink: 0;
 }
+.sidebar .brand-mark { width: 34px; height: 34px; object-fit: contain; flex-shrink: 0; }
 .sidebar a {
   display: flex;
   align-items: center;
@@ -178,8 +179,8 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   font-size: 0.92rem;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.sidebar a:hover { background: rgba(255, 255, 255, 0.6); color: var(--ink); text-decoration: none; }
-.sidebar a.active { background: var(--surface-raised); color: var(--accent-deep); font-weight: 600; box-shadow: var(--shadow-sm); }
+.sidebar a:hover { background: rgba(255, 255, 255, 0.04); color: var(--ink); text-decoration: none; }
+.sidebar a.active { background: rgba(144, 208, 16, 0.12); color: var(--accent); font-weight: 600; box-shadow: none; }
 .sidebar a svg { flex-shrink: 0; opacity: 0.85; }
 .sidebar a.active svg { opacity: 1; }
 .sidebar .spacer { flex: 1; }
@@ -189,7 +190,17 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   margin-top: 0.4rem;
 }
 
-.content { flex: 1; padding: 2.5rem 3rem; max-width: 1180px; min-width: 0; }
+.content { flex: 1; padding: 2rem 2.5rem; max-width: none; min-width: 0; }
+
+.contacts-page > .row.between { margin-bottom: 0.25rem; }
+.contacts-page .card { background: var(--surface); padding: 1rem 1.2rem; }
+.contacts-page .inactive-toggle { display: none; }
+.contacts-page table { min-width: 480px; }
+.contacts-page th { color: var(--text-tertiary); }
+.status-pill { padding: 0.25rem 0.55rem; background: rgba(111, 209, 59, 0.12); color: var(--success); border: 1px solid rgba(111,209,59,0.18); border-radius: 999px; font-size: 0.76rem; box-shadow: none; }
+.status-pill:hover:not(:disabled) { filter: brightness(1.12); transform: none; box-shadow: none; }
+.status-pill.inactive { color: var(--text-secondary); background: var(--surface-strong); border-color: var(--border); }
+.row-action { padding: 0.1rem 0.5rem; font-size: 1.35rem; line-height: 1; }
 
 /* The admin panel had no mobile layout at all: a 240px fixed sidebar next to
    flex:1 content just crushed the content pane on phone widths. Below 768px
@@ -372,7 +383,7 @@ table { width: 100%; min-width: 560px; border-collapse: separate; border-spacing
 th, td { text-align: left; padding: 0.75rem 0.6rem; border-bottom: 1px solid var(--border); }
 th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--text-muted); }
 tbody tr { transition: background 0.12s ease; }
-tbody tr:hover { background: rgba(176, 80, 28, 0.035); }
+tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
 tbody tr:last-child td { border-bottom: none; }
 tr.inactive td { opacity: 0.45; }
 

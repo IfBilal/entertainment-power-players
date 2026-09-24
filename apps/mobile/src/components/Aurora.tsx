@@ -1,5 +1,6 @@
+import { useId } from 'react';
 import { StyleSheet, View, type DimensionValue } from 'react-native';
-import Svg, { Defs, LinearGradient, Polygon, RadialGradient, Rect, Stop } from 'react-native-svg';
+import Svg, { Defs, Line, LinearGradient, Polygon, RadialGradient, Rect, Stop } from 'react-native-svg';
 import { auroras, type AuroraToken } from '../theme';
 
 type AuroraProps = {
@@ -42,6 +43,42 @@ function Streaks() {
 }
 
 /**
+ * Fine diagonal brand light-leaks used across the main-screen mockups. The
+ * low-contrast bands and hairlines sit at the canvas edges, so they add depth
+ * without reducing text contrast or competing with cards.
+ */
+function BrandLines() {
+  const id = `brand-lines-${useId().replace(/:/g, '')}`;
+
+  return (
+    <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <Svg width="100%" height="100%" viewBox="0 0 390 844" preserveAspectRatio="none">
+        <Defs>
+          <LinearGradient id={`${id}-top`} x1="1" y1="0" x2="0.12" y2="0.9">
+            <Stop offset="0" stopColor="#F05000" stopOpacity={0.24} />
+            <Stop offset="0.22" stopColor="#F0A010" stopOpacity={0.12} />
+            <Stop offset="0.54" stopColor="#90D010" stopOpacity={0.045} />
+            <Stop offset="1" stopColor="#90D010" stopOpacity={0} />
+          </LinearGradient>
+          <LinearGradient id={`${id}-bottom`} x1="0" y1="1" x2="0.9" y2="0.08">
+            <Stop offset="0" stopColor="#F05000" stopOpacity={0.19} />
+            <Stop offset="0.24" stopColor="#F0A010" stopOpacity={0.10} />
+            <Stop offset="0.58" stopColor="#90D010" stopOpacity={0.035} />
+            <Stop offset="1" stopColor="#90D010" stopOpacity={0} />
+          </LinearGradient>
+        </Defs>
+        <Polygon points="390,-48 390,262 166,-48" fill={`url(#${id}-top)`} />
+        <Polygon points="390,46 390,258 294,-26" fill={`url(#${id}-top)`} opacity={0.58} />
+        <Polygon points="0,892 0,630 286,892" fill={`url(#${id}-bottom)`} />
+        <Polygon points="36,892 0,712 198,892" fill={`url(#${id}-bottom)`} opacity={0.55} />
+        <Line x1="390" y1="30" x2="213" y2="207" stroke="#F0A010" strokeOpacity={0.18} strokeWidth={1} />
+        <Line x1="0" y1="818" x2="258" y2="844" stroke="#90D010" strokeOpacity={0.15} strokeWidth={1} />
+      </Svg>
+    </View>
+  );
+}
+
+/**
  * The soft coloured blooms that bleed in from the screen corners throughout the
  * mockups.
  *
@@ -53,12 +90,14 @@ function Streaks() {
  * Purely decorative: `pointerEvents="none"` so it never eats a touch.
  */
 export function Aurora({ variant = 'standard' }: AuroraProps) {
+  const instanceId = useId().replace(/:/g, '');
   if (variant === 'streaks') return <Streaks />;
 
   return (
     <View style={StyleSheet.absoluteFill} pointerEvents="none">
+      <BrandLines />
       {auroras[variant].map((blob, i) => {
-        const id = `aurora-${variant}-${i}`;
+        const id = `aurora-${variant}-${i}-${instanceId}`;
         const position = {
           top: 'top' in blob ? (blob.top as DimensionValue) : undefined,
           bottom: 'bottom' in blob ? (blob.bottom as DimensionValue) : undefined,

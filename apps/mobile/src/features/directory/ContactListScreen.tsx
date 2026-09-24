@@ -97,7 +97,8 @@ export function ContactListScreen({ route, navigation }: Props) {
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={17} color={colors.textTertiary} style={styles.searchIcon} />
             <TextInput
-              placeholder="Search people, companies or roles"
+              placeholder="Search contacts..."
+              accessibilityLabel="Search contacts"
               value={query}
               onChangeText={setQuery}
               style={styles.search}

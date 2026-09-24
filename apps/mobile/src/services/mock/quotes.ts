@@ -7,6 +7,7 @@ export type Quote = {
 };
 
 export const mockQuotes: Quote[] = [
+  { id: 'quote_featured', text: 'The best projects happen when you surround yourself with curious people.', author: 'Industry Voice', active: true, order: 0 },
   { id: 'quote_1', text: 'Opportunities don’t happen. You create them.', author: 'Chris Grosser', active: true, order: 1 },
   { id: 'quote_2', text: 'The way to get started is to quit talking and begin doing.', author: 'Walt Disney', active: true, order: 2 },
   { id: 'quote_3', text: 'Success is where preparation and opportunity meet.', author: 'Bobby Unser', active: true, order: 3 },

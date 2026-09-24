@@ -1,4 +1,5 @@
-import { fireEvent, screen } from '@testing-library/react-native';
+import { Alert } from 'react-native';
+import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAppStore } from '../store/useAppStore';
@@ -40,7 +41,7 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     });
   });
 
-  it('returns to the exact locked screen it was opened from after subscribing, not to a different tab', async () => {
+  it('returns to the exact locked screen it was opened from when dismissed', async () => {
     await renderWithProviders(<RootNavigator />);
 
     // The Directory tab now opens on Home (mockup 9); the category grid is one
@@ -54,14 +55,14 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
 
     // Root-level paywall modal appears.
     expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
-    fireEvent.press(screen.getByText('Start Free Trial'));
+    fireEvent.press(screen.getByLabelText('Close paywall'));
 
-    // Back on the Fashion contact list -- now unlocked, not bounced to another tab/screen.
-    expect(await screen.findByPlaceholderText('Search people, companies or roles')).toBeTruthy();
-    expect(screen.queryByText('Your industry network is waiting.')).toBeNull();
+    // Back on the Fashion contact list without changing the entitlement.
+    expect(await screen.findByText('Your industry network is waiting.')).toBeTruthy();
+    expect(useAppStore.getState().isPro).toBe(false);
   });
 
-  it('returns to Profile (not Directory) when opened from Profile > Subscription', async () => {
+  it('opens the two plan options from Profile without granting Pro before a purchase', async () => {
     await renderWithProviders(<RootNavigator />);
 
     // Switch to the Profile tab.
@@ -69,11 +70,43 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     expect(await screen.findByText('Subscription')).toBeTruthy();
     fireEvent.press(screen.getByText('Subscription'));
 
-    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
-    fireEvent.press(screen.getByText('Start Free Trial'));
+    expect(await screen.findByText('Monthly')).toBeTruthy();
+    expect(screen.getByText('Annual')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Monthly plan, $9.99 per month'));
+    await waitFor(() => expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState.selected).toBe(true));
+    fireEvent.press(screen.getByText('Choose a plan'));
 
-    // Should land back on Profile, showing the now-Pro state -- not on Directory.
-    expect(await screen.findByText('Pro Member')).toBeTruthy();
+    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
+    expect(screen.getByText('Monthly')).toBeTruthy();
+    expect(screen.getByText('Annual')).toBeTruthy();
+    expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState).toEqual({ selected: true });
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    fireEvent.press(screen.getByText('Subscribe'));
+    expect(alert).toHaveBeenCalledWith('Purchases are unavailable', expect.any(String));
+    expect(useAppStore.getState().isPro).toBe(false);
+    alert.mockRestore();
+  });
+
+  it('does not grant Pro when the paywall CTA is tapped without a billing provider', async () => {
+    await renderWithProviders(<RootNavigator />);
+    fireEvent.press(await screen.findByLabelText('Directory'));
+    fireEvent.press(await screen.findByText('Fashion'));
+    fireEvent.press(await screen.findByText('Unlock directory'));
+    await screen.findByText(/Unlock the full/);
+    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
+    fireEvent.press(screen.getByText('Subscribe'));
+    expect(alert).toHaveBeenCalledWith('Purchases are unavailable', expect.any(String));
+    expect(useAppStore.getState().isPro).toBe(false);
+    alert.mockRestore();
+  });
+
+  it('keeps Profile reachable after dismissing the plans sheet', async () => {
+    await renderWithProviders(<RootNavigator />);
+    fireEvent.press(await screen.findByText('Profile'));
+    fireEvent.press(await screen.findByText('Subscription'));
+    fireEvent.press(await screen.findByText('Choose a plan'));
+    fireEvent.press(await screen.findByLabelText('Close paywall'));
+    expect(await screen.findByText('Profile')).toBeTruthy();
     expect(screen.queryByText('Quick Access')).toBeNull();
   });
 });

@@ -18,6 +18,7 @@ function Bar({ value, max, height, current }: { value: number; max: number; heig
   const targetHeight = Math.max(3, (value / max) * height);
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return;
     Animated.timing(grow, { toValue: targetHeight, duration: 420, useNativeDriver: false }).start();
   }, [targetHeight]);
 

@@ -9,9 +9,22 @@ import { ImportPage } from './pages/ImportPage';
 import { QuotesPage } from './pages/QuotesPage';
 import { TracksPage } from './pages/TracksPage';
 import { TrackChallengesPage } from './pages/TrackChallengesPage';
+import logoMark from '../../../docs/brand-logo-mark.png';
 
 export default function App() {
   const auth = useAdminAuth();
+
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('preview') === 'contacts') {
+    return (
+      <div className="shell">
+        <nav className="sidebar">
+          <div className="brand"><img className="brand-mark" src={logoMark} alt="EPP" />EPP Admin</div>
+          <a href="#">Dashboard</a><a className="active" href="#">Contacts</a><a href="#">Categories</a><a href="#">Quotes</a><a href="#">Tracks</a><div className="spacer" /><a href="#">Settings</a><a href="#">Logout</a>
+        </nav>
+        <main className="content"><ContactsPage preview /></main>
+      </div>
+    );
+  }
 
   if (!isSupabaseConfigured) {
     return (
@@ -46,8 +59,8 @@ export default function App() {
       <div className="shell">
         <nav className="sidebar">
           <div className="brand">
-            <span className="mark">P</span>
-            Power Players
+            <img className="brand-mark" src={logoMark} alt="EPP" />
+            EPP Admin
           </div>
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
             <HomeIcon />

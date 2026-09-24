@@ -1,7 +1,7 @@
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, IconTile, ProgressRing, Screen } from '../../components';
-import { colors, spacing, trackIcons } from '../../theme';
+import { AppText, Card, IconTile, ProgressRing, Screen } from '../../components';
+import { colors, spacing, trackIcons, type GradientToken } from '../../theme';
 import { tracks, trackCompletionCount } from '../../services/mock/challenges';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengesStore } from '../../store/useChallengesStore';
@@ -12,6 +12,7 @@ type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackList'>;
 export function TrackListScreen({ navigation }: Props) {
   const selectedSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
   const progress = useChallengesStore((s) => s.progress);
+  const tones: GradientToken[] = ['barOrange', 'green', 'brand', 'barLime', 'ember', 'barAmber'];
 
   const sorted = [...tracks].sort((a, b) => {
     const aSelected = selectedSlugs.includes(a.slug);
@@ -35,10 +36,11 @@ export function TrackListScreen({ navigation }: Props) {
           const pct = total > 0 ? done / total : 0;
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
-              <View style={styles.row}>
-                <IconTile icon={trackIcons[item.slug]} size="md" soft />
+              <Card style={styles.row} elevation="none">
+                <IconTile icon={trackIcons[item.slug]} tone={tones[item.order % tones.length]} size="md" />
                 <View style={styles.text}><AppText variant="bodyStrong">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{done}/{total} completed</AppText></View>
-              </View>
+                <AppText variant="title" color={colors.textSecondary}>›</AppText>
+              </Card>
             </Pressable>
           );
         }}
@@ -51,7 +53,7 @@ const styles = StyleSheet.create({
   heading: { marginBottom: spacing.sm },
   tabs: { flexDirection: 'row', gap: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm, marginBottom: spacing.sm },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, paddingVertical: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.borderSubtle },
+  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   text: { flex: 1, gap: spacing.xs },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
 });

@@ -1,13 +1,16 @@
-import { FlatList, Share, StyleSheet, View } from 'react-native';
+import { useState } from 'react';
+import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import { AppText, QuoteCard, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
-import { mockQuotes, quoteOfTheDay, type Quote } from '../../services/mock/quotes';
+import { mockQuotes, type Quote } from '../../services/mock/quotes';
 import { useFavoritesStore } from '../../store/useFavoritesStore';
 
 export function QuoteFeedScreen() {
   const favoriteIds = useFavoritesStore((s) => s.favoriteQuoteIds);
   const toggleQuote = useFavoritesStore((s) => s.toggleQuote);
-  const featured = quoteOfTheDay(mockQuotes, new Date());
+  const [tab, setTab] = useState<'quotes' | 'saved'>('quotes');
+  const featured = mockQuotes.find((quote) => quote.id === 'quote_featured');
+  const visibleQuotes = tab === 'saved' ? mockQuotes.filter((quote) => favoriteIds.has(quote.id)) : mockQuotes.filter((quote) => quote.id !== featured?.id);
 
   function shareQuote(quote: Quote) {
     Share.share({ message: `"${quote.text}" — ${quote.author}` }).catch(() => undefined);
@@ -15,17 +18,15 @@ export function QuoteFeedScreen() {
 
   return (
     <Screen>
-      <AppText variant="label" color={colors.textTertiary}>INSPIRATION</AppText>
-      <AppText variant="display" style={styles.heading}>Keep going.</AppText>
-
+      <View style={styles.heading}><Pressable onPress={() => undefined}><AppText variant="title">‹</AppText></Pressable><AppText variant="title">Inspiration</AppText></View>
+      <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'quotes' ? colors.textPrimary : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'saved' ? colors.textPrimary : colors.textSecondary}>Saved</AppText></Pressable></View>
       <FlatList
-        data={mockQuotes.filter((q) => q.id !== featured?.id)}
+        data={visibleQuotes}
         keyExtractor={(q) => q.id}
         showsVerticalScrollIndicator={false}
         ListHeaderComponent={
-          featured ? (
+          featured && tab === 'quotes' ? (
             <View style={styles.featuredWrap}>
-              <SectionHeader label="QUOTE OF THE DAY" />
               <QuoteCard
                 variant="hero"
                 text={featured.text}
@@ -34,15 +35,14 @@ export function QuoteFeedScreen() {
                 onToggleFavorite={() => toggleQuote(featured.id)}
                 onShare={() => shareQuote(featured)}
               />
-              <View style={styles.moreLabel}>
-                <SectionHeader label="MORE TO EXPLORE" />
-              </View>
+              <View style={styles.moreLabel}><SectionHeader label="MORE TO EXPLORE" /></View>
             </View>
           ) : null
         }
-        renderItem={({ item }) => (
+        renderItem={({ item, index }) => (
           <QuoteCard
             variant="feed"
+            entranceIndex={index + 1}
             text={item.text}
             author={item.author}
             isFavorite={favoriteIds.has(item.id)}
@@ -57,7 +57,10 @@ export function QuoteFeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginTop: spacing.xs, marginBottom: spacing.md },
+  heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
+  tabs: { flexDirection: 'row', padding: 3, borderRadius: 14, backgroundColor: colors.surface, marginBottom: spacing.md },
+  tab: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 11 },
+  tabActive: { backgroundColor: colors.surfaceStrong },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
   featuredWrap: { marginBottom: spacing.sm, gap: spacing.xs },
   moreLabel: { marginTop: spacing.lg },

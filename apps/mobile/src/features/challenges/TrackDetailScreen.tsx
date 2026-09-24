@@ -12,7 +12,7 @@ import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackDetail'>;
 
-function ConnectedChallengeRow({ trackSlug, challenge }: { trackSlug: string; challenge: Challenge }) {
+function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: string; challenge: Challenge; onOpen: () => void }) {
   const key = `${trackSlug}_${challenge.order}`;
   const entry = useChallengesStore((s) => s.progress[key]);
   const act = useChallengesStore((s) => s.act);
@@ -55,6 +55,7 @@ function ConnectedChallengeRow({ trackSlug, challenge }: { trackSlug: string; ch
       onIncrement={() => onStep('increment')}
       onDecrement={() => onStep('decrement')}
       onNoteChange={setNote}
+      onOpen={onOpen}
     />
   );
 }
@@ -115,7 +116,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={<EmptyState icon="checkmark-done-outline" title="No challenges yet" />}
-        renderItem={({ item }) => <ConnectedChallengeRow trackSlug={track.slug} challenge={item} />}
+        renderItem={({ item }) => <ConnectedChallengeRow trackSlug={track.slug} challenge={item} onOpen={() => navigation.navigate('ChallengeDetail', { trackSlug: track.slug, challengeOrder: item.order })} />}
       />
     </Screen>
   );

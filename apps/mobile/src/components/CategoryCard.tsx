@@ -14,6 +14,7 @@ type CategoryCardProps = {
    *  set rather than six identical tiles (mockup screen 10). */
   tone?: GradientToken;
   fillColor?: string;
+  glyphColor?: string;
 };
 
 const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
@@ -23,7 +24,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  * The mockups changed this from a 2-up grid tile to a full-width row, which
  * also gives long category names room to breathe.
  */
-export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillColor }: CategoryCardProps) {
+export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillColor, glyphColor }: CategoryCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
@@ -42,7 +43,7 @@ export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillC
       accessibilityRole="button"
       accessibilityLabel={name}
     >
-      <IconTile icon={icon} tone={tone} size="md" circle fillColor={fillColor} />
+      <IconTile icon={icon} tone={tone} size="md" circle fillColor={fillColor} glyphColor={glyphColor} />
       <View style={styles.text}>
         <AppText variant="bodyStrong" numberOfLines={1}>
           {name}

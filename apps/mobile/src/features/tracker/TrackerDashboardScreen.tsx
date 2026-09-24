@@ -1,7 +1,6 @@
-import { useState } from 'react';
 import { ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, BarChart, BottomSheet, Button, Card, Divider, MomentumRow, Screen, SectionHeader, StatCard } from '../../components';
+import { AppText, BarChart, Button, Card, Divider, MomentumRow, ProgressRing, Screen, StatCard } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
 import { countsForWeek, last8WeeksTotals } from '../../services/mock/tracker';
@@ -10,16 +9,9 @@ import type { TrackerStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
 
-const logOptions: Array<{ type: 'contact' | 'event' | 'followUp'; label: string }> = [
-  { type: 'contact', label: 'Contact' },
-  { type: 'event', label: 'Event' },
-  { type: 'followUp', label: 'Follow-up' },
-];
-
 export function TrackerDashboardScreen({ navigation }: Props) {
   const entries = useTrackerStore((s) => s.entries);
   const goalsForWeek = useTrackerStore((s) => s.goalsForWeek);
-  const [logSheetOpen, setLogSheetOpen] = useState(false);
   const now = new Date();
   const weekKey = computeWeekKey(now);
   const counts = countsForWeek(entries, weekKey);
@@ -35,11 +27,6 @@ export function TrackerDashboardScreen({ navigation }: Props) {
     { key: 'followUps', label: 'Follow-ups', icon: 'return-up-forward-outline' },
   ];
 
-  function openLog(type: 'contact' | 'event' | 'followUp') {
-    setLogSheetOpen(false);
-    navigation.navigate('LogEntry', { type });
-  }
-
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
@@ -47,40 +34,29 @@ export function TrackerDashboardScreen({ navigation }: Props) {
         <View style={styles.tabs}><AppText variant="bodyStrong">This Week</AppText><AppText variant="body" color={colors.textSecondary}>Week History</AppText></View>
         <AppText variant="caption" color={colors.textSecondary} style={styles.date}>{weekKey}</AppText>
 
-        <Card style={styles.momentumCard} elevation="raised">
-          <StatCard value={totalActions} label="TOTAL ACTIONS" goal={totalGoal} />
-          <Divider tone="subtle" style={styles.momentumDivider} />
-          {rows.map((row) => (
-            <MomentumRow key={row.key} icon={row.icon} label={row.label} value={counts[row.key]} goal={goals[row.key]} />
+        <View style={styles.progressWrap}>
+          <ProgressRing progress={goals.contacts ? counts.contacts / goals.contacts : 0} size={170} strokeWidth={14} />
+          <View testID="tracker-progress-copy" style={styles.progressCopy}>
+            <AppText variant="numeric">{counts.contacts}/{goals.contacts}</AppText>
+            <AppText variant="caption" color={colors.textSecondary}>Contacts</AppText>
+          </View>
+        </View>
+        <View style={styles.metrics}>
+          {rows.filter((r) => r.key !== 'contacts').map((row) => (
+            <Card key={row.key} style={styles.metricCard} elevation="none"><AppText variant="bodyStrong">{row.label}</AppText><AppText variant="subtitle"><AppText variant="bodyStrong" color={colors.accentOrange}>{counts[row.key]}</AppText> / {goals[row.key]}</AppText></Card>
           ))}
-        </Card>
-
-        <Button label="Log activity" onPress={() => setLogSheetOpen(true)} />
+        </View>
 
         <View style={styles.section}>
-          <SectionHeader label="YOUR NETWORKING RHYTHM" />
-          <AppText variant="caption" color={colors.textSecondary} style={styles.chartSubtitle}>
-            Activity across the last 8 weeks
-          </AppText>
+          <AppText variant="title">Weekly Activity</AppText>
           <Card style={styles.chartCard} elevation="none">
             <BarChart data={chartData} />
           </Card>
         </View>
 
-        <View style={styles.footerRow}>
-          <Button label="Edit goals" variant="secondary" onPress={() => navigation.navigate('GoalsEditor')} />
-          <Button label="History" variant="secondary" onPress={() => navigation.navigate('TrackerHistory')} />
-        </View>
+        <Button label="Log Activity" onPress={() => navigation.navigate('LogActivity')} />
       </ScrollView>
 
-      <BottomSheet visible={logSheetOpen} onClose={() => setLogSheetOpen(false)}>
-        <AppText variant="subtitle" style={styles.sheetTitle}>Log activity</AppText>
-        <View style={styles.sheetOptions}>
-          {logOptions.map((opt) => (
-            <Button key={opt.type} label={opt.label} variant="secondary" onPress={() => openLog(opt.type)} />
-          ))}
-        </View>
-      </BottomSheet>
     </Screen>
   );
 }
@@ -90,12 +66,18 @@ const styles = StyleSheet.create({
   heading: { marginBottom: spacing.sm },
   tabs: { flexDirection: 'row', gap: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
   date: { marginTop: spacing.md, marginBottom: spacing.sm },
-  momentumCard: { marginBottom: spacing.md, gap: 0 },
-  momentumDivider: { marginVertical: spacing.sm },
-  section: { marginTop: spacing.lg, marginBottom: spacing.sm },
-  chartSubtitle: { marginTop: -spacing.xs, marginBottom: spacing.sm },
+  progressWrap: { alignItems: 'center', marginVertical: spacing.md },
+  progressCopy: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    bottom: 0,
+    left: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  metrics: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  metricCard: { flex: 1, padding: spacing.md, gap: spacing.sm, backgroundColor: colors.surface },
+  section: { marginBottom: spacing.md },
   chartCard: { backgroundColor: colors.surfaceSubtle },
-  footerRow: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
-  sheetTitle: { marginBottom: spacing.xs },
-  sheetOptions: { gap: spacing.sm },
 });

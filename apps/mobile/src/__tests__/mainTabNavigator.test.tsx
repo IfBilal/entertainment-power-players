@@ -35,6 +35,22 @@ describe('MainTabNavigator', () => {
     // Directory is the initial tab — its screen heading confirms it rendered.
     expect(await screen.findByText('Quick Access')).toBeTruthy();
 
+    for (const tab of ['Directory', 'Tracker', 'Challenges', 'Inspiration', 'Profile']) {
+      expect(screen.getAllByTestId(`main-tab-icon-${tab}`).length).toBeGreaterThan(0);
+    }
+
+    fireEvent.press(screen.getByLabelText(/^Tracker, tab,/));
+    const trackerCenter = await screen.findByTestId('tracker-progress-copy');
+    expect(trackerCenter.props.style).toMatchObject({
+      position: 'absolute',
+      top: 0,
+      right: 0,
+      bottom: 0,
+      left: 0,
+      alignItems: 'center',
+      justifyContent: 'center',
+    });
+
     // Home's Quick Access repeats these labels as plain-text tiles, and tab
     // screens stay mounted (not unmounted) when inactive, so a bare-text or
     // bare-label match can hit the Quick Access tile instead of the actual

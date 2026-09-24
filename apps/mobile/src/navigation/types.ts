@@ -20,6 +20,7 @@ export type DirectoryStackParamList = {
 
 export type TrackerStackParamList = {
   TrackerDashboard: undefined;
+  LogActivity: undefined;
   LogEntry: { type: 'contact' | 'event' | 'followUp' };
   GoalsEditor: undefined;
   TrackerHistory: undefined;
@@ -28,6 +29,7 @@ export type TrackerStackParamList = {
 export type ChallengesStackParamList = {
   TrackList: undefined;
   TrackDetail: { trackSlug: string };
+  ChallengeDetail: { trackSlug: string; challengeOrder: number };
 };
 
 export type InspirationStackParamList = {
@@ -36,6 +38,9 @@ export type InspirationStackParamList = {
 
 export type ProfileStackParamList = {
   ProfileHome: undefined;
+  EditProfile: undefined;
+  Subscription: undefined;
+  Notifications: undefined;
 };
 
 export type MainTabParamList = {
@@ -49,5 +54,5 @@ export type MainTabParamList = {
 export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
-  Paywall: { reason?: string } | undefined;
+  Paywall: { reason?: string; plan?: 'monthly' | 'annual' } | undefined;
 };

@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { Alert, ScrollView, StyleSheet, Switch, View } from 'react-native';
+import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Avatar, Divider, Screen, SettingsRow, Tag } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { colors, spacing } from '../../theme';
 import { tracks } from '../../services/mock/challenges';
 import { deleteAccount, signOut } from '../../services/supabase/auth';
 import { updateSelectedTracks } from '../../services/supabase/profile';
@@ -20,7 +20,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tracksOpen, setTracksOpen] = useState(false);
-  const [notificationsOn, setNotificationsOn] = useState(true);
+  const [settingsOpen, setSettingsOpen] = useState(false);
 
   async function toggleTrack(slug: string) {
     if (!userId) return;
@@ -81,10 +81,10 @@ export function ProfileHomeScreen({ navigation }: Props) {
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppText variant="title">Profile</AppText>
-        <View style={styles.identity}>
+        <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
           <Avatar name="Bilal Tahir" size="lg" />
           <View style={styles.identityText}><AppText variant="title">Bilal Tahir</AppText><AppText variant="caption" color={colors.textSecondary}>{isPro ? 'Pro Member' : 'Free Member'}</AppText></View>
-        </View>
+        </Pressable>
 
         <View style={styles.section}>
           <SettingsRow icon="flag-outline" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
@@ -107,17 +107,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.section}>
-          <SettingsRow icon="sparkles-outline" title="Subscription" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'profile' })} />
-          <SettingsRow icon="notifications-outline" title="Notifications" subtitle="A summary of your momentum each week"
-            trailing={
-              <Switch
-                value={notificationsOn}
-                onValueChange={setNotificationsOn}
-                trackColor={{ true: colors.accent, false: colors.border }}
-                thumbColor={colors.surfaceRaised}
-              />
-            }
-          />
+          <SettingsRow icon="sparkles-outline" title="Subscription" onPress={() => navigation.navigate('Subscription')} />
+          <SettingsRow icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
         </View>
 
         <View style={styles.section}>
@@ -131,11 +122,12 @@ export function ProfileHomeScreen({ navigation }: Props) {
           </AppText>
         ) : null}
 
-        <Divider tone="subtle" style={styles.divider} />
-        <AppText variant="caption" color={colors.textTertiary} style={styles.settings}>Settings</AppText>
         <View style={styles.section}>
-          <SettingsRow icon="log-out-outline" title="Log out" onPress={handleLogOut} trailing={null} />
-          <SettingsRow icon="trash-outline" title="Delete account" tone="danger" onPress={confirmDeleteAccount} trailing={null} />
+          <SettingsRow icon="settings-outline" title="Settings" onPress={() => setSettingsOpen((value) => !value)} />
+          {settingsOpen ? <View style={styles.trackList}>
+            <SettingsRow icon="log-out-outline" title={busy ? 'Logging out…' : 'Log out'} onPress={handleLogOut} trailing={null} />
+            <SettingsRow icon="trash-outline" title="Delete account" tone="danger" onPress={confirmDeleteAccount} trailing={null} />
+          </View> : null}
         </View>
       </ScrollView>
     </Screen>
@@ -149,6 +141,5 @@ const styles = StyleSheet.create({
   section: { marginBottom: spacing.lg },
   trackList: { paddingLeft: spacing.md },
   divider: { marginBottom: spacing.md },
-  settings: { marginBottom: spacing.xs },
   error: { marginBottom: spacing.sm },
 });

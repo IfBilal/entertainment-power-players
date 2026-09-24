@@ -1,10 +1,12 @@
-import { useState } from 'react';
-import { Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { Animated, Pressable, StyleSheet, TextInput, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import * as Haptics from 'expo-haptics';
 import { AppText } from './AppText';
 import { Card } from './Card';
 import { CounterControl } from './CounterControl';
 import { colors, spacing } from '../theme';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type ChallengeRowProps = {
   title: string;
@@ -18,6 +20,7 @@ type ChallengeRowProps = {
   onIncrement: () => void;
   onDecrement: () => void;
   onNoteChange: (note: string) => void;
+  onOpen?: () => void;
 };
 
 /** Single/counter challenge card with completion feedback and a collapsed note field (spec §24). */
@@ -33,16 +36,40 @@ export function ChallengeRow({
   onIncrement,
   onDecrement,
   onNoteChange,
+  onOpen,
 }: ChallengeRowProps) {
   const [noteOpen, setNoteOpen] = useState(Boolean(note));
+  const reduceMotion = useReducedMotion();
+  const checkScale = useRef(new Animated.Value(1)).current;
+  const previousComplete = useRef(isComplete);
+
+  useEffect(() => {
+    if (previousComplete.current === isComplete) return;
+    previousComplete.current = isComplete;
+    if (reduceMotion) return;
+
+    Animated.sequence([
+      Animated.spring(checkScale, { toValue: isComplete ? 1.35 : 0.82, speed: 18, bounciness: 9, useNativeDriver: true }),
+      Animated.spring(checkScale, { toValue: 1, speed: 14, bounciness: 8, useNativeDriver: true }),
+    ]).start();
+  }, [checkScale, isComplete, reduceMotion]);
+
+  function toggleComplete() {
+    if (reduceMotion) {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    } else if (!isComplete) {
+      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => undefined);
+    } else {
+      Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => undefined);
+    }
+    onToggle();
+  }
 
   return (
     <Card style={[styles.card, isComplete && styles.cardComplete]}>
       <View style={styles.header}>
         <View style={styles.text}>
-          <AppText variant="bodyStrong" color={isComplete ? colors.textSecondary : colors.textPrimary}>
-            {title}
-          </AppText>
+          {onOpen ? <Pressable onPress={onOpen}><AppText variant="bodyStrong" color={isComplete ? colors.textSecondary : colors.textPrimary}>{title}</AppText></Pressable> : <AppText variant="bodyStrong" color={isComplete ? colors.textSecondary : colors.textPrimary}>{title}</AppText>}
           {description ? (
             <AppText variant="caption" color={colors.textTertiary} style={styles.description}>
               {description}
@@ -50,8 +77,10 @@ export function ChallengeRow({
           ) : null}
         </View>
         {type === 'single' ? (
-          <Pressable onPress={onToggle} accessibilityRole="checkbox" accessibilityState={{ checked: isComplete }} hitSlop={8}>
-            <Ionicons name={isComplete ? 'checkmark-circle' : 'ellipse-outline'} size={28} color={isComplete ? colors.success : colors.accent} />
+          <Pressable onPress={toggleComplete} accessibilityLabel={`Complete ${title}`} accessibilityRole="checkbox" accessibilityState={{ checked: isComplete }} hitSlop={8}>
+            <Animated.View style={{ transform: [{ scale: checkScale }] }}>
+              <Ionicons name={isComplete ? 'checkmark-circle' : 'ellipse-outline'} size={28} color={isComplete ? colors.success : colors.accent} />
+            </Animated.View>
           </Pressable>
         ) : null}
       </View>

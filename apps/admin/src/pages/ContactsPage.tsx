@@ -30,7 +30,7 @@ const EMPTY_FORM = {
   notes: '',
 };
 
-export function ContactsPage() {
+export function ContactsPage({ preview = false }: { preview?: boolean }) {
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [search, setSearch] = useState('');
@@ -56,8 +56,20 @@ export function ContactsPage() {
   }
 
   useEffect(() => {
+    if (preview) {
+      setCategories([{ slug: 'fashion', name: 'Fashion' }, { slug: 'film-tv', name: 'Film + TV' }]);
+      setContacts([
+        { id: '1', name: 'Alex Rivera', category_slug: 'fashion', role: 'Stylist', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
+        { id: '2', name: 'Amara Singh', category_slug: 'fashion', role: 'Casting Director', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
+        { id: '3', name: 'Daniel Kim', category_slug: 'film-tv', role: 'Model', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
+        { id: '4', name: 'Blanca Lopez', category_slug: 'fashion', role: 'Producer', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
+        { id: '5', name: 'Caleb Wright', category_slug: 'fashion', role: 'Buyer', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
+      ]);
+      setLoading(false);
+      return;
+    }
     load();
-  }, []);
+  }, [preview]);
 
   const visible = useMemo(() => {
     const q = search.trim().toLowerCase();
@@ -141,39 +153,23 @@ export function ContactsPage() {
   }
 
   return (
-    <div className="stack">
+    <div className="stack contacts-page">
       <div className="row between">
         <div>
           <h1>Contacts</h1>
-          <p className="muted small">The directory your subscribers browse in the app</p>
         </div>
         <button onClick={openCreate}>+ Add contact</button>
-      </div>
-
-      <div className="stat-row">
-        <div className="stat">
-          <div className="num">{contacts.filter((c) => c.active).length}</div>
-          <div className="label">Active</div>
-        </div>
-        <div className="stat">
-          <div className="num">{categories.length}</div>
-          <div className="label">Categories</div>
-        </div>
-        <div className="stat">
-          <div className="num">{contacts.filter((c) => !c.active).length}</div>
-          <div className="label">Inactive</div>
-        </div>
       </div>
 
       <div className="card stack">
         <div className="row wrap">
           <input
-            placeholder="Search name, company, role or city"
+            placeholder="Search contacts..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             style={{ flex: 1, minWidth: 220 }}
           />
-          <label className="row small" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
+            <label className="row small inactive-toggle" style={{ marginBottom: 0, whiteSpace: 'nowrap' }}>
             <input
               type="checkbox"
               checked={showInactive}
@@ -203,9 +199,7 @@ export function ContactsPage() {
               <tr>
                 <th>Name</th>
                 <th>Category</th>
-                <th>Role</th>
-                <th>Company</th>
-                <th>City</th>
+                <th>Status</th>
                 <th />
               </tr>
             </thead>
@@ -236,28 +230,13 @@ export function ContactsPage() {
                     </div>
                   </td>
                   <td>{categories.find((cat) => cat.slug === c.category_slug)?.name ?? c.category_slug}</td>
-                  <td>{c.role}</td>
-                  <td>{c.company ?? '—'}</td>
-                  <td>{c.city ?? '—'}</td>
+                  <td><button className={c.active ? 'status-pill' : 'status-pill inactive'} onClick={() => {
+                    if (c.active) {
+                      if (window.confirm(`Deactivate ${c.name}?\n\nThe contact will disappear from the app but can be restored later.`)) setActive(c, false);
+                    } else setActive(c, true);
+                  }}>{c.active ? '● Active' : '○ Inactive'}</button></td>
                   <td>
-                    <div className="row">
-                      <button className="ghost small" onClick={() => openEdit(c)}>Edit</button>
-                      {c.active ? (
-                        <button
-                          className="ghost small"
-                          style={{ color: 'var(--danger)' }}
-                          onClick={() => {
-                            if (window.confirm(`Deactivate ${c.name}?\n\nThe contact will disappear from the app but can be restored later.`)) {
-                              setActive(c, false);
-                            }
-                          }}
-                        >
-                          Deactivate
-                        </button>
-                      ) : (
-                        <button className="ghost small" onClick={() => setActive(c, true)}>Restore</button>
-                      )}
-                    </div>
+                    <button className="ghost small row-action" aria-label={`Edit ${c.name}`} onClick={() => openEdit(c)}>›</button>
                   </td>
                 </tr>
               ))}

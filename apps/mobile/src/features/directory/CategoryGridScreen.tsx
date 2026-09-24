@@ -1,4 +1,5 @@
 import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { AppText, CategoryCard, ErrorState, Screen, Skeleton } from '../../components';
@@ -10,18 +11,24 @@ import type { DirectoryStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<DirectoryStackParamList, 'CategoryGrid'>;
 
 export function CategoryGridScreen({ navigation }: Props) {
+  const [search, setSearch] = useState('');
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
   const countsQuery = useQuery({ queryKey: ['categoryCounts'], queryFn: fetchCategoryCounts });
 
   const categories = categoriesQuery.data ?? [];
+  const filteredCategories = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase();
+    return query ? categories.filter((category) => category.name.toLocaleLowerCase().includes(query)) : categories;
+  }, [categories, search]);
   const counts = countsQuery.data ?? {};
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
   const fills: Record<string, string> = { fashion: '#44271A', 'film-tv': '#19372C', gaming: '#24341B', music: '#3A2F14', sports: '#17363A' };
+  const glyphs: Record<string, string> = { fashion: '#F87900', 'film-tv': '#EFB512', gaming: '#9BDB1B', music: '#F0A010', sports: '#CBD3D0' };
 
   return (
     <Screen padded={false}>
       <FlatList
-        data={categories}
+        data={filteredCategories}
         keyExtractor={(c) => c.slug}
         contentContainerStyle={styles.grid}
         refreshing={categoriesQuery.isFetching}
@@ -34,7 +41,15 @@ export function CategoryGridScreen({ navigation }: Props) {
             <View style={styles.titleRow}><AppText variant="title">Directory</AppText><Ionicons name="chevron-down" size={18} color={colors.textSecondary} /></View>
             <View style={styles.searchRow}>
               <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
-              <TextInput placeholder="Search categories..." placeholderTextColor={colors.textMuted} style={styles.search} />
+              <TextInput
+                placeholder="Search categories..."
+                placeholderTextColor={colors.textMuted}
+                style={styles.search}
+                value={search}
+                onChangeText={setSearch}
+                accessibilityLabel="Search categories"
+                returnKeyType="search"
+              />
               <Pressable accessibilityLabel="Filter categories"><Ionicons name="options-outline" size={20} color={colors.textSecondary} /></Pressable>
             </View>
           </View>
@@ -54,12 +69,12 @@ export function CategoryGridScreen({ navigation }: Props) {
             </View>
           ) : (
             <AppText variant="body" color={colors.textSecondary} style={styles.empty}>
-              No categories yet.
+              {search.trim() ? 'No matching categories.' : 'No categories yet.'}
             </AppText>
           )
         }
         renderItem={({ item }) => (
-          <CategoryCard name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]}
+          <CategoryCard name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]}
             onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })} />
         )}
       />

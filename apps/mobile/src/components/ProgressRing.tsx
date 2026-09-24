@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { Animated, View } from 'react-native';
+import { Animated, Platform, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { AppText } from './AppText';
 import { colors } from '../theme';
@@ -24,6 +24,7 @@ export function ProgressRing({ progress, size = 84, strokeWidth = 8, label }: Pr
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return;
     Animated.timing(anim, { toValue: clamped, duration: 480, useNativeDriver: false }).start();
   }, [clamped]);
 
@@ -49,22 +50,38 @@ export function ProgressRing({ progress, size = 84, strokeWidth = 8, label }: Pr
           strokeWidth={strokeWidth}
           fill="none"
         />
-        <AnimatedCircle
-          cx={size / 2}
-          cy={size / 2}
-          r={radius}
-          stroke="url(#ringGradient)"
-          strokeWidth={strokeWidth}
-          fill="none"
-          strokeLinecap="round"
-          strokeDasharray={circumference}
-          strokeDashoffset={strokeDashoffset}
-          rotation="-90"
-          origin={`${size / 2}, ${size / 2}`}
-        />
+        {Platform.OS === 'web' ? (
+          <Circle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke={colors.accentLime}
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={`${circumference} ${circumference}`}
+            strokeDashoffset={circumference * (1 - clamped)}
+            rotation="-90"
+            origin={`${size / 2}, ${size / 2}`}
+          />
+        ) : (
+          <AnimatedCircle
+            cx={size / 2}
+            cy={size / 2}
+            r={radius}
+            stroke="url(#ringGradient)"
+            strokeWidth={strokeWidth}
+            fill="none"
+            strokeLinecap="round"
+            strokeDasharray={circumference}
+            strokeDashoffset={strokeDashoffset}
+            rotation="-90"
+            origin={`${size / 2}, ${size / 2}`}
+          />
+        )}
       </Svg>
       {label ? (
-        <View style={{ position: 'absolute' }}>
+        <View style={{ position: 'absolute', top: 0, right: 0, bottom: 0, left: 0, alignItems: 'center', justifyContent: 'center' }}>
           <AppText variant="bodyStrong">{label}</AppText>
         </View>
       ) : null}

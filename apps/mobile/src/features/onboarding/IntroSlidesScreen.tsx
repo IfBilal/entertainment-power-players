@@ -1,5 +1,5 @@
-import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
@@ -8,6 +8,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, IconTile, Screen } from '../../components';
 import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'IntroSlides'>;
 
@@ -21,6 +22,36 @@ type Slide = {
   tiles?: Array<{ icon: IoniconName; tone: GradientToken }>;
   stat?: boolean;
 };
+
+function SlideEntrance({ children }: { children: ReactNode }) {
+  const reduceMotion = useReducedMotion();
+  const opacity = useRef(new Animated.Value(0)).current;
+  const translateY = useRef(new Animated.Value(32)).current;
+  const scale = useRef(new Animated.Value(0.98)).current;
+
+  useEffect(() => {
+    if (reduceMotion || process.env.NODE_ENV === 'test') {
+      opacity.setValue(1);
+      translateY.setValue(0);
+      scale.setValue(1);
+      return;
+    }
+
+    const entrance = Animated.parallel([
+      Animated.timing(opacity, { toValue: 1, duration: 360, easing: Easing.out(Easing.cubic), useNativeDriver: true }),
+      Animated.spring(translateY, { toValue: 0, speed: 15, bounciness: 7, useNativeDriver: true }),
+      Animated.spring(scale, { toValue: 1, speed: 16, bounciness: 5, useNativeDriver: true }),
+    ]);
+    entrance.start();
+    return () => entrance.stop();
+  }, [opacity, reduceMotion, scale, translateY]);
+
+  return (
+    <Animated.View style={[styles.slideEntrance, { opacity, transform: [{ translateY }, { scale }] }]}>
+      {children}
+    </Animated.View>
+  );
+}
 
 const slides: Slide[] = [
   {
@@ -181,17 +212,19 @@ export function IntroSlidesScreen({ navigation }: Props) {
         {/* The photo slide stacks headline-last over the image; the two
             illustrated slides lead with the headline and put the graphic
             underneath, as mockups 3 and 4 do. */}
-        <View style={slide.photo ? styles.body : styles.bodyTop}>
-          <AppText variant="hero" style={styles.title}>
-            {slide.title}
-          </AppText>
-          <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
-            {slide.body}
-          </AppText>
+        <SlideEntrance key={index}>
+          <View style={slide.photo ? styles.body : styles.bodyTop}>
+            <AppText variant="hero" style={styles.title}>
+              {slide.title}
+            </AppText>
+            <AppText variant="body" color={colors.textSecondary} style={styles.slideBody}>
+              {slide.body}
+            </AppText>
 
-          {slide.stat ? <StatPreview /> : null}
-          {slide.tiles ? <TileScatter tiles={slide.tiles} /> : null}
-        </View>
+            {slide.stat ? <StatPreview /> : null}
+            {slide.tiles ? <TileScatter tiles={slide.tiles} /> : null}
+          </View>
+        </SlideEntrance>
 
         <Button label={isLast ? 'Get Started' : 'Next'} onPress={next} size="lg" fullWidth />
 
@@ -207,6 +240,7 @@ export function IntroSlidesScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  slideEntrance: { flex: 1 },
   inner: {
     flex: 1,
     paddingHorizontal: spacing.md,
@@ -223,10 +257,10 @@ const styles = StyleSheet.create({
     left: 0,
     right: 0,
     top: 0,
-    // Contained at full width the frame is ~1.55x as tall as it is wide, so it
-    // ends around 62% of the screen -- which is where the mockup's crowd line
-    // sits, with the headline block starting just below it.
-    height: '78%',
+    // The mockup's image/crowd transition sits near 40% of the phone. Limiting
+    // this frame to 62% keeps the contained portrait crop from dropping the
+    // crowd and headline too far down the screen.
+    height: '62%',
   },
   body: {
     flex: 1,

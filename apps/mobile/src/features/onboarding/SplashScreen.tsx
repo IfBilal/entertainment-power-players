@@ -74,9 +74,18 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Aurora variant="warm" />
+      <Aurora variant="streaks" />
       <Animated.View style={[styles.mark, { opacity, transform: [{ scale }] }]}>
-        <Logo variant="full" width={230} />
+        {/* The mockup pairs the star+epp mark with its own white wordmark set
+            below it, rather than the supplied lockup whose wordmark is green
+            and too small to read at this size. */}
+        <Logo variant="mark" width={252} />
+        <AppText variant="label" color={colors.textPrimary} style={styles.wordmarkTop}>
+          ENTERTAINMENT
+        </AppText>
+        <AppText variant="title" color={colors.textPrimary} style={styles.wordmarkMain}>
+          POWER PLAYERS
+        </AppText>
       </Animated.View>
       <Animated.View style={[styles.taglineWrap, { opacity }]}>
         <AppText variant="body" color={colors.textSecondary} style={styles.tagline}>
@@ -99,6 +108,14 @@ const styles = StyleSheet.create({
   },
   mark: {
     alignItems: 'center',
+  },
+  wordmarkTop: {
+    marginTop: spacing.md,
+    letterSpacing: 3.4,
+  },
+  wordmarkMain: {
+    marginTop: 2,
+    letterSpacing: 2.2,
   },
   /** The mockup sets the tagline low on the screen, well clear of the logo,
    *  rather than directly beneath it. */

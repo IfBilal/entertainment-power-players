@@ -1,34 +1,12 @@
 import { useState } from 'react';
 import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, FormField, Logo, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { AppText, Button, FormField, Logo, Screen, SocialButton } from '../../components';
+import { colors, spacing } from '../../theme';
 import { signInWithEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Login'>;
-
-/** Apple / Google row from the mockup: dark pill, hairline border, brand glyph
- *  then label, both centred as a group. */
-function SocialButton({
-  icon,
-  label,
-  color,
-  onPress,
-}: {
-  icon: 'logo-apple' | 'logo-google';
-  label: string;
-  color: string;
-  onPress: () => void;
-}) {
-  return (
-    <Pressable style={styles.social} onPress={onPress} accessibilityRole="button">
-      <Ionicons name={icon} size={19} color={color} />
-      <AppText variant="bodyStrong">{label}</AppText>
-    </Pressable>
-  );
-}
 
 export function LoginScreen({ navigation }: Props) {
   const [email, setEmail] = useState('');
@@ -122,15 +100,13 @@ export function LoginScreen({ navigation }: Props) {
 
         <View style={styles.socials}>
           <SocialButton
-            icon="logo-apple"
+            provider="apple"
             label="Continue with Apple"
-            color={colors.textPrimary}
             onPress={() => navigation.navigate('SignUp')}
           />
           <SocialButton
-            icon="logo-google"
+            provider="google"
             label="Continue with Google"
-            color="#EA4335"
             onPress={() => navigation.navigate('SignUp')}
           />
         </View>
@@ -192,17 +168,6 @@ const styles = StyleSheet.create({
   },
   socials: {
     gap: spacing.sm + 4,
-  },
-  social: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: spacing.sm + 2,
-    height: 46,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.borderStrong,
-    backgroundColor: colors.surfaceSubtle,
   },
   footer: {
     flexDirection: 'row',

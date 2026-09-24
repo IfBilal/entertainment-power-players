@@ -8,8 +8,14 @@ export class EmailAlreadyRegisteredError extends Error {
   }
 }
 
-export async function signUpWithEmail(email: string, password: string) {
-  const { data, error } = await supabase.auth.signUp({ email, password });
+export async function signUpWithEmail(email: string, password: string, fullName?: string) {
+  // `full_name` rides along in user_metadata so the name captured at signup
+  // isn't discarded -- the profile row is created from it server-side.
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: fullName ? { data: { full_name: fullName } } : undefined,
+  });
   if (error) throw error;
 
   // Supabase deliberately returns a 200 with a synthetic user rather than an

@@ -1,19 +1,16 @@
 import { useState } from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, Divider, FormField, Screen } from '../../components';
+import Ionicons from '@expo/vector-icons/Ionicons';
+import { AppText, Button, FormField, Screen, SocialButton } from '../../components';
 import { colors, spacing } from '../../theme';
 import { signInWithGoogle, signUpWithEmail } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'SignUp'>;
 
-/**
- * Apple sign-in is deferred, not built -- no Apple Developer account exists
- * yet (client is providing one; see docs/week2-implementation-plan.md
- * decision #1). No Apple button here rather than a fake-functional one.
- */
 export function SignUpScreen({ navigation }: Props) {
+  const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -23,7 +20,7 @@ export function SignUpScreen({ navigation }: Props) {
     setError(null);
     setSubmitting(true);
     try {
-      const data = await signUpWithEmail(email.trim(), password);
+      const data = await signUpWithEmail(email.trim(), password, fullName.trim() || undefined);
       if (data.session) {
         // Email confirmation is off (or already auto-confirmed) -- a real
         // session exists immediately. RootNavigator's auth listener picks
@@ -53,68 +50,156 @@ export function SignUpScreen({ navigation }: Props) {
     }
   }
 
+  function handleAppleSignUp() {
+    // The mockup shows an Apple button, so the layout keeps its place --
+    // but Apple sign-in needs an Apple Developer account the project does
+    // not have yet (docs/week2-implementation-plan.md decision #1). Saying so
+    // beats a button that silently does nothing.
+    setError('Apple sign-in isn’t set up yet — use Google or email for now.');
+  }
+
   return (
-    <Screen>
-      <AppText variant="label" color={colors.textTertiary}>GET STARTED</AppText>
-      <AppText variant="display" style={styles.heading}>Build your career here.</AppText>
-      <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
-        Join the directory, tracker and challenges.
-      </AppText>
+    <Screen aurora="warm">
+      <ScrollView
+        contentContainerStyle={styles.content}
+        keyboardShouldPersistTaps="handled"
+        showsVerticalScrollIndicator={false}
+      >
+        <Pressable
+          onPress={() => navigation.goBack()}
+          hitSlop={12}
+          style={styles.back}
+          accessibilityRole="button"
+          accessibilityLabel="Go back"
+        >
+          <Ionicons name="chevron-back" size={26} color={colors.textPrimary} />
+        </Pressable>
 
-      <View style={styles.form}>
-        <FormField
-          label="EMAIL"
-          placeholder="you@example.com"
-          autoCapitalize="none"
-          keyboardType="email-address"
-          value={email}
-          onChangeText={setEmail}
-        />
-        <FormField
-          label="PASSWORD"
-          placeholder="••••••••"
-          secureTextEntry
-          value={password}
-          onChangeText={setPassword}
-          error={error ?? undefined}
-        />
-        <Button label="Sign up with email" onPress={handleEmailSignUp} disabled={submitting || !email || !password} />
+        <AppText variant="display" style={styles.heading}>
+          Create your account
+        </AppText>
+        <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
+          Join Entertainment Power Players today.
+        </AppText>
 
-        <View style={styles.dividerRow}>
-          <Divider tone="subtle" style={styles.dividerLine} />
-          <AppText variant="caption" color={colors.textTertiary}>or continue with</AppText>
-          <Divider tone="subtle" style={styles.dividerLine} />
+        <View style={styles.rule} />
+
+        <View style={styles.form}>
+          <FormField
+            label="Full name"
+            placeholder="John Doe"
+            autoCapitalize="words"
+            autoComplete="name"
+            value={fullName}
+            onChangeText={setFullName}
+          />
+          <FormField
+            label="Email address"
+            placeholder="you@domain.com"
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            value={email}
+            onChangeText={setEmail}
+          />
+          <FormField
+            label="Password"
+            placeholder="Create a strong password"
+            secureTextEntry
+            autoComplete="new-password"
+            value={password}
+            onChangeText={setPassword}
+            error={error ?? undefined}
+          />
         </View>
 
-        <Button label="Continue with Google" variant="secondary" onPress={handleGoogleSignUp} disabled={submitting} />
-      </View>
+        <View style={styles.ctaWrap}>
+          <Button
+            label={submitting ? 'Creating account…' : 'Sign Up'}
+            size="lg"
+            fullWidth
+            onPress={handleEmailSignUp}
+            disabled={submitting || !email || !password}
+          />
+        </View>
 
-      <View style={styles.footer}>
-        <Button label="Already have an account? Log in" variant="ghost" onPress={() => navigation.navigate('Login')} />
-      </View>
+        <AppText variant="body" color={colors.textSecondary} style={styles.or}>
+          or
+        </AppText>
+
+        <View style={styles.socials}>
+          <SocialButton
+            provider="apple"
+            label="Continue with Apple"
+            onPress={handleAppleSignUp}
+            disabled={submitting}
+          />
+          <SocialButton
+            provider="google"
+            label="Continue with Google"
+            onPress={handleGoogleSignUp}
+            disabled={submitting}
+          />
+        </View>
+
+        <Pressable
+          onPress={() => navigation.navigate('Login')}
+          style={styles.footer}
+          accessibilityRole="button"
+        >
+          <AppText variant="body" color={colors.textSecondary}>
+            Already have an account?{' '}
+          </AppText>
+          <AppText variant="bodyStrong" color={colors.accentAmber}>
+            Log in
+          </AppText>
+        </Pressable>
+      </ScrollView>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  heading: { marginTop: spacing.xs },
-  subtitle: {
+  content: {
+    flexGrow: 1,
+    paddingBottom: spacing.lg,
+  },
+  back: {
+    alignSelf: 'flex-start',
     marginTop: spacing.sm,
-    marginBottom: spacing.xl,
+    marginBottom: spacing.md,
+    marginLeft: -spacing.xs,
+  },
+  heading: {
+    marginBottom: spacing.xs,
+  },
+  subtitle: {
+    maxWidth: 300,
+  },
+  /** Hairline under the intro block, as the mockup has. */
+  rule: {
+    height: StyleSheet.hairlineWidth,
+    backgroundColor: colors.borderStrong,
+    marginTop: spacing.md,
+    marginBottom: spacing.lg,
   },
   form: {
     gap: spacing.md,
   },
-  dividerRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: spacing.sm,
+  ctaWrap: {
+    marginTop: spacing.lg,
   },
-  dividerLine: {
-    flex: 1,
+  or: {
+    textAlign: 'center',
+    marginVertical: spacing.md,
+  },
+  socials: {
+    gap: spacing.sm + 4,
   },
   footer: {
-    marginTop: 'auto',
-    marginBottom: spacing.md,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: spacing.lg,
   },
 });

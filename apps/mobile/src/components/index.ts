@@ -4,6 +4,7 @@ export { Aurora } from './Aurora';
 export { Avatar, initials } from './Avatar';
 export { IconTile } from './IconTile';
 export { Logo } from './Logo';
+export { SocialButton } from './SocialButton';
 export { Button } from './Button';
 export { Card } from './Card';
 export { EmptyState } from './EmptyState';

@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { FlatList, Pressable, StyleSheet } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Screen } from '../../components';
-import { colors, radius, spacing } from '../../theme';
+import { colors, radius, spacing, trackIcons } from '../../theme';
 import { tracks } from '../../services/mock/challenges';
 import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -42,10 +42,12 @@ export function TrackPickerScreen(_props: Props) {
   }
 
   return (
-    <Screen>
-      <AppText variant="display">Choose your path.</AppText>
+    <Screen aurora="subtle">
+      <AppText variant="display" style={styles.heading}>
+        Choose Your Tracks
+      </AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
-        Pick the areas you want to focus on. You can change them later in Profile.
+        Select the areas you want to focus on. You can change this later.
       </AppText>
       <FlatList
         data={tracks}
@@ -54,16 +56,22 @@ export function TrackPickerScreen(_props: Props) {
         columnWrapperStyle={styles.row}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        renderItem={({ item }) => {
+        renderItem={({ item, index }) => {
           const isSelected = selected.includes(item.slug);
+          // Alternating amber / lime glyphs, as the mockup's grid does.
+          const hue = index % 2 === 0 ? colors.accentAmber : colors.accentLime;
           return (
-            <Pressable style={[styles.card, isSelected && styles.cardSelected]} onPress={() => toggle(item.slug)}>
-              {isSelected ? (
-                <View style={styles.check}>
-                  <Ionicons name="checkmark-circle" size={22} color={colors.accent} />
-                </View>
-              ) : null}
-              <AppText variant="bodyStrong" style={styles.cardLabel}>{item.name}</AppText>
+            <Pressable
+              style={[styles.card, isSelected && styles.cardSelected]}
+              onPress={() => toggle(item.slug)}
+              accessibilityRole="checkbox"
+              accessibilityState={{ checked: isSelected }}
+              accessibilityLabel={item.name}
+            >
+              <Ionicons name={trackIcons[item.slug] ?? 'star-outline'} size={38} color={hue} />
+              <AppText variant="bodyStrong" style={styles.cardLabel}>
+                {item.name}
+              </AppText>
             </Pressable>
           );
         }}
@@ -73,36 +81,53 @@ export function TrackPickerScreen(_props: Props) {
           {error}
         </AppText>
       ) : null}
-      <Button label="Continue" disabled={selected.length === 0 || submitting} onPress={handleContinue} />
+      <Button
+        label="Continue"
+        size="lg"
+        fullWidth
+        disabled={selected.length === 0 || submitting}
+        onPress={handleContinue}
+      />
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginTop: spacing.sm, marginBottom: spacing.md },
-  list: { gap: spacing.sm, paddingBottom: spacing.md },
-  row: { gap: spacing.sm },
+  heading: {
+    marginTop: spacing.xl,
+  },
+  subtitle: {
+    marginTop: spacing.sm,
+    marginBottom: spacing.lg,
+  },
+  list: {
+    gap: spacing.md,
+    paddingBottom: spacing.md,
+  },
+  row: {
+    gap: spacing.md,
+  },
+  // Tall tiles with the glyph stacked above a centred label, per mockup 8.
   card: {
     flex: 1,
-    minHeight: 96,
-    justifyContent: 'flex-end',
-    borderWidth: 1.5,
+    height: 146,
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.md,
+    borderWidth: 1,
     borderColor: colors.border,
-    borderRadius: radius.lg,
-    padding: spacing.md,
-    backgroundColor: colors.surfaceRaised,
+    borderRadius: radius.xl,
+    padding: spacing.sm,
+    backgroundColor: colors.surface,
   },
   cardSelected: {
-    borderColor: colors.accent,
+    borderColor: colors.accentLime,
     backgroundColor: colors.accentFaint,
   },
-  check: {
-    position: 'absolute',
-    top: spacing.sm,
-    right: spacing.sm,
-  },
   cardLabel: {
-    marginTop: spacing.sm,
+    textAlign: 'center',
   },
-  error: { marginBottom: spacing.sm },
+  error: {
+    marginBottom: spacing.sm,
+  },
 });

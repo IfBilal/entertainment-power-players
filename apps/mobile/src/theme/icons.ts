@@ -25,6 +25,19 @@ export const categorySlugToKey: Record<string, keyof typeof categoryIconOptions>
   sports: 'sports',
 };
 
+/**
+ * Glyph per challenge track, matching the mockups' track-selection grid
+ * (screen 8) and challenges list (screen 16). Keyed by track slug.
+ */
+export const trackIcons: Record<string, IoniconName> = {
+  'creators-producers': 'shirt-outline',
+  fashion: 'glasses-outline',
+  'film-tv': 'film-outline',
+  gaming: 'game-controller-outline',
+  music: 'musical-notes-outline',
+  sports: 'football-outline',
+};
+
 export const tabIcons: Record<string, IoniconName> = {
   Directory: 'people-outline',
   Tracker: 'stats-chart-outline',

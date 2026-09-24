@@ -4,7 +4,7 @@ export { spacing, radius } from './spacing';
 export { typography } from './typography';
 export { shadows } from './shadows';
 export { motion, easing } from './motion';
-export { categoryIconOptions, categorySlugToKey, tabIcons } from './icons';
+export { categoryIconOptions, categorySlugToKey, tabIcons, trackIcons } from './icons';
 export { fontFamilies, useAppFonts } from './fonts';
 export type { ColorToken } from './colors';
 export type { GradientToken, AuroraToken, GlowToken } from './gradients';

@@ -9,7 +9,7 @@ type ScreenProps = ViewProps & {
   animateIn?: boolean;
   /** Corner light-leaks behind the content. `false` for screens that supply
    *  their own backdrop (onboarding photography, the share card). */
-  aurora?: AuroraToken | false;
+  aurora?: AuroraToken | 'streaks' | false;
 };
 
 export function Screen({

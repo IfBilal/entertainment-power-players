@@ -9,7 +9,7 @@ import { ImportPage } from './pages/ImportPage';
 import { QuotesPage } from './pages/QuotesPage';
 import { TracksPage } from './pages/TracksPage';
 import { TrackChallengesPage } from './pages/TrackChallengesPage';
-import logoMark from '../../../docs/brand-logo-mark.png';
+import logoMark from './assets/brand-logo-mark.png';
 
 export default function App() {
   const auth = useAdminAuth();

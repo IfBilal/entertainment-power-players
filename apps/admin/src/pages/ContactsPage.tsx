@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 import { computeNameLower, computeSortKey } from '../lib/contactFields';
 
@@ -157,8 +158,12 @@ export function ContactsPage({ preview = false }: { preview?: boolean }) {
       <div className="row between">
         <div>
           <h1>Contacts</h1>
+          <p className="muted">Manage the people in your Entertainment Power Players directory.</p>
         </div>
-        <button onClick={openCreate}>+ Add contact</button>
+        <div className="row wrap">
+          <Link className="button-link" to="/import">Import CSV</Link>
+          <button onClick={openCreate}>+ Add contact</button>
+        </div>
       </div>
 
       <div className="card stack">

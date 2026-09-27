@@ -2,6 +2,8 @@ import { create } from 'zustand';
 import type { Session } from '@supabase/supabase-js';
 import { supabase } from '../services/supabase/client';
 import { fetchProfile } from '../services/supabase/profile';
+import { fetchPremiumAccess } from '../services/supabase/billing';
+import { useAppStore } from './useAppStore';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
 
@@ -33,6 +35,14 @@ type AuthState = {
 };
 
 async function loadProfileInto(set: (partial: Partial<AuthState>) => void, session: Session) {
+  void fetchPremiumAccess()
+    .then((hasAccess) => {
+      if (useAuthStore.getState().userId === session.user.id) useAppStore.getState().setIsPro(hasAccess);
+    })
+    .catch(() => {
+      if (useAuthStore.getState().userId === session.user.id) useAppStore.getState().setIsPro(false);
+    });
+
   try {
     const profile = await fetchProfile(session.user.id);
     const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
@@ -84,6 +94,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       if (settled) return;
       settled = true;
       console.warn('[auth] getSession timed out after', HYDRATE_TIMEOUT_MS, 'ms, falling back to signedOut');
+      useAppStore.getState().setIsPro(false);
       set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
     }, HYDRATE_TIMEOUT_MS);
 
@@ -95,9 +106,11 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         clearTimeout(timeout);
         const session = data.session;
         if (session) {
+          if (get().userId !== session.user.id) useAppStore.getState().setIsPro(false);
           set({ status: 'signedIn', userId: session.user.id, emailAddress: session.user.email ?? null });
           loadProfileInto(set, session);
         } else {
+          useAppStore.getState().setIsPro(false);
           set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
         }
       })
@@ -110,14 +123,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // user on the splash screen with no way forward. Fail safe to
         // signedOut so they at least reach Onboarding/Login and can retry.
         console.warn('[auth] getSession failed, falling back to signedOut:', error);
+        useAppStore.getState().setIsPro(false);
         set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
       });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
       if (session) {
+        if (get().userId !== session.user.id) useAppStore.getState().setIsPro(false);
         set({ status: 'signedIn', userId: session.user.id, emailAddress: session.user.email ?? null });
         loadProfileInto(set, session);
       } else {
+        useAppStore.getState().setIsPro(false);
         set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
       }
     });
@@ -128,5 +144,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSelectedTrackSlugs: (slugs) => set({ selectedTrackSlugs: slugs }),
   setDisplayName: (name) => set({ displayName: name }),
 
-  reset: () => set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null }),
+  reset: () => {
+    useAppStore.getState().setIsPro(false);
+    set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+  },
 }));

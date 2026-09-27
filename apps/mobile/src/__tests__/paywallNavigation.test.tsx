@@ -1,9 +1,13 @@
-import { Alert } from 'react-native';
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAppStore } from '../store/useAppStore';
 import { useAuthStore } from '../store/useAuthStore';
+import { activatePreviewPlan } from '../services/supabase/billing';
+
+jest.mock('../services/supabase/billing', () => ({
+  activatePreviewPlan: jest.fn(async () => undefined),
+}));
 
 jest.mock('../services/supabase/directory', () => ({
   fetchCategories: jest.fn(async () => [
@@ -62,42 +66,22 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     expect(useAppStore.getState().isPro).toBe(false);
   });
 
-  it('opens the two plan options from Profile without granting Pro before a purchase', async () => {
+  it('grants the selected preview plan and unlocks contacts after Subscribe', async () => {
     await renderWithProviders(<RootNavigator />);
 
-    // Switch to the Profile tab.
-    fireEvent.press(await screen.findByText('Profile'));
-    expect(await screen.findByText('Subscription')).toBeTruthy();
-    fireEvent.press(screen.getByText('Subscription'));
-
-    expect(await screen.findByText('Monthly')).toBeTruthy();
-    expect(screen.getByText('Annual')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText('Monthly plan, $9.99 per month'));
-    await waitFor(() => expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState.selected).toBe(true));
-    fireEvent.press(screen.getByText('Choose a plan'));
-
-    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
-    expect(screen.getByText('Monthly')).toBeTruthy();
-    expect(screen.getByText('Annual')).toBeTruthy();
-    expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState).toEqual({ selected: true });
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-    fireEvent.press(screen.getByText('Subscribe'));
-    expect(alert).toHaveBeenCalledWith('Purchases are unavailable', expect.any(String));
-    expect(useAppStore.getState().isPro).toBe(false);
-    alert.mockRestore();
-  });
-
-  it('does not grant Pro when the paywall CTA is tapped without a billing provider', async () => {
-    await renderWithProviders(<RootNavigator />);
     fireEvent.press(await screen.findByLabelText('Directory'));
     fireEvent.press(await screen.findByText('Fashion'));
     fireEvent.press(await screen.findByText('Unlock directory'));
-    await screen.findByText(/Unlock the full/);
-    const alert = jest.spyOn(Alert, 'alert').mockImplementation(() => undefined);
-    fireEvent.press(screen.getByText('Subscribe'));
-    expect(alert).toHaveBeenCalledWith('Purchases are unavailable', expect.any(String));
-    expect(useAppStore.getState().isPro).toBe(false);
-    alert.mockRestore();
+    expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
+    expect(screen.getByText('Monthly')).toBeTruthy();
+    expect(screen.getByText('Annual')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText('Monthly plan, $9.99 per month'));
+    await waitFor(() => expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState.selected).toBe(true));
+    fireEvent.press(screen.getByText('Activate Premium (test)'));
+
+    await waitFor(() => expect(activatePreviewPlan).toHaveBeenCalledWith('monthly'));
+    await waitFor(() => expect(useAppStore.getState().isPro).toBe(true));
+    expect(await screen.findByText('Jane Doe')).toBeTruthy();
   });
 
   it('keeps Profile reachable after dismissing the plans sheet', async () => {

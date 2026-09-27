@@ -81,3 +81,6 @@ jobs:
             echo "Expected 60 seeded challenges, got $COUNT"
             exit 1
           fi
+      - name: Verify reversible preview premium grants access through RLS
+        run: |
+          PGPASSWORD=postgres psql -h 127.0.0.1 -p 54322 -U postgres -d postgres -v ON_ERROR_STOP=1 -f supabase/tests/preview_entitlement.sql

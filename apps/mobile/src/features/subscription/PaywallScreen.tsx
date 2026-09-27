@@ -5,10 +5,13 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Logo, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import type { RootStackParamList } from '../../navigation/types';
+import { activatePreviewPlan } from '../../services/supabase/billing';
+import { useAppStore } from '../../store/useAppStore';
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
 const benefits = ['Full contact directory', 'All challenge track details'];
+const previewPurchasesEnabled = __DEV__ || process.env.EXPO_PUBLIC_ENABLE_TEST_PURCHASES === 'true';
 
 /**
  * Product selection is ready here; entitlement must only come from RevenueCat
@@ -17,8 +20,27 @@ const benefits = ['Full contact directory', 'All challenge track details'];
  */
 export function PaywallScreen({ navigation, route }: Props) {
   const [plan, setPlan] = useState<'monthly' | 'annual'>(route.params?.plan ?? 'annual');
+  const [activating, setActivating] = useState(false);
+  const setIsPro = useAppStore((state) => state.setIsPro);
 
-  function subscribe() {
+  async function subscribe() {
+    if (previewPurchasesEnabled) {
+      setActivating(true);
+      try {
+        await activatePreviewPlan(plan);
+        setIsPro(true);
+        navigation.goBack();
+      } catch (error) {
+        Alert.alert(
+          'Could not activate test Premium',
+          error instanceof Error ? error.message : 'Please try again.',
+        );
+      } finally {
+        setActivating(false);
+      }
+      return;
+    }
+
     Alert.alert('Purchases are unavailable', 'Premium billing is not connected yet. Your account has not been changed.');
   }
 
@@ -48,7 +70,17 @@ export function PaywallScreen({ navigation, route }: Props) {
           </Pressable>
         </View>
 
-        <Button label="Subscribe" size="lg" onPress={subscribe} />
+        {previewPurchasesEnabled ? (
+          <AppText variant="caption" color={colors.accentLime} style={styles.testNotice}>
+            Testing mode: activating a plan grants Premium without charging you.
+          </AppText>
+        ) : null}
+        <Button
+          label={activating ? 'Activating Premium…' : previewPurchasesEnabled ? 'Activate Premium (test)' : 'Subscribe'}
+          size="lg"
+          onPress={subscribe}
+          disabled={activating}
+        />
         <View style={styles.footerLinks}>
           <Button label="Restore Purchase" variant="ghost" onPress={() => Alert.alert('Restore unavailable', 'Premium billing is not connected yet.')} />
         </View>
@@ -69,4 +101,5 @@ const styles = StyleSheet.create({
   planCard: { flex: 1, minHeight: 118, justifyContent: 'center', gap: 6, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.lg, paddingHorizontal: spacing.md, backgroundColor: colors.surface },
   planSelected: { borderColor: colors.accentLime, backgroundColor: 'rgba(111, 209, 59, 0.14)' },
   footerLinks: { alignItems: 'center', marginTop: spacing.xs },
+  testNotice: { textAlign: 'center', marginBottom: spacing.sm },
 });

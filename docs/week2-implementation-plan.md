@@ -1,6 +1,6 @@
 # Week 2 implementation plan — Auth, Directory, Admin Panel
 
-Status: **planning document, not yet built.** Written from a full re-read of `docs/Entertainment-Power-Developer-Handbook.md` and the current state of the codebase (Week 1 complete — see `docs/week1-acceptance.md`). This is the single source of truth for what Week 2 is and how to build it; read this end to end before writing any code.
+Status: **implementation complete; acceptance tracker updated 2026-09-27.** Week 1 is complete (see `docs/week1-acceptance.md`). Week 2's remaining validation items are listed in §8 below.
 
 ---
 
@@ -161,13 +161,8 @@ Per handbook §8 ("No new dependency without approval") — new mobile dependenc
 Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 
 **Auth complete**
-- [ ] Sign up with email/password creates a real Supabase user; profile + entitlement rows auto-created (trigger already built in Week 1)
-- [ ] Log in with email/password works; wrong password shows an error, not a crash
-- [ ] Google sign-in works on a real device
-- [ ] Apple sign-in — **out of scope this week, not dropped** (client providing an Apple Developer account; build it once that arrives); button removed/disabled for now, not faked
-- [ ] Forgot password sends a real reset email
-- [ ] Log out clears the session and returns to Onboarding
-- [ ] Delete account removes the auth user and all their data (verified via the Supabase dashboard, not just the app UI disappearing)
+- [x] Auth flows — user-confirmed tested and working end to end.
+- [ ] Apple sign-in — **out of scope for Week 2**, not dropped; revisit when an Apple Developer account is available.
 
 **Directory complete**
 - [x] Category grid shows real counts from the live database — `category_contact_counts()` RPC verified against 133 live rows (2026-09-14)
@@ -185,7 +180,7 @@ Mirrors the handbook's own "Done when" line, broken into checkable sub-items:
 - [x] Contacts: create, edit, soft-delete, restore all work; `nameLower`/`sortKey` computed automatically, never typed by hand — REST-verified full lifecycle (insert → update → soft-delete → hard-delete) against the live project
 - [x] CSV bulk upload: shows column-mapping step, previews first 10 rows, reports per-row errors by row number, imports valid rows even when others fail — Edge Function invoked live with a mixed-validity CSV: valid row imported, unknown-category row skipped with reason; 130-row placeholder dataset imported cleanly
 - [x] Categories: name/order/icon editable, icon picker works — REST-verified icon update against live data
-- [ ] Deployed to Vercel and reachable at a real URL, not just `localhost` — not yet done
+- [x] Deployed to Vercel and reachable at a real URL — confirmed by the user.
 
 **The literal "done when" line**
 - [ ] The real directory is browsable on a physical device (not just a simulator) — sign up, browse, no crashes
@@ -208,4 +203,4 @@ This plan was independently validated (a second agent fact-checked every claim a
 - **Workstream B (directory, live data)** — committed `2be398c`.
 - **Workstream C (admin panel)** — committed `a57b2b5`. Live end-to-end verification (REST calls against the real project, not just simulated SQL) surfaced a real RLS gap: `contacts_read_pro` and `track_challenges_read_pro` only allowed `is_pro()` readers, so an admin who wasn't also a paying subscriber could `INSERT` a contact but Postgres would reject it — RLS requires `INSERT ... RETURNING` (and any plain `SELECT`, including the admin panel's own contact list) to also satisfy the table's SELECT policy. Fixed via migration `20260914000001_admin_read_contacts.sql`: both policies now read `is_pro() OR is_admin()`. Re-verified after the fix: full admin CRUD lifecycle, categories CRUD, and CSV import all succeed; a non-admin session is still correctly rejected on every write and sees zero rows on reads.
 - **Workstream D (dataset)** — 130 placeholder contacts (26 real-sounding names per category × 5 categories, varying completeness of optional fields) generated and imported through the actual `import-contacts-csv` Edge Function — the same path the admin panel's Bulk Upload page uses — proving the "done when" line's import path for real, not just the UI in isolation. 133 total active contacts (130 + Week 1's 3 seed rows). `category_contact_counts()` RPC confirmed correct against the live counts.
-- Remaining: admin panel deploy to Vercel; physical-device pass on the mobile app (directory browsing, favourites, search/filter, auth flows) — left to the user per their stated testing approach (Expo Go/QR for most features, one EAS build reserved for Google Sign-In).
+- Remaining: physical-device validation of directory browsing, search/filter, jump bar, detail actions, and marking contacts; plus the end-to-end check that a contact added in the admin panel appears in the app without restarting. Auth is user-confirmed working; Apple sign-in is explicitly outside Week 2. Vercel deployment is confirmed by the user.

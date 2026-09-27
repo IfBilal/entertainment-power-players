@@ -18,9 +18,9 @@ insert into quotes (id, text, author, active, "order") values
   ('quote_5', 'Do the best you can until you know better. Then when you know better, do better.', 'Maya Angelou', true, 5)
 on conflict (id) do update set text = excluded.text, author = excluded.author, active = excluded.active, "order" = excluded."order";
 
-insert into app_config (id, min_version, paywall_copy, free_tier_rules) values
-  (true, '1.0.0', 'Unlock the full directory and every challenge track.', 'Category names, track names, and quotes are free. Contacts and challenges require Pro.')
-on conflict (id) do update set min_version = excluded.min_version, paywall_copy = excluded.paywall_copy, free_tier_rules = excluded.free_tier_rules;
+insert into app_config (id, min_version, paywall_copy, free_tier_rules, test_purchases_enabled) values
+  (true, '1.0.0', 'Unlock the full directory and every challenge track.', 'Category names, track names, and quotes are free. Contacts and challenges require Pro.', true)
+on conflict (id) do update set min_version = excluded.min_version, paywall_copy = excluded.paywall_copy, free_tier_rules = excluded.free_tier_rules, test_purchases_enabled = excluded.test_purchases_enabled;
 
 insert into tracks (slug, name, "order", active) values
   ('creators-producers', 'Creators + Producers', 1, true),

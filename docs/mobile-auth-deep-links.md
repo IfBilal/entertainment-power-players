@@ -17,7 +17,16 @@ exp://**/--/auth/callback
 The first URL is used by an installed development/production app. The
 wildcard URL supports Expo Go during development, where Expo generates a
 device-specific `exp://` URL. The app passes the callback URL explicitly for
-each email operation, so the Site URL can remain the normal web fallback.
+each auth operation. If the project has no website, its Site URL may be set to
+`com.entertainmentpowerplayers.app://auth/callback` as the mobile fallback.
+
+Google sign-in uses the same Supabase-hosted OAuth browser flow as Star Talks:
+the app opens Google's consent screen via Supabase, then exchanges the returned
+PKCE code into the app session. Enable Google in **Authentication → Sign In /
+Providers → Google** for this project and configure its Google client ID and
+secret there. The Google OAuth client's authorized redirect URI must be the
+Supabase callback URL shown on that provider settings page; the app deep link
+belongs in Supabase's Redirect URLs, not in Google's redirect URI list.
 
 Keep the auth email templates' confirmation link pointed at Supabase's
 `{{ .ConfirmationURL }}` so Supabase verifies the one-time token before

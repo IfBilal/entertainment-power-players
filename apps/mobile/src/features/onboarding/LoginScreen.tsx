@@ -3,7 +3,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, FormField, Logo, Screen, SocialButton } from '../../components';
 import { colors, spacing } from '../../theme';
-import { signInWithEmail } from '../../services/supabase/auth';
+import { signInWithEmail, signInWithGoogle } from '../../services/supabase/auth';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Login'>;
@@ -13,6 +13,19 @@ export function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  async function handleGoogleLogin() {
+    setError(null);
+    setSubmitting(true);
+    try {
+      const signedIn = await signInWithGoogle();
+      if (signedIn) navigation.replace('Splash');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not sign in with Google. Try again.');
+    } finally {
+      setSubmitting(false);
+    }
+  }
 
   async function handleLogin() {
     setError(null);
@@ -107,7 +120,8 @@ export function LoginScreen({ navigation }: Props) {
           <SocialButton
             provider="google"
             label="Continue with Google"
-            onPress={() => navigation.navigate('SignUp')}
+            onPress={handleGoogleLogin}
+            disabled={submitting}
           />
         </View>
 

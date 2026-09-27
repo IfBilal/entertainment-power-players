@@ -1,7 +1,7 @@
 const mockSetSession = jest.fn();
 const mockExchangeCodeForSession = jest.fn();
 const mockVerifyOtp = jest.fn();
-const mockCreateUrl = jest.fn((path: string, options: { scheme: string }) => `${options.scheme}://${path}`);
+const mockCreateUrl = jest.fn((path: string) => `com.entertainmentpowerplayers.app://${path}`);
 
 jest.mock('../services/supabase/client', () => ({
   supabase: {
@@ -13,7 +13,7 @@ jest.mock('../services/supabase/client', () => ({
   },
 }));
 
-jest.mock('expo-linking', () => ({ createURL: (...args: unknown[]) => mockCreateUrl(...args as [string, { scheme: string }]) }));
+jest.mock('expo-linking', () => ({ createURL: (path: string) => mockCreateUrl(path) }));
 
 import { completeAuthRedirect, getAuthRedirectUrl, isAuthCallbackUrl } from '../services/supabase/authRedirect';
 
@@ -27,9 +27,7 @@ describe('Supabase app auth redirects', () => {
 
   it('creates the same app callback route used for all email flows', () => {
     expect(getAuthRedirectUrl()).toBe('com.entertainmentpowerplayers.app://auth/callback');
-    expect(mockCreateUrl).toHaveBeenCalledWith('auth/callback', {
-      scheme: 'com.entertainmentpowerplayers.app',
-    });
+    expect(mockCreateUrl).toHaveBeenCalledWith('auth/callback');
   });
 
   it('recognizes the installed-app and Expo Go callback URLs only', () => {

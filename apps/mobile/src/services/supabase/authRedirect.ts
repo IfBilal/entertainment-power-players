@@ -13,7 +13,9 @@ export type AuthRedirectKind = 'signup' | 'recovery' | 'email-change' | 'verific
  * exp:// URL, which is why the Supabase redirect allowlist needs both forms.
  */
 export function getAuthRedirectUrl() {
-  return Linking.createURL(AUTH_CALLBACK_PATH, { scheme: APP_AUTH_SCHEME });
+  // Let Expo choose the URI for the current runtime: standalone/dev builds
+  // use the registered app scheme, while Expo Go gets its host-specific URL.
+  return Linking.createURL(AUTH_CALLBACK_PATH);
 }
 
 function getCallbackParams(url: URL) {

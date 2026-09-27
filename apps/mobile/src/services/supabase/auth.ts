@@ -1,5 +1,6 @@
 import { supabase } from './client';
-import { getAuthRedirectUrl } from './authRedirect';
+import * as WebBrowser from 'expo-web-browser';
+import { completeAuthRedirect, getAuthRedirectUrl } from './authRedirect';
 
 /** Thrown by signUpWithEmail when the email already belongs to a confirmed account. */
 export class EmailAlreadyRegisteredError extends Error {
@@ -71,35 +72,27 @@ export async function signOut() {
 }
 
 /**
- * Deliberately lazy — nothing from @react-native-google-signin/google-signin
- * runs at module load or app startup. `configure()` and the sign-in call both
- * happen only when this function is actually invoked (button press), so the
- * native module is never touched unless someone taps "Continue with Google".
- * In plain Expo Go (no dev client) the native module isn't linked and this
- * throws — callers show a friendly message instead of a crash. In the EAS
- * dev-client build it works normally. See docs/week2-implementation-plan.md
- * Workstream A.
+ * Matches Star Talks: use Supabase-hosted Google OAuth in the system browser,
+ * then exchange the returned PKCE code into the app's persisted Supabase
+ * session. A cancelled browser flow is a normal no-op and returns false.
  */
 export async function signInWithGoogle() {
-  const { GoogleSignin } = await import('@react-native-google-signin/google-signin');
-
-  GoogleSignin.configure({
-    webClientId: process.env.EXPO_PUBLIC_GOOGLE_WEB_CLIENT_ID,
-  });
-
-  await GoogleSignin.hasPlayServices();
-  const response = await GoogleSignin.signIn();
-  const idToken = response.data?.idToken;
-  if (!idToken) {
-    throw new Error('No ID token returned from Google sign-in.');
-  }
-
-  const { data, error } = await supabase.auth.signInWithIdToken({
+  const redirectTo = getAuthRedirectUrl();
+  const { data, error } = await supabase.auth.signInWithOAuth({
     provider: 'google',
-    token: idToken,
+    options: {
+      redirectTo,
+      skipBrowserRedirect: true,
+    },
   });
   if (error) throw error;
-  return data;
+  if (!data.url) throw new Error('Google sign-in did not return an authorization URL.');
+
+  const result = await WebBrowser.openAuthSessionAsync(data.url, redirectTo);
+  if (result.type !== 'success') return false;
+
+  await completeAuthRedirect(result.url);
+  return true;
 }
 
 /**

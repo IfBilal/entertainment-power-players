@@ -37,8 +37,8 @@
         }
       ],
       "expo-secure-store",
-      "@react-native-google-signin/google-signin",
-      "expo-image"
+      "expo-image",
+      "expo-web-browser"
     ],
     "extra": {
       "eas": {

@@ -44,10 +44,10 @@ export function SignUpScreen({ navigation }: Props) {
     setNotice(null);
     setSubmitting(true);
     try {
-      await signInWithGoogle();
-      navigation.navigate('TrackPicker');
-    } catch {
-      setError('Google sign-in isn’t available in this preview — use the full build, or sign up with email.');
+      const signedIn = await signInWithGoogle();
+      if (signedIn) navigation.replace('Splash');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Could not sign in with Google. Try again.');
     } finally {
       setSubmitting(false);
     }

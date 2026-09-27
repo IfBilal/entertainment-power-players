@@ -25,6 +25,8 @@ import { EditProfileScreen, NotificationsScreen, SubscriptionScreen } from './sr
 import { useAppStore } from './src/store/useAppStore';
 import { useChallengesStore } from './src/store/useChallengesStore';
 import { colors, useAppFonts } from './src/theme';
+import { AuthDeepLinkHandler } from './src/features/onboarding/AuthDeepLinkHandler';
+import { flushPendingAuthNavigation, rootNavigationRef } from './src/navigation/rootNavigation';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -150,7 +152,12 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayoutRootView}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <NavigationContainer theme={navigationTheme}>
+          <NavigationContainer
+            ref={rootNavigationRef}
+            onReady={flushPendingAuthNavigation}
+            theme={navigationTheme}
+          >
+            <AuthDeepLinkHandler />
             {preview ?? <RootNavigator />}
             {/* Light glyphs: the app is dark-only, and "dark" would paint the
                 clock and battery near-black against a near-black bar. */}

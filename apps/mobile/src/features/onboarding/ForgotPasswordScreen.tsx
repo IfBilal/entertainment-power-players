@@ -35,7 +35,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
           Check your email
         </AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
-          We sent a password reset link to {email.trim()}. Open it on this device to set a new password, then log in.
+          We sent a password reset link to {email.trim()}. Open it on this device and the app will take you to a screen to choose a new password.
         </AppText>
         <Button label="Back to login" size="lg" fullWidth onPress={() => navigation.goBack()} />
       </Screen>

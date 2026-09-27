@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -6,13 +6,78 @@ import { AppText, Button, FormField, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
+import { requestEmailChange } from '../../services/supabase/auth';
+import { useAuthStore } from '../../store/useAuthStore';
 
 function Back({ onPress }: { onPress: () => void }) { return <Pressable onPress={onPress} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>; }
 
 export function EditProfileScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>) {
   const [name, setName] = useState('Bilal Tahir');
   const [bio, setBio] = useState('Aspiring creator, building my next opportunity.');
-  return <Screen><Back onPress={() => navigation.goBack()} /><AppText variant="title">Edit Profile</AppText><View style={styles.editAvatar}><View style={styles.avatar}><AppText variant="title" color={colors.textInverse}>BT</AppText><Ionicons name="camera" size={15} color={colors.textInverse} style={styles.camera} /></View></View><View style={styles.form}><FormField label="Full name" value={name} onChangeText={setName} /><FormField label="Email address" value="bilal@example.com" editable={false} /><FormField label="Bio" value={bio} onChangeText={setBio} multiline style={styles.bio} /><Button label="Save Changes" onPress={() => navigation.goBack()} /></View></Screen>;
+  const currentEmail = useAuthStore((state) => state.emailAddress);
+  const [email, setEmail] = useState(currentEmail ?? '');
+  const [sendingEmailLink, setSendingEmailLink] = useState(false);
+  const [emailLinkSent, setEmailLinkSent] = useState(false);
+  const [emailError, setEmailError] = useState<string | null>(null);
+
+  useEffect(() => {
+    if (currentEmail) setEmail(currentEmail);
+  }, [currentEmail]);
+
+  async function sendEmailChangeLink() {
+    setEmailError(null);
+    setEmailLinkSent(false);
+    if (!email.trim() || email.trim().toLowerCase() === currentEmail?.toLowerCase()) {
+      setEmailError('Enter a different email address.');
+      return;
+    }
+    setSendingEmailLink(true);
+    try {
+      await requestEmailChange(email);
+      setEmailLinkSent(true);
+    } catch (err) {
+      setEmailError(err instanceof Error ? err.message : 'Could not send the confirmation email. Try again.');
+    } finally {
+      setSendingEmailLink(false);
+    }
+  }
+
+  return (
+    <Screen>
+      <Back onPress={() => navigation.goBack()} />
+      <AppText variant="title">Edit Profile</AppText>
+      <View style={styles.editAvatar}>
+        <View style={styles.avatar}>
+          <AppText variant="title" color={colors.textInverse}>BT</AppText>
+          <Ionicons name="camera" size={15} color={colors.textInverse} style={styles.camera} />
+        </View>
+      </View>
+      <View style={styles.form}>
+        <FormField label="Full name" value={name} onChangeText={setName} />
+        <FormField
+          label="Email address"
+          value={email}
+          onChangeText={(value) => { setEmail(value); setEmailLinkSent(false); }}
+          autoCapitalize="none"
+          autoComplete="email"
+          keyboardType="email-address"
+          error={emailError ?? undefined}
+        />
+        {emailLinkSent ? (
+          <AppText variant="caption" color={colors.accentLime}>
+            Confirmation link sent. Open it on this device; if Supabase asks you to confirm both addresses, open both email links.
+          </AppText>
+        ) : null}
+        <Button
+          label={sendingEmailLink ? 'Sending confirmation…' : 'Change email address'}
+          onPress={sendEmailChangeLink}
+          disabled={sendingEmailLink || !email.trim()}
+        />
+        <FormField label="Bio" value={bio} onChangeText={setBio} multiline style={styles.bio} />
+        <Button label="Save Changes" onPress={() => navigation.goBack()} />
+      </View>
+    </Screen>
+  );
 }
 
 export function SubscriptionScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Subscription'>) {

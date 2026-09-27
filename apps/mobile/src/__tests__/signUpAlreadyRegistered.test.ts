@@ -9,6 +9,10 @@
  */
 const mockSignUp = jest.fn();
 
+jest.mock('expo-linking', () => ({
+  createURL: () => 'com.entertainmentpowerplayers.app://auth/callback',
+}));
+
 jest.mock('../services/supabase/client', () => ({
   supabase: {
     auth: {

@@ -4,6 +4,7 @@ import { OnboardingNavigator } from '../features/onboarding/OnboardingNavigator'
 import { MainTabNavigator } from './MainTabNavigator';
 import { PaywallScreen } from '../features/subscription/PaywallScreen';
 import { themedHeaderOptions } from './headerOptions';
+import { ResetPasswordScreen } from '../features/onboarding/ResetPasswordScreen';
 import { useAuthStore } from '../store/useAuthStore';
 import type { RootStackParamList } from './types';
 
@@ -40,6 +41,11 @@ export function RootNavigator() {
         name="Paywall"
         component={PaywallScreen}
         options={{ ...themedHeaderOptions, headerShown: true, title: '', presentation: 'modal', animation: 'slide_from_bottom' }}
+      />
+      <Stack.Screen
+        name="ResetPassword"
+        component={ResetPasswordScreen}
+        options={{ ...themedHeaderOptions, headerShown: false, presentation: 'modal' }}
       />
     </Stack.Navigator>
   );

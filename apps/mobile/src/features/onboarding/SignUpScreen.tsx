@@ -15,9 +15,11 @@ export function SignUpScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
 
   async function handleEmailSignUp() {
     setError(null);
+    setNotice(null);
     setSubmitting(true);
     try {
       const data = await signUpWithEmail(email.trim(), password, fullName.trim() || undefined);
@@ -28,7 +30,7 @@ export function SignUpScreen({ navigation }: Props) {
         navigation.navigate('TrackPicker');
       } else {
         // Email confirmation is required on this project -- no session yet.
-        setError('Check your email to confirm your account, then log in.');
+        setNotice('Check your email and open the confirmation link on this device. It will bring you back to the app.');
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Something went wrong. Try again.');
@@ -39,6 +41,7 @@ export function SignUpScreen({ navigation }: Props) {
 
   async function handleGoogleSignUp() {
     setError(null);
+    setNotice(null);
     setSubmitting(true);
     try {
       await signInWithGoogle();
@@ -111,6 +114,7 @@ export function SignUpScreen({ navigation }: Props) {
             onChangeText={setPassword}
             error={error ?? undefined}
           />
+          {notice ? <AppText variant="caption" color={colors.accentLime}>{notice}</AppText> : null}
         </View>
 
         <View style={styles.ctaWrap}>

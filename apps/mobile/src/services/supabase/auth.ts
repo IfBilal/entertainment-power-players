@@ -1,4 +1,5 @@
 import { supabase } from './client';
+import { getAuthRedirectUrl } from './authRedirect';
 
 /** Thrown by signUpWithEmail when the email already belongs to a confirmed account. */
 export class EmailAlreadyRegisteredError extends Error {
@@ -14,7 +15,10 @@ export async function signUpWithEmail(email: string, password: string, fullName?
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
-    options: fullName ? { data: { full_name: fullName } } : undefined,
+    options: {
+      emailRedirectTo: getAuthRedirectUrl(),
+      ...(fullName ? { data: { full_name: fullName } } : {}),
+    },
   });
   if (error) throw error;
 
@@ -39,19 +43,26 @@ export async function signInWithEmail(email: string, password: string) {
   return data;
 }
 
-// Password recovery needs its own destination -- a real page where someone
-// can type a new password -- separate from the plain "you're confirmed"
-// page used for signup. Without an explicit redirectTo here, Supabase falls
-// back to the project's single global Site URL, which is the signup
-// confirmation page: that's the bug reported live (reset email landed on
-// "you're confirmed" with no way to actually set a new password).
-const PASSWORD_RESET_REDIRECT_URL = 'https://entertainment-power-players-confirm.vercel.app/reset.html';
-
 export async function sendPasswordResetEmail(email: string) {
   const { error } = await supabase.auth.resetPasswordForEmail(email, {
-    redirectTo: PASSWORD_RESET_REDIRECT_URL,
+    redirectTo: getAuthRedirectUrl(),
   });
   if (error) throw error;
+}
+
+export async function requestEmailChange(email: string) {
+  const { data, error } = await supabase.auth.updateUser(
+    { email: email.trim() },
+    { emailRedirectTo: getAuthRedirectUrl() },
+  );
+  if (error) throw error;
+  return data;
+}
+
+export async function updatePassword(password: string) {
+  const { data, error } = await supabase.auth.updateUser({ password });
+  if (error) throw error;
+  return data;
 }
 
 export async function signOut() {

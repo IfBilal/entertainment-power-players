@@ -55,4 +55,5 @@ export type RootStackParamList = {
   Onboarding: NavigatorScreenParams<OnboardingStackParamList>;
   Main: NavigatorScreenParams<MainTabParamList>;
   Paywall: { reason?: string; plan?: 'monthly' | 'annual' } | undefined;
+  ResetPassword: undefined;
 };

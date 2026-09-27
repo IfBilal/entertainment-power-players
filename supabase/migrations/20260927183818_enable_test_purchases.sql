@@ -1,3 +1,4 @@
+-- Version matches the migration record created on the EPP database.
 -- Temporary, reversible purchase simulation for internal testing before the
 -- RevenueCat integration exists. Keep it separate from paid entitlements.
 alter table public.app_config

@@ -5,6 +5,17 @@ import { fetchProfile } from '../services/supabase/profile';
 
 export type AuthStatus = 'loading' | 'signedOut' | 'signedIn';
 
+export function displayNameFromMetadata(metadata: Record<string, unknown> | undefined): string | null {
+  if (!metadata) return null;
+  const fullName = metadata.full_name ?? metadata.name;
+  if (typeof fullName === 'string' && fullName.trim()) return fullName.trim();
+
+  const parts = [metadata.given_name, metadata.family_name]
+    .filter((part): part is string => typeof part === 'string' && Boolean(part.trim()))
+    .map((part) => part.trim());
+  return parts.length ? parts.join(' ') : null;
+}
+
 type AuthState = {
   status: AuthStatus;
   userId: string | null;
@@ -17,23 +28,30 @@ type AuthState = {
   hydrated: boolean;
   hydrate: () => () => void;
   setSelectedTrackSlugs: (slugs: string[]) => void;
+  setDisplayName: (name: string) => void;
   reset: () => void;
 };
 
 async function loadProfileInto(set: (partial: Partial<AuthState>) => void, session: Session) {
   try {
     const profile = await fetchProfile(session.user.id);
+    const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
     set({
       selectedTrackSlugs: profile?.selectedTracks ?? [],
-      displayName: profile?.displayName ?? null,
-      photoUrl: profile?.photoUrl ?? null,
+      displayName: profile?.displayName?.trim() || displayNameFromMetadata(metadata),
+      photoUrl: profile?.photoUrl ?? (typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null),
     });
   } catch {
     // Profile row is created by a DB trigger on signup; a transient fetch
     // failure shouldn't block the user out of the app -- treat as "no
     // tracks yet" and let them proceed to TrackPicker, which will retry
     // the write when they continue.
-    set({ selectedTrackSlugs: [] });
+    const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
+    set({
+      selectedTrackSlugs: [],
+      displayName: displayNameFromMetadata(metadata),
+      photoUrl: typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null,
+    });
   }
 }
 
@@ -108,6 +126,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   },
 
   setSelectedTrackSlugs: (slugs) => set({ selectedTrackSlugs: slugs }),
+  setDisplayName: (name) => set({ displayName: name }),
 
   reset: () => set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null }),
 }));

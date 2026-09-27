@@ -17,6 +17,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
   const userId = useAuthStore((s) => s.userId);
   const selectedTrackSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
   const setSelectedTrackSlugs = useAuthStore((s) => s.setSelectedTrackSlugs);
+  const displayName = useAuthStore((s) => s.displayName);
+  const photoUrl = useAuthStore((s) => s.photoUrl);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tracksOpen, setTracksOpen] = useState(false);
@@ -82,8 +84,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppText variant="title">Profile</AppText>
         <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
-          <Avatar name="Bilal Tahir" size="lg" />
-          <View style={styles.identityText}><AppText variant="title">Bilal Tahir</AppText><AppText variant="caption" color={colors.textSecondary}>{isPro ? 'Pro Member' : 'Free Member'}</AppText></View>
+          <Avatar name={displayName || 'Your profile'} imageUrl={photoUrl} size="lg" />
+          <View style={styles.identityText}><AppText variant="title">{displayName || 'Your profile'}</AppText><AppText variant="caption" color={colors.textSecondary}>{isPro ? 'Pro Member' : 'Free Member'}</AppText></View>
         </Pressable>
 
         <View style={styles.section}>

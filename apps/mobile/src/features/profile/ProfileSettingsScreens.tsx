@@ -8,13 +8,19 @@ import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { requestEmailChange } from '../../services/supabase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
+import { updateProfile } from '../../services/supabase/profile';
 
 function Back({ onPress }: { onPress: () => void }) { return <Pressable onPress={onPress} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>; }
 
 export function EditProfileScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>) {
-  const [name, setName] = useState('Bilal Tahir');
+  const displayName = useAuthStore((state) => state.displayName);
+  const userId = useAuthStore((state) => state.userId);
+  const setDisplayName = useAuthStore((state) => state.setDisplayName);
+  const [name, setName] = useState(displayName ?? '');
   const [bio, setBio] = useState('Aspiring creator, building my next opportunity.');
   const currentEmail = useAuthStore((state) => state.emailAddress);
+  const [savingProfile, setSavingProfile] = useState(false);
+  const [profileError, setProfileError] = useState<string | null>(null);
   const [email, setEmail] = useState(currentEmail ?? '');
   const [sendingEmailLink, setSendingEmailLink] = useState(false);
   const [emailLinkSent, setEmailLinkSent] = useState(false);
@@ -23,6 +29,34 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   useEffect(() => {
     if (currentEmail) setEmail(currentEmail);
   }, [currentEmail]);
+
+  useEffect(() => {
+    if (displayName) setName(displayName);
+  }, [displayName]);
+
+  async function saveProfile() {
+    const nextName = name.trim();
+    if (!userId || !nextName) {
+      setProfileError('Enter your full name before saving.');
+      return;
+    }
+    setProfileError(null);
+    setSavingProfile(true);
+    try {
+      await updateProfile(userId, { displayName: nextName });
+      setDisplayName(nextName);
+      navigation.goBack();
+    } catch (err) {
+      setProfileError(err instanceof Error ? err.message : 'Could not save your profile. Try again.');
+    } finally {
+      setSavingProfile(false);
+    }
+  }
+
+  const avatarName = name.trim() || displayName || 'Your profile';
+  const avatarInitials = avatarName === 'Your profile'
+    ? '?'
+    : avatarName.split(/\s+/).filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
 
   async function sendEmailChangeLink() {
     setEmailError(null);
@@ -48,7 +82,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
       <AppText variant="title">Edit Profile</AppText>
       <View style={styles.editAvatar}>
         <View style={styles.avatar}>
-          <AppText variant="title" color={colors.textInverse}>BT</AppText>
+          <AppText variant="title" color={colors.textInverse}>{avatarInitials}</AppText>
           <Ionicons name="camera" size={15} color={colors.textInverse} style={styles.camera} />
         </View>
       </View>
@@ -74,7 +108,8 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
           disabled={sendingEmailLink || !email.trim()}
         />
         <FormField label="Bio" value={bio} onChangeText={setBio} multiline style={styles.bio} />
-        <Button label="Save Changes" onPress={() => navigation.goBack()} />
+        {profileError ? <AppText variant="caption" color={colors.danger}>{profileError}</AppText> : null}
+        <Button label={savingProfile ? 'Saving…' : 'Save Changes'} onPress={saveProfile} disabled={savingProfile} />
       </View>
     </Screen>
   );

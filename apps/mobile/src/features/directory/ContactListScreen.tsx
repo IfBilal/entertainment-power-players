@@ -1,4 +1,4 @@
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
@@ -12,6 +12,7 @@ import {
   filterContacts,
   groupByLetter,
   searchContacts,
+  sectionIndexForLetter,
   type ContactFilters,
 } from '../../utils/contactSearch';
 import { useDebouncedValue } from '../../utils/useDebouncedValue';
@@ -32,6 +33,13 @@ export function ContactListScreen({ route, navigation }: Props) {
   const [filters, setFilters] = useState<ContactFilters>({});
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const listRef = useRef<SectionList<Contact>>(null);
+  const pendingSectionIndex = useRef<number | null>(null);
+  const scrollRecoveryAttempts = useRef(0);
+  const scrollRecoveryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => () => {
+    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
+  }, []);
 
   const locked = isScreenLocked('directoryContactList', isPro);
 
@@ -42,14 +50,14 @@ export function ContactListScreen({ route, navigation }: Props) {
     enabled: !locked,
   });
 
-  const { isFavorite, toggleFavorite } = useFavorites();
+  const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
 
   const category = categoriesQuery.data?.find((c) => c.slug === categorySlug);
   const categoryContacts = useMemo(() => contactsQuery.data ?? [], [contactsQuery.data]);
 
   const filtered = useMemo(
-    () => filterContacts(searchContacts(categoryContacts, debouncedQuery), filters),
-    [categoryContacts, debouncedQuery, filters],
+    () => filterContacts(searchContacts(categoryContacts, debouncedQuery), filters, favoriteIds),
+    [categoryContacts, debouncedQuery, filters, favoriteIds],
   );
 
   const sections = useMemo(
@@ -59,12 +67,29 @@ export function ContactListScreen({ route, navigation }: Props) {
 
   const roles = useMemo(() => availableRoles(categoryContacts), [categoryContacts]);
   const cities = useMemo(() => availableCities(categoryContacts), [categoryContacts]);
-  const activeFilterCount = (filters.role ? 1 : 0) + (filters.city ? 1 : 0);
+  const activeFilterCount = (filters.role ? 1 : 0) + (filters.city ? 1 : 0) + (filters.favoritesOnly ? 1 : 0);
 
   function jumpToLetter(letter: string) {
-    const sectionIndex = sections.findIndex((s) => s.title === letter);
+    const sectionIndex = sectionIndexForLetter(sections.map((section) => section.title), letter);
     if (sectionIndex < 0) return;
+    pendingSectionIndex.current = sectionIndex;
+    scrollRecoveryAttempts.current = 0;
+    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
     listRef.current?.scrollToLocation({ sectionIndex, itemIndex: 0, viewPosition: 0 });
+  }
+
+  function recoverFailedScroll({ index, averageItemLength }: { index: number; averageItemLength: number }) {
+    const sectionIndex = pendingSectionIndex.current;
+    if (sectionIndex === null || scrollRecoveryAttempts.current >= 2) {
+      pendingSectionIndex.current = null;
+      return;
+    }
+    scrollRecoveryAttempts.current += 1;
+    listRef.current?.getScrollResponder()?.scrollTo({ y: averageItemLength * index, animated: false });
+    scrollRecoveryTimer.current = setTimeout(() => {
+      const target = pendingSectionIndex.current;
+      if (target !== null) listRef.current?.scrollToLocation({ sectionIndex: target, itemIndex: 0, viewPosition: 0 });
+    }, 120);
   }
 
   if (locked) {
@@ -116,7 +141,7 @@ export function ContactListScreen({ route, navigation }: Props) {
         {activeFilterCount > 0 ? (
           <Pressable onPress={() => setFilters({})} style={styles.clearFilters}>
             <AppText variant="caption" color={colors.accent}>
-              {[filters.role, filters.city].filter(Boolean).join(' · ')} — clear
+              {[filters.role, filters.city, filters.favoritesOnly ? 'Favorites only' : undefined].filter(Boolean).join(' · ')} — clear
             </AppText>
           </Pressable>
         ) : null}
@@ -131,7 +156,7 @@ export function ContactListScreen({ route, navigation }: Props) {
           stickySectionHeadersEnabled
           refreshing={contactsQuery.isFetching}
           onRefresh={() => contactsQuery.refetch()}
-          onScrollToIndexFailed={() => undefined}
+          onScrollToIndexFailed={recoverFailedScroll}
           renderSectionHeader={({ section }) => (
             <View style={styles.sectionHeader}>
               <AppText variant="label" color={colors.textTertiary}>
@@ -164,9 +189,17 @@ export function ContactListScreen({ route, navigation }: Props) {
         />
         <View style={styles.jumpBar}>
           {ALPHABET.map((letter) => {
-            const hasSection = sections.some((s) => s.title === letter);
+            const hasSection = sections.length > 0;
             return (
-              <Pressable key={letter} onPress={() => jumpToLetter(letter)} disabled={!hasSection} hitSlop={2}>
+              <Pressable
+                key={letter}
+                onPress={() => jumpToLetter(letter)}
+                disabled={!hasSection}
+                hitSlop={5}
+                accessibilityRole="button"
+                accessibilityLabel={`Jump to ${letter}`}
+                style={styles.jumpTarget}
+              >
                 <AppText variant="caption" color={hasSection ? colors.accent : colors.borderSubtle} style={styles.jumpLetter}>
                   {letter}
                 </AppText>
@@ -214,6 +247,21 @@ export function ContactListScreen({ route, navigation }: Props) {
               </AppText>
             </Pressable>
           ))}
+        </View>
+
+        <AppText variant="label" color={colors.textTertiary} style={styles.filterLabel}>FAVORITES</AppText>
+        <View style={styles.chips}>
+          <Pressable
+            onPress={() => setFilters((f) => ({ ...f, favoritesOnly: !f.favoritesOnly }))}
+            accessibilityRole="checkbox"
+            accessibilityState={{ checked: Boolean(filters.favoritesOnly) }}
+            accessibilityLabel="Favorites only"
+            style={[styles.chip, filters.favoritesOnly && styles.chipActive]}
+          >
+            <AppText variant="caption" color={filters.favoritesOnly ? colors.textInverse : colors.textPrimary}>
+              ★ Favorites only
+            </AppText>
+          </Pressable>
         </View>
 
         <View style={styles.sheetActions}>
@@ -267,6 +315,7 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     paddingVertical: spacing.sm,
   },
+  jumpTarget: { minWidth: 20, minHeight: 15, alignItems: 'center', justifyContent: 'center' },
   jumpLetter: { fontSize: 10, lineHeight: 13 },
   sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   filterLabel: { marginTop: spacing.md },

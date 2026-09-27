@@ -3,6 +3,7 @@ import type { Contact } from '../services/supabase/directory';
 export type ContactFilters = {
   role?: string;
   city?: string;
+  favoritesOnly?: boolean;
 };
 
 /**
@@ -20,12 +21,21 @@ export function searchContacts(contacts: Contact[], query: string): Contact[] {
   );
 }
 
-export function filterContacts(contacts: Contact[], filters: ContactFilters): Contact[] {
+export function filterContacts(contacts: Contact[], filters: ContactFilters, favoriteIds: string[] = []): Contact[] {
   return contacts.filter((c) => {
     if (filters.role && c.role !== filters.role) return false;
     if (filters.city && c.city !== filters.city) return false;
+    if (filters.favoritesOnly && !favoriteIds.includes(c.id)) return false;
     return true;
   });
+}
+
+/** Resolve an A–Z tap to the next populated section (or the last one). */
+export function sectionIndexForLetter(sectionTitles: string[], letter: string): number {
+  if (sectionTitles.length === 0) return -1;
+  const target = letter.toUpperCase();
+  const nextIndex = sectionTitles.findIndex((title) => title >= target);
+  return nextIndex === -1 ? sectionTitles.length - 1 : nextIndex;
 }
 
 /**

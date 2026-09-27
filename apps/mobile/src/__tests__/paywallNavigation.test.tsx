@@ -23,10 +23,30 @@ jest.mock('../services/supabase/directory', () => ({
       categorySlug: 'fashion',
       role: 'Casting Director',
       company: 'Example Casting',
+      city: 'New York',
+    },
+    {
+      id: 'c2',
+      name: 'John Smith',
+      nameLower: 'john smith',
+      sortKey: 'john smith',
+      categorySlug: 'fashion',
+      role: 'Producer',
+      company: 'Second Example',
+      city: 'Los Angeles',
     },
   ]),
-  fetchContactById: jest.fn(async () => null),
-  fetchFavoriteContactIds: jest.fn(async () => []),
+  fetchContactById: jest.fn(async (id: string) => ({
+    id,
+    name: id === 'c1' ? 'Jane Doe' : 'John Smith',
+    nameLower: id === 'c1' ? 'jane doe' : 'john smith',
+    sortKey: id === 'c1' ? 'jane doe' : 'john smith',
+    categorySlug: 'fashion',
+    role: id === 'c1' ? 'Casting Director' : 'Producer',
+    company: id === 'c1' ? 'Example Casting' : 'Second Example',
+    city: id === 'c1' ? 'New York' : 'Los Angeles',
+  })),
+  fetchFavoriteContactIds: jest.fn(async () => ['c2']),
   addFavorite: jest.fn(async () => undefined),
   removeFavorite: jest.fn(async () => undefined),
   logContactedActivity: jest.fn(async () => undefined),
@@ -92,5 +112,24 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     fireEvent.press(await screen.findByLabelText('Close paywall'));
     expect(await screen.findByText('Profile')).toBeTruthy();
     expect(screen.queryByText('Quick Access')).toBeNull();
+  });
+
+  it('filters to favorites only and shows city on contact details', async () => {
+    useAppStore.setState({ isPro: true });
+    await renderWithProviders(<RootNavigator />);
+
+    fireEvent.press(await screen.findByLabelText('Directory'));
+    fireEvent.press(await screen.findByText('Fashion'));
+    expect(await screen.findByText('Jane Doe')).toBeTruthy();
+    expect(await screen.findByText('John Smith')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText('Filter contacts'));
+    fireEvent.press(await screen.findByLabelText('Favorites only'));
+    fireEvent.press(screen.getByText('Apply filters'));
+    expect(await screen.findByText('John Smith')).toBeTruthy();
+    await waitFor(() => expect(screen.queryByText('Jane Doe')).toBeNull());
+
+    fireEvent.press(screen.getByText('John Smith'));
+    expect(await screen.findByText('Los Angeles')).toBeTruthy();
   });
 });

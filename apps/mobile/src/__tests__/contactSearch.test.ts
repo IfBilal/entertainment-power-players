@@ -1,4 +1,4 @@
-import { availableCities, availableRoles, filterContacts, groupByLetter, searchContacts } from '../utils/contactSearch';
+import { availableCities, availableRoles, filterContacts, groupByLetter, searchContacts, sectionIndexForLetter } from '../utils/contactSearch';
 import type { Contact } from '../services/mock/contacts';
 
 function makeContact(overrides: Partial<Contact>): Contact {
@@ -43,6 +43,11 @@ describe('filterContacts', () => {
     expect(filterContacts(contacts, { city: 'NYC' }).map((c) => c.id).sort()).toEqual(['c1', 'c3']);
     expect(filterContacts(contacts, { role: 'Executive' }).map((c) => c.id)).toEqual(['c2']);
   });
+
+  it('can filter down to favorited contacts while preserving other filters', () => {
+    expect(filterContacts(contacts, { favoritesOnly: true }, ['c2', 'c3']).map((c) => c.id)).toEqual(['c2', 'c3']);
+    expect(filterContacts(contacts, { city: 'NYC', favoritesOnly: true }, ['c1']).map((c) => c.id)).toEqual(['c1']);
+  });
 });
 
 describe('availableRoles / availableCities', () => {
@@ -59,6 +64,15 @@ describe('groupByLetter', () => {
     expect(letters).toEqual(['J', 'W']); // "The Weeknd Group" sorts under W, not T
     const jGroup = groups.find((g) => g.letter === 'J');
     expect(jGroup?.contacts.map((c) => c.id)).toEqual(['c1', 'c2']);
+  });
+});
+
+describe('sectionIndexForLetter', () => {
+  it('jumps to the next populated letter, falling back to the previous last section', () => {
+    expect(sectionIndexForLetter(['A', 'C', 'F'], 'C')).toBe(1);
+    expect(sectionIndexForLetter(['A', 'C', 'F'], 'D')).toBe(2);
+    expect(sectionIndexForLetter(['A', 'C', 'F'], 'Z')).toBe(2);
+    expect(sectionIndexForLetter([], 'A')).toBe(-1);
   });
 });
 

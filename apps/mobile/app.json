@@ -5,7 +5,7 @@
     "version": "1.0.0",
     "scheme": "com.entertainmentpowerplayers.app",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/app-icon.png",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#050F11",
     "ios": {
@@ -16,9 +16,7 @@
       "package": "com.entertainmentpowerplayers.app",
       "adaptiveIcon": {
         "backgroundColor": "#050F11",
-        "foregroundImage": "./assets/android-icon-foreground.png",
-        "backgroundImage": "./assets/android-icon-background.png",
-        "monochromeImage": "./assets/android-icon-monochrome.png"
+        "foregroundImage": "./assets/app-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
     },
@@ -32,7 +30,7 @@
         "expo-splash-screen",
         {
           "backgroundColor": "#050F11",
-          "image": "./assets/icon.png",
+          "image": "./assets/app-icon.png",
           "imageWidth": 120
         }
       ],

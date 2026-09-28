@@ -15,7 +15,7 @@ export type DirectoryStackParamList = {
   Home: undefined;
   CategoryGrid: undefined;
   ContactList: { categorySlug: string };
-  ContactDetail: { contactId: string };
+  ContactDetail: { contactId: string; city?: string };
 };
 
 export type TrackerStackParamList = {

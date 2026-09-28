@@ -78,18 +78,25 @@ export function ContactListScreen({ route, navigation }: Props) {
     listRef.current?.scrollToLocation({ sectionIndex, itemIndex: 0, viewPosition: 0 });
   }
 
-  function recoverFailedScroll({ index, averageItemLength }: { index: number; averageItemLength: number }) {
+  function recoverFailedScroll({ index, highestMeasuredFrameIndex, averageItemLength }: {
+    index: number;
+    highestMeasuredFrameIndex: number;
+    averageItemLength: number;
+  }) {
     const sectionIndex = pendingSectionIndex.current;
-    if (sectionIndex === null || scrollRecoveryAttempts.current >= 2) {
+    if (sectionIndex === null || scrollRecoveryAttempts.current >= 12) {
       pendingSectionIndex.current = null;
       return;
     }
     scrollRecoveryAttempts.current += 1;
-    listRef.current?.getScrollResponder()?.scrollTo({ y: averageItemLength * index, animated: false });
+    const estimatedLength = averageItemLength > 0 ? averageItemLength : 72;
+    const estimatedIndex = Math.max(index, highestMeasuredFrameIndex + 1, 0);
+    listRef.current?.getScrollResponder()?.scrollTo({ y: estimatedLength * estimatedIndex, animated: false });
+    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
     scrollRecoveryTimer.current = setTimeout(() => {
       const target = pendingSectionIndex.current;
       if (target !== null) listRef.current?.scrollToLocation({ sectionIndex: target, itemIndex: 0, viewPosition: 0 });
-    }, 120);
+    }, 180);
   }
 
   if (locked) {
@@ -171,7 +178,7 @@ export function ContactListScreen({ route, navigation }: Props) {
               company={item.company ?? undefined}
               city={item.city ?? undefined}
               favorite={isFavorite(item.id)}
-              onPress={() => navigation.navigate('ContactDetail', { contactId: item.id })}
+              onPress={() => navigation.navigate('ContactDetail', { contactId: item.id, city: item.city })}
               onToggleFavorite={() => toggleFavorite(item.id)}
             />
           )}
@@ -310,12 +317,12 @@ const styles = StyleSheet.create({
   },
   emptyText: { paddingHorizontal: spacing.md, paddingVertical: spacing.xl, textAlign: 'center' },
   jumpBar: {
-    width: 20,
-    justifyContent: 'center',
+    width: 44,
+    justifyContent: 'space-evenly',
     alignItems: 'center',
-    paddingVertical: spacing.sm,
+    paddingVertical: spacing.xs,
   },
-  jumpTarget: { minWidth: 20, minHeight: 15, alignItems: 'center', justifyContent: 'center' },
+  jumpTarget: { width: '100%', flex: 1, minHeight: 16, alignItems: 'center', justifyContent: 'center' },
   jumpLetter: { fontSize: 10, lineHeight: 13 },
   sheetHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
   filterLabel: { marginTop: spacing.md },

@@ -25,6 +25,7 @@ export function ContactDetailScreen({ route }: Props) {
   });
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
   const contact = contactQuery.data;
+  const city = contact?.city?.trim() || route.params.city?.trim();
   const categoryName = categoriesQuery.data?.find((c) => c.slug === contact?.categorySlug)?.name;
 
   if (contactQuery.isLoading) {
@@ -77,8 +78,11 @@ export function ContactDetailScreen({ route }: Props) {
         <View style={styles.headerText}>
           <AppText variant="display" style={styles.name}>{contact.name}</AppText>
           <AppText variant="subtitle" color={colors.textSecondary} style={styles.role}>{contact.role}</AppText>
-          {contact.city ? (
-            <View style={styles.location}><Ionicons name="location" size={18} color={colors.accentAmber} /><AppText variant="body" color={colors.textSecondary}>{contact.city}</AppText></View>
+          {city ? (
+            <View style={styles.location}>
+              <Ionicons name="location" size={18} color={colors.accentAmber} />
+              <AppText variant="body" color={colors.textSecondary}>{city}</AppText>
+            </View>
           ) : null}
         </View>
       </View>

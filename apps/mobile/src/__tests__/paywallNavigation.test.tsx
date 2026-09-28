@@ -1,4 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
+import { SectionList } from 'react-native';
 import { RootNavigator } from '../navigation/RootNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAppStore } from '../store/useAppStore';
@@ -44,7 +45,8 @@ jest.mock('../services/supabase/directory', () => ({
     categorySlug: 'fashion',
     role: id === 'c1' ? 'Casting Director' : 'Producer',
     company: id === 'c1' ? 'Example Casting' : 'Second Example',
-    city: id === 'c1' ? 'New York' : 'Los Angeles',
+    // Mimic a detail response without city while the list row already has it.
+    city: undefined,
   })),
   fetchFavoriteContactIds: jest.fn(async () => ['c2']),
   addFavorite: jest.fn(async () => undefined),
@@ -131,5 +133,19 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
 
     fireEvent.press(screen.getByText('John Smith'));
     expect(await screen.findByText('Los Angeles')).toBeTruthy();
+  });
+
+  it('routes A–Z taps to a populated section', async () => {
+    useAppStore.setState({ isPro: true });
+    await renderWithProviders(<RootNavigator />);
+
+    fireEvent.press(await screen.findByLabelText('Directory'));
+    fireEvent.press(await screen.findByText('Fashion'));
+    await screen.findByText('John Smith');
+
+    const scrollToLocation = jest.spyOn(SectionList.prototype, 'scrollToLocation');
+    fireEvent.press(screen.getByLabelText('Jump to Z'));
+    expect(scrollToLocation).toHaveBeenCalledWith({ sectionIndex: 0, itemIndex: 0, viewPosition: 0 });
+    scrollToLocation.mockRestore();
   });
 });

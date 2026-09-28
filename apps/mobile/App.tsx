@@ -93,6 +93,21 @@ function previewScreen() {
       return <CategoryGridScreen {...props} />;
     case 'ContactList':
       props.route.params = { categorySlug: 'fashion' };
+      if (new URLSearchParams(globalThis.location.search).get('dataset') === 'long') {
+        queryClient.setQueryData(['contacts', 'fashion'], [
+          ...sampleContacts,
+          ...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('').flatMap((letter) =>
+            Array.from({ length: 5 }, (_, index) => ({
+              id: `preview-${letter}-${index}`,
+              name: `${letter} Preview Contact ${index + 1}`,
+              nameLower: `${letter.toLowerCase()} preview contact ${index + 1}`,
+              sortKey: `${letter.toLowerCase()} preview contact ${index + 1}`,
+              categorySlug: 'fashion',
+              role: 'Stylist',
+              city: 'London, UK',
+            }))),
+        ]);
+      }
       return <ContactListScreen {...props} />;
     case 'ContactDetail':
       props.route.params = { contactId: 'alex' };

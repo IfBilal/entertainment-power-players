@@ -1,5 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
-import { Pressable, SectionList, StyleSheet, TextInput, View } from 'react-native';
+import { useMemo, useRef, useState } from 'react';
+import { Pressable, SectionList, StyleSheet, TextInput, View, useWindowDimensions } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -16,6 +16,7 @@ import {
   type ContactFilters,
 } from '../../utils/contactSearch';
 import { useDebouncedValue } from '../../utils/useDebouncedValue';
+import { buildDirectoryItemLayouts } from '../../utils/directoryLayout';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAppStore } from '../../store/useAppStore';
 import { isScreenLocked } from '../../utils/paywall';
@@ -33,13 +34,9 @@ export function ContactListScreen({ route, navigation }: Props) {
   const [filters, setFilters] = useState<ContactFilters>({});
   const [filterSheetOpen, setFilterSheetOpen] = useState(false);
   const listRef = useRef<SectionList<Contact>>(null);
-  const pendingSectionIndex = useRef<number | null>(null);
-  const scrollRecoveryAttempts = useRef(0);
-  const scrollRecoveryTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => () => {
-    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
-  }, []);
+  const { fontScale } = useWindowDimensions();
+  const rowHeight = Math.max(72, Math.ceil(26 + 39 * fontScale));
+  const sectionHeaderHeight = Math.ceil(18 * fontScale + spacing.xs * 2);
 
   const locked = isScreenLocked('directoryContactList', isPro);
 
@@ -64,6 +61,10 @@ export function ContactListScreen({ route, navigation }: Props) {
     () => groupByLetter(filtered).map((g) => ({ title: g.letter, data: g.contacts })),
     [filtered],
   );
+  const itemLayouts = useMemo(
+    () => buildDirectoryItemLayouts(sections.map((section) => section.data.length), rowHeight, sectionHeaderHeight),
+    [sections, rowHeight, sectionHeaderHeight],
+  );
 
   const roles = useMemo(() => availableRoles(categoryContacts), [categoryContacts]);
   const cities = useMemo(() => availableCities(categoryContacts), [categoryContacts]);
@@ -72,31 +73,7 @@ export function ContactListScreen({ route, navigation }: Props) {
   function jumpToLetter(letter: string) {
     const sectionIndex = sectionIndexForLetter(sections.map((section) => section.title), letter);
     if (sectionIndex < 0) return;
-    pendingSectionIndex.current = sectionIndex;
-    scrollRecoveryAttempts.current = 0;
-    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
     listRef.current?.scrollToLocation({ sectionIndex, itemIndex: 0, viewPosition: 0 });
-  }
-
-  function recoverFailedScroll({ index, highestMeasuredFrameIndex, averageItemLength }: {
-    index: number;
-    highestMeasuredFrameIndex: number;
-    averageItemLength: number;
-  }) {
-    const sectionIndex = pendingSectionIndex.current;
-    if (sectionIndex === null || scrollRecoveryAttempts.current >= 12) {
-      pendingSectionIndex.current = null;
-      return;
-    }
-    scrollRecoveryAttempts.current += 1;
-    const estimatedLength = averageItemLength > 0 ? averageItemLength : 72;
-    const estimatedIndex = Math.max(index, highestMeasuredFrameIndex + 1, 0);
-    listRef.current?.getScrollResponder()?.scrollTo({ y: estimatedLength * estimatedIndex, animated: false });
-    if (scrollRecoveryTimer.current) clearTimeout(scrollRecoveryTimer.current);
-    scrollRecoveryTimer.current = setTimeout(() => {
-      const target = pendingSectionIndex.current;
-      if (target !== null) listRef.current?.scrollToLocation({ sectionIndex: target, itemIndex: 0, viewPosition: 0 });
-    }, 180);
   }
 
   if (locked) {
@@ -159,13 +136,13 @@ export function ContactListScreen({ route, navigation }: Props) {
           ref={listRef}
           style={styles.list}
           sections={sections}
+          getItemLayout={(_, index) => itemLayouts[index]}
           keyExtractor={(item) => item.id}
           stickySectionHeadersEnabled
           refreshing={contactsQuery.isFetching}
           onRefresh={() => contactsQuery.refetch()}
-          onScrollToIndexFailed={recoverFailedScroll}
           renderSectionHeader={({ section }) => (
-            <View style={styles.sectionHeader}>
+            <View style={[styles.sectionHeader, { height: sectionHeaderHeight }]}>
               <AppText variant="label" color={colors.textTertiary}>
                 {section.title}
               </AppText>
@@ -178,6 +155,7 @@ export function ContactListScreen({ route, navigation }: Props) {
               company={item.company ?? undefined}
               city={item.city ?? undefined}
               favorite={isFavorite(item.id)}
+              rowHeight={rowHeight}
               onPress={() => navigation.navigate('ContactDetail', { contactId: item.id, city: item.city })}
               onToggleFavorite={() => toggleFavorite(item.id)}
             />

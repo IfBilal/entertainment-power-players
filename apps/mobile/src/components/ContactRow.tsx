@@ -10,6 +10,7 @@ type ContactRowProps = {
   role?: string;
   company?: string;
   city?: string;
+  rowHeight: number;
   favorite: boolean;
   onPress: () => void;
   onToggleFavorite: () => void;
@@ -20,7 +21,7 @@ type ContactRowProps = {
  * The mockups put an avatar on every row — see Avatar for why these are
  * initials on a brand gradient rather than photographs.
  */
-export function ContactRow({ name, role, company, city, favorite, onPress, onToggleFavorite }: ContactRowProps) {
+export function ContactRow({ name, role, company, city, rowHeight, favorite, onPress, onToggleFavorite }: ContactRowProps) {
   const bg = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = bg.interpolate({
@@ -36,7 +37,7 @@ export function ContactRow({ name, role, company, city, favorite, onPress, onTog
         onPress={onPress}
         onPressIn={() => Animated.timing(bg, { toValue: 1, duration: 100, useNativeDriver: false }).start()}
         onPressOut={() => Animated.timing(bg, { toValue: 0, duration: 150, useNativeDriver: false }).start()}
-        style={styles.row}
+        style={[styles.row, { height: rowHeight }]}
       >
         <Avatar name={name} size="md" />
         <View style={styles.text}>

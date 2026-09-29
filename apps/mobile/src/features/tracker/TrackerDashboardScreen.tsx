@@ -1,4 +1,5 @@
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { useEffect, useRef, useState } from 'react';
+import { AppState, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, BarChart, Button, Card, Divider, MomentumRow, ProgressRing, Screen, StatCard } from '../../components';
 import { colors, spacing } from '../../theme';
@@ -7,21 +8,43 @@ import { useUserGoals } from '../../hooks/useUserGoals';
 import { goalsForWeek } from '../../services/supabase/goals';
 import { countsForWeek, last8WeeksTotals } from '../../services/mock/tracker';
 import { computeWeekKey } from '../../utils/weekKey';
+import { useQueryClient } from '@tanstack/react-query';
+import { useAuthStore } from '../../store/useAuthStore';
+import { activityQueryKey } from '../../services/supabase/activity';
 import type { TrackerStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
 
 export function TrackerDashboardScreen({ navigation }: Props) {
+  const [now, setNow] = useState(() => new Date());
+  const lastWeek = useRef(computeWeekKey(now));
+  const queryClient = useQueryClient();
+  const userId = useAuthStore((state) => state.userId);
   const { entries, activityQuery } = useTrackerEntries();
   const goalsQuery = useUserGoals();
-  const now = new Date();
   const weekKey = computeWeekKey(now);
   const counts = countsForWeek(entries, weekKey);
   const goals = goalsForWeek(goalsQuery.data ?? {}, weekKey);
-  const chartData = last8WeeksTotals(entries, now).map((w, i) => ({ label: `W${i + 1}`, value: w.total }));
+  const chartData = last8WeeksTotals(entries, now).map((w) => ({ label: `${w.weekKey.slice(2, 4)}-${w.weekKey.slice(5)}`, value: w.total }));
 
-  const totalActions = counts.contacts + counts.events + counts.followUps;
-  const totalGoal = goals.contacts + goals.events + goals.followUps;
+  useEffect(() => {
+    if (process.env.NODE_ENV === 'test') return;
+    const refresh = () => {
+      const next = new Date();
+      const nextWeek = computeWeekKey(next);
+      if (nextWeek !== lastWeek.current && userId) void queryClient.invalidateQueries({ queryKey: activityQueryKey(userId) });
+      lastWeek.current = nextWeek;
+      setNow(next);
+    };
+    const timer = setInterval(refresh, 30_000);
+    const listener = AppState.addEventListener('change', (state) => {
+      if (state === 'active') {
+        refresh();
+        if (userId) void queryClient.invalidateQueries({ queryKey: activityQueryKey(userId) });
+      }
+    });
+    return () => { clearInterval(timer); listener.remove(); };
+  }, [queryClient, userId]);
 
   const rows: Array<{ key: 'contacts' | 'events' | 'followUps'; label: string; icon: 'people-outline' | 'calendar-outline' | 'return-up-forward-outline' }> = [
     { key: 'contacts', label: 'Contacts', icon: 'people-outline' },
@@ -59,11 +82,18 @@ export function TrackerDashboardScreen({ navigation }: Props) {
           <View testID="tracker-progress-copy" style={styles.progressCopy}>
             <AppText variant="numeric">{counts.contacts}/{goals.contacts}</AppText>
             <AppText variant="caption" color={colors.textSecondary}>Contacts</AppText>
+            {goals.contacts === 0 ? <AppText variant="caption" color={colors.textSecondary}>No goal set</AppText> : null}
           </View>
         </View>
         <View style={styles.metrics}>
-          {rows.filter((r) => r.key !== 'contacts').map((row) => (
-            <Card key={row.key} style={styles.metricCard} elevation="none"><AppText variant="bodyStrong">{row.label}</AppText><AppText variant="subtitle"><AppText variant="bodyStrong" color={colors.accentOrange}>{counts[row.key]}</AppText> / {goals[row.key]}</AppText></Card>
+          {rows.map((row) => (
+            <Card key={row.key} style={styles.metricCard} elevation="none">
+              <AppText variant="bodyStrong">{row.label}</AppText>
+              <AppText variant="caption" color={colors.textSecondary}>{counts[row.key]} / {goals[row.key]}{goals[row.key] === 0 ? ' · No goal set' : ''}</AppText>
+              <View accessibilityRole="progressbar" accessibilityLabel={`${row.label}: ${counts[row.key]} of ${goals[row.key]}`} accessibilityValue={{ min: 0, max: goals[row.key] || 1, now: Math.min(counts[row.key], goals[row.key] || 1) }} style={styles.barTrack}>
+                <View style={[styles.barFill, { width: `${goals[row.key] ? Math.min(100, counts[row.key] / goals[row.key] * 100) : 0}%` }]} />
+              </View>
+            </Card>
           ))}
         </View>
 
@@ -99,8 +129,10 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  metrics: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.lg },
+  metrics: { gap: spacing.sm, marginBottom: spacing.lg },
   metricCard: { flex: 1, padding: spacing.md, gap: spacing.sm, backgroundColor: colors.surface },
+  barTrack: { height: 7, borderRadius: 4, backgroundColor: colors.surfaceStrong, overflow: 'hidden' },
+  barFill: { height: '100%', borderRadius: 4, backgroundColor: colors.accentLime },
   section: { marginBottom: spacing.md },
   chartCard: { backgroundColor: colors.surfaceSubtle },
 });

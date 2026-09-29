@@ -50,3 +50,11 @@ Admin checkpoint: `da5fa69`, pushed to `main`; deployment intentionally withheld
 - Challenge actions use the atomic `transition_challenge` RPC and update progress/activity caches; tracker history now reads persisted activity only, without title-based synthetic deduplication. Legacy position keys remain read-compatible until old APKs are retired; the new writes use stable challenge IDs.
 - Mobile `npm run typecheck` passes; `npm test -- --runInBand --silent` passes **31 suites / 81 tests**, including new live-content mapping tests. No `--forceExit` required.
 - This is still a **code-only checkpoint**: the currently deployed EPP database does not yet have the new columns/RPC, and no physical-device Supabase session or deployed admin edit has been exercised. Do not ship a new APK from this commit until schema rollout is verified.
+
+## Phase 3 — tracker client checkpoint (in progress, 2026-09-30)
+
+- Contact and follow-up logging can now link an active directory contact for pro accounts, or use a manual title; free accounts do not query the gated directory. Events have local date and time pickers, and creation stores the selected instant and its local ISO `week_key`. There is no event edit UI, so the stored key never changes after creation.
+- Dashboard shows counts, goals, accessible bars for all three types, a zero-goal label, and an eight-week chart labelled with ISO year/week. A foreground check and 30-second tick update the current week without an app restart; activity is invalidated on foreground/week rollover.
+- History rows reveal a delete action on left swipe (with a visible accessibility fallback), confirm before server deletion, show a pending state, and invalidate the activity cache after the server succeeds. Challenge history remains read-only.
+- Added integration tests for directory linking, event creation, durable deletion/reopen, and unit tests for eight-week gaps, ISO year rollover, zero goal carry-forward and persisted-week counting. `npm run typecheck` and `npm test -- --runInBand --silent` pass: **32 suites / 86 tests**.
+- Not yet a Phase 3 acceptance claim: the native picker/swipe and force-stop/reopen flow have not been exercised on a device against migrated EPP. The EPP migration remains unavailable from this session, so no APK should be released from the current branch yet.

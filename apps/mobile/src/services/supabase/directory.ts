@@ -22,6 +22,8 @@ export type Contact = {
   notes?: string;
 };
 
+export type ContactChoice = Pick<Contact, 'id' | 'name' | 'categorySlug'>;
+
 type ContactRow = {
   id: string;
   name: string;
@@ -103,6 +105,17 @@ export async function fetchContactById(id: string): Promise<Contact | null> {
   const { data, error } = await supabase.from('contacts').select(CONTACT_COLUMNS).eq('id', id).maybeSingle();
   if (error) throw error;
   return data ? toContact(data as ContactRow) : null;
+}
+
+/** Small-directory picker for linking a contact log to a real directory row. */
+export async function fetchContactChoices(): Promise<ContactChoice[]> {
+  const { data, error } = await supabase.from('contacts')
+    .select('id, name, category_slug')
+    .eq('active', true)
+    .order('name')
+    .limit(5000);
+  if (error) throw error;
+  return (data ?? []).map((row) => ({ id: row.id, name: row.name, categorySlug: row.category_slug }));
 }
 
 export async function fetchFavoriteContactIds(userId: string): Promise<string[]> {

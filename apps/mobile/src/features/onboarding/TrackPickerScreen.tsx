@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Screen } from '../../components';
 import { colors, radius, spacing, trackIcons } from '../../theme';
-import { tracks } from '../../services/mock/challenges';
+import { useTracks } from '../../hooks/useContent';
 import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { OnboardingStackParamList } from '../../navigation/types';
@@ -17,6 +17,8 @@ export function TrackPickerScreen(_props: Props) {
   const [error, setError] = useState<string | null>(null);
   const userId = useAuthStore((s) => s.userId);
   const setSelectedTrackSlugs = useAuthStore((s) => s.setSelectedTrackSlugs);
+  const tracksQuery = useTracks();
+  const tracks = tracksQuery.data ?? [];
 
   function toggle(slug: string) {
     setSelected((prev) => (prev.includes(slug) ? prev.filter((s) => s !== slug) : [...prev, slug]));
@@ -76,6 +78,13 @@ export function TrackPickerScreen(_props: Props) {
           );
         }}
       />
+      {tracksQuery.isPending ? <AppText variant="caption" color={colors.textSecondary}>Loading tracks…</AppText> : null}
+      {tracksQuery.isError ? (
+        <Pressable onPress={() => tracksQuery.refetch()} accessibilityRole="button">
+          <AppText variant="caption" color={colors.danger}>Couldn&apos;t load tracks. Tap to retry.</AppText>
+        </Pressable>
+      ) : null}
+      {tracksQuery.isSuccess && tracks.length === 0 ? <AppText variant="caption" color={colors.textSecondary}>No tracks are available yet.</AppText> : null}
       {error ? (
         <AppText variant="caption" color={colors.danger} style={styles.error}>
           {error}
@@ -85,7 +94,7 @@ export function TrackPickerScreen(_props: Props) {
         label="Continue"
         size="lg"
         fullWidth
-        disabled={selected.length === 0 || submitting}
+        disabled={selected.length === 0 || submitting || tracksQuery.isPending || tracksQuery.isError}
         onPress={handleContinue}
       />
     </Screen>

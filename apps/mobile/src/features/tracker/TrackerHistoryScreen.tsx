@@ -12,7 +12,7 @@ const typeLabels = { contact: 'Contact', event: 'Event', followUp: 'Follow-up', 
 
 export function TrackerHistoryScreen() {
   const userId = useAuthStore((state) => state.userId);
-  const { entries: trackerEntries, activityQuery, challengeQuery } = useTrackerEntries();
+  const { entries: trackerEntries, activityQuery } = useTrackerEntries();
   const queryClient = useQueryClient();
   const entries = [...trackerEntries].sort((a, b) => b.date.localeCompare(a.date));
 
@@ -42,8 +42,8 @@ export function TrackerHistoryScreen() {
         data={grouped}
         keyExtractor={([weekKey]) => weekKey}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={activityQuery.isPending || challengeQuery.isPending ? <ActivityIndicator color={colors.accentLime} /> : activityQuery.isError || challengeQuery.isError ? (
-          <ErrorState title="Couldn't load history" description="Check your connection and try again." onRetry={() => { activityQuery.refetch(); challengeQuery.refetch(); }} />
+        ListEmptyComponent={activityQuery.isPending ? <ActivityIndicator color={colors.accentLime} /> : activityQuery.isError ? (
+          <ErrorState title="Couldn't load history" description="Check your connection and try again." onRetry={() => activityQuery.refetch()} />
         ) : (
           <EmptyState
             icon="time-outline"
@@ -65,7 +65,7 @@ export function TrackerHistoryScreen() {
                   <AppText variant="caption" color={colors.textSecondary}>{typeLabels[entry.type]}</AppText>
                   {entry.notes ? <AppText variant="caption" color={colors.textSecondary}>{entry.notes}</AppText> : null}
                 </View>
-                {entry.id.startsWith('challenge_') ? null : (
+                {entry.type === 'challenge' ? null : (
                   <Pressable onPress={() => handleDelete(entry)} accessibilityLabel="Delete entry" hitSlop={8}>
                     <Ionicons name="trash-outline" size={17} color={colors.textTertiary} />
                   </Pressable>

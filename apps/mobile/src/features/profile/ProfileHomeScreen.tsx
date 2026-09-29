@@ -3,7 +3,7 @@ import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Avatar, Divider, Screen, SettingsRow, Tag } from '../../components';
 import { colors, spacing } from '../../theme';
-import { tracks } from '../../services/mock/challenges';
+import { useTracks } from '../../hooks/useContent';
 import { deleteAccount, signOut } from '../../services/supabase/auth';
 import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAppStore } from '../../store/useAppStore';
@@ -23,12 +23,16 @@ export function ProfileHomeScreen({ navigation }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [tracksOpen, setTracksOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const tracksQuery = useTracks();
+  const tracks = tracksQuery.data ?? [];
 
   async function toggleTrack(slug: string) {
     if (!userId) return;
-    const next = selectedTrackSlugs.includes(slug)
-      ? selectedTrackSlugs.filter((s) => s !== slug)
-      : [...selectedTrackSlugs, slug];
+    const activeSlugs = new Set(tracks.map((track) => track.slug));
+    const activeSelection = selectedTrackSlugs.filter((selectedSlug) => activeSlugs.has(selectedSlug));
+    const next = activeSelection.includes(slug)
+      ? activeSelection.filter((selectedSlug) => selectedSlug !== slug)
+      : [...activeSelection, slug];
     // Keep at least one track selected -- an empty list is what RootNavigator
     // reads as "onboarding not finished", which would bounce them back to
     // the track picker mid-session.
@@ -92,6 +96,8 @@ export function ProfileHomeScreen({ navigation }: Props) {
           <SettingsRow icon="flag-outline" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
           {tracksOpen ? (
             <View style={styles.trackList}>
+              {tracksQuery.isPending ? <AppText variant="caption" color={colors.textSecondary}>Loading tracks…</AppText> : null}
+              {tracksQuery.isError ? <Pressable onPress={() => tracksQuery.refetch()}><AppText variant="caption" color={colors.danger}>Couldn&apos;t load tracks. Tap to retry.</AppText></Pressable> : null}
               {tracks.map((track) => {
                 const isSelected = selectedTrackSlugs.includes(track.slug);
                 return (

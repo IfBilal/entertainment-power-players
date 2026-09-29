@@ -1,8 +1,6 @@
 import { supabase } from './client';
-import { challengeKey, type ChallengeProgress, type ChallengeProgressMap } from '../mock/challenges';
-import { tracks } from '../mock/challenges';
-import type { ActivityEntry } from '../mock/tracker';
-import { computeWeekKey } from '../../utils/weekKey';
+import { legacyChallengeKey, type ChallengeProgress, type ChallengeProgressMap } from '../../utils/challengeProgress';
+import type { ChallengeRecord } from '../../types/week3';
 
 export function challengeProgressQueryKey(userId: string | null) {
   return ['challengeProgress', userId] as const;
@@ -10,52 +8,42 @@ export function challengeProgressQueryKey(userId: string | null) {
 
 export async function fetchChallengeProgress(userId: string): Promise<ChallengeProgressMap> {
   const { data, error } = await supabase.from('challenge_progress')
-    .select('track_slug, challenge_order, status, count, note, completed_at')
+    .select('challenge_id, track_slug, challenge_order, status, count, note, completed_at')
     .eq('user_id', userId);
   if (error) throw error;
   const progress: ChallengeProgressMap = {};
   for (const row of data ?? []) {
-    progress[challengeKey(row.track_slug, row.challenge_order)] = {
+    const entry = {
       status: row.status as ChallengeProgress['status'],
       count: row.count,
       note: row.note ?? undefined,
       completedAt: row.completed_at ?? undefined,
     };
+    progress[legacyChallengeKey(row.track_slug, row.challenge_order)] = entry;
+    if (row.challenge_id) progress[row.challenge_id] = entry;
   }
   return progress;
 }
 
-export async function saveChallengeProgress(userId: string, trackSlug: string, challengeOrder: number, next: ChallengeProgress): Promise<ChallengeProgress> {
-  const completedAt = next.status === 'complete' ? next.completedAt ?? new Date().toISOString() : undefined;
-  const { error } = await supabase.from('challenge_progress').upsert({
-    user_id: userId,
-    track_slug: trackSlug,
-    challenge_order: challengeOrder,
-    status: next.status,
-    count: next.count,
-    note: next.note ?? null,
-    completed_at: completedAt ?? null,
-  }, { onConflict: 'user_id,track_slug,challenge_order' }).select('challenge_order').single();
+/** One server transaction changes progress and its linked tracker activity. */
+export async function transitionChallenge(
+  challenge: ChallengeRecord,
+  action: 'toggle' | 'increment' | 'decrement' | 'note',
+  note: string | undefined,
+  weekKey: string,
+): Promise<ChallengeProgress> {
+  const { data, error } = await supabase.rpc('transition_challenge', {
+    p_challenge_id: challenge.id,
+    p_action: action,
+    p_note: note ?? null,
+    p_week_key: weekKey,
+  });
   if (error) throw error;
-  return { ...next, completedAt };
-}
-
-export function completedChallengeEntries(progress: ChallengeProgressMap): ActivityEntry[] {
-  const entries: ActivityEntry[] = [];
-  for (const track of tracks) {
-    for (const challenge of track.challenges) {
-      const key = challengeKey(track.slug, challenge.order);
-      const saved = progress[key];
-      if (saved?.status !== 'complete' || !saved.completedAt) continue;
-      entries.push({
-        id: `challenge_${key}`,
-        type: 'challenge',
-        title: `Completed "${challenge.title}"`,
-        date: saved.completedAt,
-        weekKey: computeWeekKey(new Date(saved.completedAt)),
-        notes: saved.note,
-      });
-    }
-  }
-  return entries;
+  if (!data) throw new Error('Challenge update did not return progress.');
+  return {
+    status: data.status as ChallengeProgress['status'],
+    count: data.count,
+    note: data.note ?? undefined,
+    completedAt: data.completed_at ?? undefined,
+  };
 }

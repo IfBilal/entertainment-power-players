@@ -10,7 +10,14 @@ jest.mock('../services/supabase/directory', () => ({
 }));
 jest.mock('../services/supabase/activity', () => ({
   activityQueryKey: (userId: string | null) => ['activity', userId],
-  fetchUserActivity: jest.fn(async () => []),
+  fetchUserActivity: jest.fn(async () => [{
+    id: 'persisted-challenge-activity',
+    type: 'challenge',
+    title: 'Completed "Create Something New"',
+    date: new Date().toISOString(),
+    weekKey: '2026-W40',
+    notes: 'Drafted a pitch',
+  }]),
 }));
 jest.mock('../services/supabase/challenges', () => {
   const actual = jest.requireActual('../services/supabase/challenges');
@@ -22,11 +29,12 @@ jest.mock('../services/supabase/challenges', () => {
   };
 });
 
-it('shows saved challenge completion in Tracker Week History without a second activity write', async () => {
+it('shows the one persisted challenge activity in Tracker Week History', async () => {
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['creators-producers'], hydrated: true });
   await renderWithProviders(<MainTabNavigator />);
   fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
   fireEvent.press(await screen.findByLabelText('Week History'));
   expect(await screen.findByText('Completed "Create Something New"')).toBeTruthy();
+  expect(screen.getAllByText('Completed "Create Something New"')).toHaveLength(1);
   expect(await screen.findByText('Drafted a pitch')).toBeTruthy();
 });

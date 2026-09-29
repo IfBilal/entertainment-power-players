@@ -3,6 +3,15 @@ import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator'
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAuthStore } from '../store/useAuthStore';
 
+jest.mock('../services/supabase/content', () => {
+  const { testTracks, testChallenges } = jest.requireActual('../testing/mockContent');
+  return {
+    fetchActiveTracks: jest.fn(async () => testTracks),
+    fetchActiveChallenges: jest.fn(async () => testChallenges),
+    fetchActiveQuotes: jest.fn(async () => []),
+  };
+});
+
 jest.mock('../services/supabase/challenges', () => ({
   challengeProgressQueryKey: (userId: string | null) => ['challengeProgress', userId],
   fetchChallengeProgress: jest.fn(async () => ({})),

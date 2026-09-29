@@ -29,7 +29,7 @@ export type TrackerStackParamList = {
 export type ChallengesStackParamList = {
   TrackList: undefined;
   TrackDetail: { trackSlug: string };
-  ChallengeDetail: { trackSlug: string; challengeOrder: number };
+  ChallengeDetail: { trackSlug: string; challengeId?: string; challengeOrder?: number };
 };
 
 export type InspirationStackParamList = {

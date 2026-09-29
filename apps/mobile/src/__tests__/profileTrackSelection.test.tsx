@@ -5,6 +5,15 @@ import { displayNameFromMetadata, useAuthStore } from '../store/useAuthStore';
 import { useAppStore } from '../store/useAppStore';
 import { updateSelectedTracks } from '../services/supabase/profile';
 
+jest.mock('../services/supabase/content', () => {
+  const { testTracks, testChallenges } = jest.requireActual('../testing/mockContent');
+  return {
+    fetchActiveTracks: jest.fn(async () => testTracks),
+    fetchActiveChallenges: jest.fn(async () => testChallenges),
+    fetchActiveQuotes: jest.fn(async () => []),
+  };
+});
+
 jest.mock('../services/supabase/profile', () => ({
   updateSelectedTracks: jest.fn(async () => undefined),
 }));

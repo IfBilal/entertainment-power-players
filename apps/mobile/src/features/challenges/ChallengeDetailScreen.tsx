@@ -4,20 +4,33 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, CounterControl, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { tracks } from '../../services/mock/challenges';
+import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useChallengeActions } from '../../hooks/useChallengeActions';
+import { useAppStore } from '../../store/useAppStore';
+import type { ChallengeRecord } from '../../types/week3';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'ChallengeDetail'>;
 
 export function ChallengeDetailScreen({ route, navigation }: Props) {
-  const { trackSlug, challengeOrder } = route.params;
-  const track = tracks.find((candidate) => candidate.slug === trackSlug);
-  const foundChallenge = track?.challenges.find((candidate) => candidate.order === challengeOrder);
-  const challenge = foundChallenge ?? { order: challengeOrder, title: '', description: '', type: 'single' as const };
-  const { progress: entry, disabled, error, act, complete: markComplete, saveNote } = useChallengeActions(trackSlug, challenge);
+  const { trackSlug, challengeId, challengeOrder } = route.params;
+  const tracksQuery = useTracks();
+  const challengesQuery = useChallenges();
+  const isPro = useAppStore((state) => state.isPro);
+  const track = tracksQuery.data?.find((candidate) => candidate.slug === trackSlug);
+  const foundChallenge = challengesQuery.data?.find((candidate) => candidate.trackSlug === trackSlug && (
+    challengeId ? candidate.id === challengeId : candidate.order === challengeOrder
+  ));
+  const challenge: ChallengeRecord = foundChallenge ?? {
+    id: challengeId ?? 'missing', trackSlug, order: challengeOrder ?? -1,
+    title: '', description: '', type: 'single', target: null, active: false,
+  };
+  const { progress: entry, disabled, error, act, saveNote } = useChallengeActions(challenge);
   const [note, setNote] = useState('');
   useEffect(() => setNote(entry?.note ?? ''), [entry?.note]);
+  if (!isPro) return <Screen><AppText variant="title">Premium challenge</AppText><Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'challenges' })} /></Screen>;
+  if (tracksQuery.isPending || challengesQuery.isPending) return <Screen><AppText variant="body">Loading challenge…</AppText></Screen>;
+  if (tracksQuery.isError || challengesQuery.isError) return <Screen><Button label="Retry loading challenge" onPress={() => { tracksQuery.refetch(); challengesQuery.refetch(); }} /></Screen>;
   if (!track || !foundChallenge) return <Screen><AppText variant="body">Challenge not found.</AppText></Screen>;
   const count = entry?.count ?? 0;
   const target = challenge.target ?? 1;
@@ -34,7 +47,7 @@ export function ChallengeDetailScreen({ route, navigation }: Props) {
       {challenge.type === 'counter' ? <><AppText variant="captionStrong" color={colors.accentAmber} style={styles.counterLabel}>Counter · Target {target}</AppText><CounterControl count={count} target={target} onIncrement={() => change('increment')} onDecrement={() => change('decrement')} disabled={disabled} /></> : null}
       <TextInput value={note} onChangeText={setNote} onBlur={() => { if (note !== (entry?.note ?? '')) saveNote(note); }} editable={!disabled} placeholder="Add Note" placeholderTextColor={colors.textMuted} style={styles.note} />
       {error ? <AppText variant="caption" color={colors.danger}>Couldn't save challenge. Try again.</AppText> : null}
-      <View style={styles.bottom}><Button label={complete ? 'Completed' : 'Mark as Complete'} onPress={() => markComplete(note)} disabled={disabled || complete} /></View>
+      {challenge.type === 'single' ? <View style={styles.bottom}><Button label={complete ? 'Mark Incomplete' : 'Mark as Complete'} onPress={() => act('toggle', note)} disabled={disabled} /></View> : null}
     </Screen>
   );
 }

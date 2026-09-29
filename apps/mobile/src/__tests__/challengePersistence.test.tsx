@@ -3,19 +3,36 @@ import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator'
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAuthStore } from '../store/useAuthStore';
 import { useAppStore } from '../store/useAppStore';
-import { completedChallengeEntries, saveChallengeProgress } from '../services/supabase/challenges';
+import { transitionChallenge } from '../services/supabase/challenges';
 import type { ChallengeProgressMap } from '../services/mock/challenges';
+import type { ChallengeRecord } from '../types/week3';
 
 const mockProgress: ChallengeProgressMap = {};
+
+jest.mock('../services/supabase/content', () => {
+  const { testTracks, testChallenges } = jest.requireActual('../testing/mockContent');
+  return {
+    fetchActiveTracks: jest.fn(async () => testTracks),
+    fetchActiveChallenges: jest.fn(async () => testChallenges),
+    fetchActiveQuotes: jest.fn(async () => []),
+  };
+});
 
 jest.mock('../services/supabase/challenges', () => {
   const actual = jest.requireActual('../services/supabase/challenges');
   return {
     ...actual,
     fetchChallengeProgress: jest.fn(async () => ({ ...mockProgress })),
-    saveChallengeProgress: jest.fn(async (_userId: string, trackSlug: string, order: number, next: ChallengeProgressMap[string]) => {
-      const saved = { ...next, completedAt: next.status === 'complete' ? next.completedAt ?? new Date().toISOString() : undefined };
-      mockProgress[`${trackSlug}_${order}`] = saved;
+    transitionChallenge: jest.fn(async (challenge: ChallengeRecord, action: string, note: string | undefined) => {
+      const current = mockProgress[challenge.id] ?? { status: 'not_started', count: 0 };
+      const complete = action === 'toggle' ? current.status !== 'complete' : current.status === 'complete';
+      const saved = {
+        status: complete ? 'complete' as const : 'not_started' as const,
+        count: complete ? 1 : 0,
+        note,
+        completedAt: complete ? current.completedAt ?? new Date().toISOString() : undefined,
+      };
+      mockProgress[challenge.id] = saved;
       return saved;
     }),
   };
@@ -37,8 +54,7 @@ it('persists a challenge note and completion from its detail screen after reopen
   await waitFor(() => expect(mockProgress['creators-producers_1']?.note).toBe('Drafted a pitch'));
   fireEvent.press(screen.getByRole('button', { name: 'Mark as Complete' }));
   await waitFor(() => expect(mockProgress['creators-producers_1']?.status).toBe('complete'));
-  expect(completedChallengeEntries(mockProgress)).toEqual(expect.arrayContaining([expect.objectContaining({ type: 'challenge', notes: 'Drafted a pitch' })]));
-  expect(saveChallengeProgress).toHaveBeenCalledWith('test-user', 'creators-producers', 1, expect.objectContaining({ status: 'complete' }));
+  expect(transitionChallenge).toHaveBeenCalledWith(expect.objectContaining({ id: 'creators-producers_1' }), 'toggle', 'Drafted a pitch', expect.any(String));
 
   visit.unmount();
   await renderWithProviders(<ChallengesNavigator />);

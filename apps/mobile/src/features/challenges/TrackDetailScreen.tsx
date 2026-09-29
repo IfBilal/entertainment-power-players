@@ -3,7 +3,9 @@ import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
+import { useChallenges, useTracks } from '../../hooks/useContent';
+import { legacyChallengeKey } from '../../utils/challengeProgress';
+import type { ChallengeRecord } from '../../types/week3';
 import { useAppStore } from '../../store/useAppStore';
 import { useChallengeActions } from '../../hooks/useChallengeActions';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
@@ -12,8 +14,8 @@ import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackDetail'>;
 
-function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: string; challenge: Challenge; onOpen: () => void }) {
-  const { progress: entry, disabled, error, act, saveNote } = useChallengeActions(trackSlug, challenge);
+function ConnectedChallengeRow({ challenge, onOpen }: { challenge: ChallengeRecord; onOpen: () => void }) {
+  const { progress: entry, disabled, error, act, saveNote } = useChallengeActions(challenge);
   const [note, setNote] = useState('');
   useEffect(() => setNote(entry?.note ?? ''), [entry?.note]);
 
@@ -27,7 +29,7 @@ function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: st
       type={challenge.type}
       isComplete={isComplete}
       count={count}
-      target={challenge.target}
+      target={challenge.target ?? undefined}
       note={note}
       onToggle={() => act('toggle', note)}
       onIncrement={() => act('increment', note)}
@@ -42,11 +44,16 @@ function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: st
 
 export function TrackDetailScreen({ route, navigation }: Props) {
   const { trackSlug } = route.params;
-  const track = tracks.find((t) => t.slug === trackSlug);
+  const tracksQuery = useTracks();
+  const challengesQuery = useChallenges();
+  const track = tracksQuery.data?.find((t) => t.slug === trackSlug);
+  const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === trackSlug);
   const isPro = useAppStore((s) => s.isPro);
   const progressQuery = useChallengeProgress();
   const progress = progressQuery.data ?? {};
 
+  if (tracksQuery.isPending) return <Screen><AppText variant="body">Loading track…</AppText></Screen>;
+  if (tracksQuery.isError) return <Screen><Button label="Retry loading track" onPress={() => tracksQuery.refetch()} /></Screen>;
   if (!track) {
     return (
       <Screen>
@@ -69,7 +76,10 @@ export function TrackDetailScreen({ route, navigation }: Props) {
     );
   }
 
-  const { done, total } = trackCompletionCount(track, progress);
+  const total = challenges.length;
+  const done = challenges.filter((challenge) => (
+    progress[challenge.id] ?? progress[legacyChallengeKey(challenge.trackSlug, challenge.order)]
+  )?.status === 'complete').length;
   const complete = total > 0 && done === total;
 
   return (
@@ -91,14 +101,15 @@ export function TrackDetailScreen({ route, navigation }: Props) {
         <AppText variant="subtitle" style={styles.celebration}>Keep the momentum going.</AppText>
       )}
       {progressQuery.isError ? <AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Reopen this track to retry.</AppText> : null}
+      {challengesQuery.isError ? <Button label="Retry loading challenges" onPress={() => challengesQuery.refetch()} /> : null}
 
       <FlatList
-        data={[...track.challenges].sort((a, b) => a.order - b.order)}
-        keyExtractor={(c) => String(c.order)}
+        data={challenges}
+        keyExtractor={(c) => c.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
         ListEmptyComponent={<EmptyState icon="checkmark-done-outline" title="No challenges yet" />}
-        renderItem={({ item }) => <ConnectedChallengeRow trackSlug={track.slug} challenge={item} onOpen={() => navigation.navigate('ChallengeDetail', { trackSlug: track.slug, challengeOrder: item.order })} />}
+        renderItem={({ item }) => <ConnectedChallengeRow challenge={item} onOpen={() => navigation.navigate('ChallengeDetail', { trackSlug: track.slug, challengeId: item.id })} />}
       />
     </Screen>
   );

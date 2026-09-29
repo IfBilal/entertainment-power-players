@@ -12,7 +12,7 @@ import type { TrackerStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
 
 export function TrackerDashboardScreen({ navigation }: Props) {
-  const { entries, activityQuery, challengeQuery } = useTrackerEntries();
+  const { entries, activityQuery } = useTrackerEntries();
   const goalsQuery = useUserGoals();
   const now = new Date();
   const weekKey = computeWeekKey(now);
@@ -51,11 +51,6 @@ export function TrackerDashboardScreen({ navigation }: Props) {
         {activityQuery.isError ? (
           <Pressable onPress={() => activityQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry tracker activity">
             <AppText variant="caption" color={colors.danger}>Couldn't load activity. Tap to retry.</AppText>
-          </Pressable>
-        ) : null}
-        {challengeQuery.isError ? (
-          <Pressable onPress={() => challengeQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry challenge history">
-            <AppText variant="caption" color={colors.danger}>Couldn't load challenge history. Tap to retry.</AppText>
           </Pressable>
         ) : null}
 

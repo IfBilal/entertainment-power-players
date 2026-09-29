@@ -43,3 +43,10 @@ Phase 1 local checkpoint: `56b1f87`, pushed to `main`. No database deployment oc
 - The admin challenge page now deactivates/restores instead of hard-deleting, includes inactive rows, validates positive counter targets, and uses the gated atomic reorder RPC. Track reorder uses its atomic RPC.
 - Admin `npm run typecheck`, `npm test` (19 passed), and `npm run build` all pass. No Vercel deployment yet: its current EPP database lacks the un-applied Week 3 migrations, so shipping this UI first would produce schema/RPC errors.
 - Mobile live-content rewiring, deployed admin testing, and open-screen content refresh are still pending. Phase 2 is **not complete**.
+
+Admin checkpoint: `da5fa69`, pushed to `main`; deployment intentionally withheld until the EPP migration is live.
+
+- Mobile now queries active tracks and challenges from Supabase with 10-second while-mounted refresh. The picker, Profile track selection, track list/detail and challenge detail no longer load bundled track/challenge records. Newly admin-created track slugs get a generic icon fallback.
+- Challenge actions use the atomic `transition_challenge` RPC and update progress/activity caches; tracker history now reads persisted activity only, without title-based synthetic deduplication. Legacy position keys remain read-compatible until old APKs are retired; the new writes use stable challenge IDs.
+- Mobile `npm run typecheck` passes; `npm test -- --runInBand --silent` passes **31 suites / 81 tests**, including new live-content mapping tests. No `--forceExit` required.
+- This is still a **code-only checkpoint**: the currently deployed EPP database does not yet have the new columns/RPC, and no physical-device Supabase session or deployed admin edit has been exercised. Do not ship a new APK from this commit until schema rollout is verified.

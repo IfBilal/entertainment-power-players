@@ -24,4 +24,14 @@ Week 3's scope and gates are in [the implementation plan](week3-implementation-p
 | Quote-of-day, saved quotes, image share | Deterministic date and favorites isolation tests | Two-device sync and image share sheet on Android/iOS |
 | Monthly/annual purchase, restore, expiration, RLS | SDK mock tests, webhook event/replay tests and SQL RLS tests | Separate Google Play and Apple platform-sandbox transactions, second-device restore, expiry |
 
-Phase 0 can close after the new contract typecheck and baseline recheck. Phase 1 must start with the migration-history mismatch resolved locally and confirmed for the EPP remote project before any remote database change.
+Phase 0 can close after the new contract typecheck and baseline recheck. Phase 1 may be developed/tested locally in rollback transactions; the migration-history mismatch and EPP remote history must be reconciled **before any remote database change**.
+
+Phase 0 checkpoint: `499ff87`, pushed to `main`. The new contracts typecheck. External store registrations and EPP management access remain unverified prerequisites for later gates.
+
+## Phase 1 — local database foundation (in progress, 2026-09-30)
+
+- `20260929144443_week3_content_foundation.sql`: active challenge flag; stable challenge ID backfill alongside legacy order columns; linked challenge activity and historic-completion backfill; quote favorites with owner-only RLS/grants.
+- `20260929191454_week3_challenge_transition.sql`: invoker-rights atomic single/counter/note transition and exact linked activity write-through. It verifies caller premium, challenge type and note/week inputs.
+- `20260929191746_week3_admin_reorder.sql`: atomic full-list track/challenge reorders. Challenge reorder defaults **disabled** in `app_config.challenge_reorder_enabled` until old order-based APKs are retired.
+- Local test assembled legacy fixture → all three migrations → RLS/backfill/transition/reorder checks in one transaction, then `ROLLBACK`. Passed: owner/other quote isolation, legacy progress→stable ID, exactly one completion activity, untick/decrement cleanup, counter cap, free-user rejection, admin reorder and cutover gate. No Week 3 migration is applied to the local or remote database yet.
+- Remaining for Phase 1 acceptance: reconcile/verify EPP remote migration history; run advisors on migrated schema; migrate EPP staging and verify actual RLS/API access; retire/coordinate old APK progress writes; tighten direct-write rules after cutover. Therefore **Phase 1 is not complete** despite green local SQL tests.

@@ -17,8 +17,14 @@ export function ProgressBar({ progress, height = 6, tone = 'brand' }: ProgressBa
   const gradient = gradients[tone];
 
   useEffect(() => {
-    Animated.timing(anim, { toValue: clamped, duration: 380, useNativeDriver: false }).start();
-  }, [clamped]);
+    if (process.env.NODE_ENV === 'test') {
+      anim.setValue(clamped);
+      return;
+    }
+    const animation = Animated.timing(anim, { toValue: clamped, duration: 380, useNativeDriver: false });
+    animation.start();
+    return () => animation.stop();
+  }, [anim, clamped]);
 
   const width = anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 

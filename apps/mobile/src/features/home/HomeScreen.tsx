@@ -8,6 +8,9 @@ import { AppText, Avatar, Card, ProgressBar, Screen } from '../../components';
 import { colors, radius, spacing, type IoniconName } from '../../theme';
 import { countsForWeek, type WeeklyGoals } from '../../services/mock/tracker';
 import { useTrackerStore } from '../../store/useTrackerStore';
+import { useUserActivity } from '../../hooks/useUserActivity';
+import { useUserGoals } from '../../hooks/useUserGoals';
+import { goalsForWeek } from '../../services/supabase/goals';
 import { useAuthStore } from '../../store/useAuthStore';
 import { computeWeekKey } from '../../utils/weekKey';
 import type { DirectoryStackParamList, MainTabParamList } from '../../navigation/types';
@@ -57,14 +60,16 @@ function weekRangeLabel(date: Date): string {
 
 export function HomeScreen({ navigation }: Props) {
   const tabNavigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const entries = useTrackerStore((s) => s.entries);
-  const goalsForWeek = useTrackerStore((s) => s.goalsForWeek);
+  const localEntries = useTrackerStore((s) => s.entries);
+  const activityQuery = useUserActivity();
+  const entries = [...(activityQuery.data ?? []), ...localEntries];
+  const goalsQuery = useUserGoals();
   const displayName = useAuthStore((s) => s.displayName);
 
   const now = useMemo(() => new Date(), []);
   const weekKey = computeWeekKey(now);
   const counts = countsForWeek(entries, weekKey);
-  const goals = goalsForWeek(weekKey);
+  const goals = goalsForWeek(goalsQuery.data ?? {}, weekKey);
 
   const firstName = (displayName ?? '').trim().split(/\s+/)[0] || 'there';
 

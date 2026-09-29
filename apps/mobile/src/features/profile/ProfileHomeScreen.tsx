@@ -113,11 +113,6 @@ export function ProfileHomeScreen({ navigation }: Props) {
           <SettingsRow icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
         </View>
 
-        <View style={styles.section}>
-          <SettingsRow icon="shield-checkmark-outline" title="Privacy & Security" onPress={() => undefined} />
-          <SettingsRow icon="help-circle-outline" title="Help & Support" onPress={() => undefined} />
-        </View>
-
         {error ? (
           <AppText variant="caption" color={colors.danger} style={styles.error}>
             {error}

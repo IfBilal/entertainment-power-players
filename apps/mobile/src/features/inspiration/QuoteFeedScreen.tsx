@@ -18,7 +18,7 @@ export function QuoteFeedScreen() {
 
   return (
     <Screen>
-      <View style={styles.heading}><Pressable onPress={() => undefined}><AppText variant="title">‹</AppText></Pressable><AppText variant="title">Inspiration</AppText></View>
+      <View style={styles.heading}><AppText variant="title">Inspiration</AppText></View>
       <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'quotes' ? colors.textPrimary : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'saved' ? colors.textPrimary : colors.textSecondary}>Saved</AppText></Pressable></View>
       <FlatList
         data={visibleQuotes}

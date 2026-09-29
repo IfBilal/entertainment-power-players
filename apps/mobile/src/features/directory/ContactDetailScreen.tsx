@@ -1,11 +1,14 @@
 import { useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { useQuery } from '@tanstack/react-query';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Avatar, Button, Card, EmptyState, Screen, Tag } from '../../components';
 import { colors, radius, spacing } from '../../theme';
-import { fetchCategories, fetchContactById, logContactedActivity } from '../../services/supabase/directory';
+import { fetchCategories, fetchContactById } from '../../services/supabase/directory';
+import { activityQueryKey, createActivity } from '../../services/supabase/activity';
+import { useUserActivity } from '../../hooks/useUserActivity';
+import type { ActivityEntry } from '../../services/mock/tracker';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAuthStore } from '../../store/useAuthStore';
 import { computeWeekKey } from '../../utils/weekKey';
@@ -16,8 +19,11 @@ type Props = NativeStackScreenProps<DirectoryStackParamList, 'ContactDetail'>;
 export function ContactDetailScreen({ route }: Props) {
   const { contactId } = route.params;
   const userId = useAuthStore((s) => s.userId);
+  const queryClient = useQueryClient();
+  const activityQuery = useUserActivity();
   const { isFavorite, toggleFavorite } = useFavorites();
-  const [contactedState, setContactedState] = useState<'idle' | 'saving' | 'done' | 'error'>('idle');
+  const [contactedState, setContactedState] = useState<'idle' | 'saving' | 'error'>('idle');
+  const weekKey = computeWeekKey(new Date());
 
   const contactQuery = useQuery({
     queryKey: ['contact', contactId],
@@ -44,13 +50,17 @@ export function ContactDetailScreen({ route }: Props) {
     if (!userId || !contact) return;
     setContactedState('saving');
     try {
-      await logContactedActivity({
+      const date = new Date();
+      const entry = await createActivity({
         userId,
+        type: 'contact',
+        title: `Marked ${contact.name} as contacted`,
         contactId: contact.id,
-        contactName: contact.name,
-        weekKey: computeWeekKey(new Date()),
+        date,
+        weekKey: computeWeekKey(date),
       });
-      setContactedState('done');
+      queryClient.setQueryData<ActivityEntry[]>(activityQueryKey(userId), (current) => [entry, ...(current ?? [])]);
+      setContactedState('idle');
     } catch {
       setContactedState('error');
     }
@@ -65,7 +75,9 @@ export function ContactDetailScreen({ route }: Props) {
   const fields = allFields.filter((f) => Boolean(f.value));
 
   const favorited = isFavorite(contact.id);
-  const contacted = contactedState === 'done';
+  const contacted = activityQuery.data?.some((entry) =>
+    entry.type === 'contact' && entry.contactId === contact.id && entry.weekKey === weekKey,
+  ) ?? false;
 
   return (
     <Screen>
@@ -103,7 +115,16 @@ export function ContactDetailScreen({ route }: Props) {
 
       <View style={styles.spacer} />
 
-      <Button label={contacted ? 'Added to Tracker' : 'Add to Tracker'} onPress={handleMarkContacted} disabled={contactedState === 'saving' || contacted} />
+      <Button
+        label={contacted ? 'Added to Tracker' : 'Add to Tracker'}
+        onPress={handleMarkContacted}
+        disabled={!userId || activityQuery.isPending || activityQuery.isError || contactedState === 'saving' || contacted}
+      />
+      {activityQuery.isError ? (
+        <Pressable onPress={() => activityQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry tracker status">
+          <AppText variant="caption" color={colors.danger} style={styles.error}>Couldn't check tracker status. Tap to retry.</AppText>
+        </Pressable>
+      ) : null}
       {contactedState === 'error' ? (
         <AppText variant="caption" color={colors.danger} style={styles.error}>
           Couldn't log that. Check your connection and try again.

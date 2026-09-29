@@ -7,6 +7,32 @@ export type Profile = {
   selectedTracks: string[];
 };
 
+export type NotificationPrefs = {
+  weeklyProgress: boolean;
+  challengeReminders: boolean;
+};
+
+export const defaultNotificationPrefs: NotificationPrefs = { weeklyProgress: true, challengeReminders: true };
+
+export async function fetchNotificationPrefs(userId: string): Promise<NotificationPrefs> {
+  const { data, error } = await supabase.from('profiles').select('notification_prefs').eq('id', userId).single();
+  if (error) throw error;
+  const prefs = data.notification_prefs as Partial<NotificationPrefs> | null;
+  return {
+    weeklyProgress: typeof prefs?.weeklyProgress === 'boolean' ? prefs.weeklyProgress : true,
+    challengeReminders: typeof prefs?.challengeReminders === 'boolean' ? prefs.challengeReminders : true,
+  };
+}
+
+export async function updateNotificationPrefs(userId: string, prefs: NotificationPrefs): Promise<void> {
+  const { error } = await supabase.from('profiles')
+    .update({ notification_prefs: prefs })
+    .eq('id', userId)
+    .select('id')
+    .single();
+  if (error) throw error;
+}
+
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')

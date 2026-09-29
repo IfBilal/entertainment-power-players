@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, TextInput, View } from 'react-native';
+import { FlatList, StyleSheet, TextInput, View } from 'react-native';
 import { useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
@@ -50,7 +50,6 @@ export function CategoryGridScreen({ navigation }: Props) {
                 accessibilityLabel="Search categories"
                 returnKeyType="search"
               />
-              <Pressable accessibilityLabel="Filter categories"><Ionicons name="options-outline" size={20} color={colors.textSecondary} /></Pressable>
             </View>
           </View>
         }

@@ -50,7 +50,13 @@ jest.mock('../services/supabase/directory', () => ({
   fetchFavoriteContactIds: jest.fn(async () => ['c2']),
   addFavorite: jest.fn(async () => undefined),
   removeFavorite: jest.fn(async () => undefined),
-  logContactedActivity: jest.fn(async () => undefined),
+}));
+
+jest.mock('../services/supabase/activity', () => ({
+  activityQueryKey: (userId: string | null) => ['activity', userId],
+  fetchUserActivity: jest.fn(async () => []),
+  createActivity: jest.fn(async () => undefined),
+  deleteActivity: jest.fn(async () => undefined),
 }));
 
 describe('Paywall reached from a locked screen (root-level modal)', () => {
@@ -133,4 +139,5 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     fireEvent.press(screen.getByText('John Smith'));
     expect(await screen.findByText('Los Angeles')).toBeTruthy();
   });
+
 });

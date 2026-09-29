@@ -16,7 +16,13 @@ jest.mock('../services/supabase/directory', () => ({
   fetchFavoriteContactIds: jest.fn(async () => []),
   addFavorite: jest.fn(async () => undefined),
   removeFavorite: jest.fn(async () => undefined),
-  logContactedActivity: jest.fn(async () => undefined),
+}));
+
+jest.mock('../services/supabase/activity', () => ({
+  activityQueryKey: (userId: string | null) => ['activity', userId],
+  fetchUserActivity: jest.fn(async () => []),
+  createActivity: jest.fn(async () => undefined),
+  deleteActivity: jest.fn(async () => undefined),
 }));
 
 describe('MainTabNavigator', () => {
@@ -39,7 +45,7 @@ describe('MainTabNavigator', () => {
       expect(screen.getAllByTestId(`main-tab-icon-${tab}`).length).toBeGreaterThan(0);
     }
 
-    fireEvent.press(screen.getByLabelText(/^Tracker, tab,/));
+    fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
     const trackerCenter = await screen.findByTestId('tracker-progress-copy');
     expect(trackerCenter.props.style).toMatchObject({
       position: 'absolute',
@@ -63,4 +69,5 @@ describe('MainTabNavigator', () => {
     // Profile tab renders its subscription control once selected.
     expect(await screen.findByText('Subscription')).toBeTruthy();
   });
+
 });

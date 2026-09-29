@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, FormField, Screen } from '../../components';
@@ -8,7 +9,7 @@ import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { requestEmailChange } from '../../services/supabase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
-import { updateProfile } from '../../services/supabase/profile';
+import { defaultNotificationPrefs, fetchNotificationPrefs, updateNotificationPrefs, updateProfile, type NotificationPrefs } from '../../services/supabase/profile';
 
 function Back({ onPress }: { onPress: () => void }) { return <Pressable onPress={onPress} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>; }
 
@@ -17,7 +18,6 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   const userId = useAuthStore((state) => state.userId);
   const setDisplayName = useAuthStore((state) => state.setDisplayName);
   const [name, setName] = useState(displayName ?? '');
-  const [bio, setBio] = useState('Aspiring creator, building my next opportunity.');
   const currentEmail = useAuthStore((state) => state.emailAddress);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -83,7 +83,6 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
       <View style={styles.editAvatar}>
         <View style={styles.avatar}>
           <AppText variant="title" color={colors.textInverse}>{avatarInitials}</AppText>
-          <Ionicons name="camera" size={15} color={colors.textInverse} style={styles.camera} />
         </View>
       </View>
       <View style={styles.form}>
@@ -107,7 +106,6 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
           onPress={sendEmailChangeLink}
           disabled={sendingEmailLink || !email.trim()}
         />
-        <FormField label="Bio" value={bio} onChangeText={setBio} multiline style={styles.bio} />
         {profileError ? <AppText variant="caption" color={colors.danger}>{profileError}</AppText> : null}
         <Button label={savingProfile ? 'Saving…' : 'Save Changes'} onPress={saveProfile} disabled={savingProfile} />
       </View>
@@ -165,7 +163,9 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
           <Button label="Choose a plan" onPress={choosePlan} />
         </>
       ) : (
-        <Button label="Manage Subscription" onPress={() => undefined} />
+        <AppText variant="caption" color={colors.textSecondary} style={styles.previewNote}>
+          Premium is active in test mode. Billing management will be available when purchases launch.
+        </AppText>
       )}
 
       <AppText variant="subtitle" style={styles.featuresTitle}>Features</AppText>
@@ -182,9 +182,43 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
 }
 
 export function NotificationsScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Notifications'>) {
-  const [weekly, setWeekly] = useState(true); const [reminders, setReminders] = useState(true);
-  return <Screen><Back onPress={() => navigation.goBack()} /><AppText variant="title">Notifications</AppText><View style={styles.settings}><AppText variant="label" color={colors.textTertiary} style={styles.emailLabel}>EMAIL</AppText><Setting label="Weekly Progress" value={weekly} onValueChange={setWeekly} /><Setting label="Challenge Reminders" value={reminders} onValueChange={setReminders} /></View></Screen>;
+  const userId = useAuthStore((state) => state.userId);
+  const queryClient = useQueryClient();
+  const queryKey = ['notificationPrefs', userId] as const;
+  const prefsQuery = useQuery({ queryKey, queryFn: () => fetchNotificationPrefs(userId!), enabled: Boolean(userId) });
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const prefs = prefsQuery.data ?? defaultNotificationPrefs;
+
+  async function changePref(field: keyof NotificationPrefs, value: boolean) {
+    if (!userId || saving || prefsQuery.isPending || prefsQuery.isError) return;
+    const previous = prefs;
+    const next = { ...prefs, [field]: value };
+    setSaveError(false);
+    setSaving(true);
+    queryClient.setQueryData(queryKey, next);
+    try {
+      await updateNotificationPrefs(userId, next);
+    } catch {
+      queryClient.setQueryData(queryKey, previous);
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
+  }
+
+  return <Screen>
+    <Back onPress={() => navigation.goBack()} />
+    <AppText variant="title">Notifications</AppText>
+    <View style={styles.settings}>
+      <AppText variant="label" color={colors.textTertiary} style={styles.emailLabel}>EMAIL</AppText>
+      <Setting label="Weekly Progress" value={prefs.weeklyProgress} disabled={saving || prefsQuery.isPending || prefsQuery.isError} onValueChange={(value) => changePref('weeklyProgress', value)} />
+      <Setting label="Challenge Reminders" value={prefs.challengeReminders} disabled={saving || prefsQuery.isPending || prefsQuery.isError} onValueChange={(value) => changePref('challengeReminders', value)} />
+    </View>
+    {prefsQuery.isError ? <Pressable onPress={() => prefsQuery.refetch()}><AppText variant="caption" color={colors.danger}>Couldn't load preferences. Tap to retry.</AppText></Pressable> : null}
+    {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save preferences. Please try again.</AppText> : null}
+  </Screen>;
 }
 
-function Setting({ label, value, onValueChange }: { label: string; value: boolean; onValueChange: (value: boolean) => void }) { return <View style={styles.setting}><AppText variant="bodyStrong">{label}</AppText><Switch value={value} onValueChange={onValueChange} trackColor={{ true: colors.accent, false: colors.borderStrong }} thumbColor={colors.textPrimary} /></View>; }
-const styles = StyleSheet.create({ back: { marginBottom: spacing.md, marginLeft: -spacing.sm }, form: { gap: spacing.md, marginTop: spacing.lg }, intro: { marginTop: spacing.sm }, settings: { marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border }, setting: { paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }, editAvatar: { alignItems: 'center', marginTop: spacing.lg }, avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentAmber, alignItems: 'center', justifyContent: 'center' }, camera: { position: 'absolute', right: -2, bottom: 0, padding: 4, borderRadius: 20, backgroundColor: colors.accentLime }, bio: { minHeight: 80, textAlignVertical: 'top', paddingTop: 10 }, planCard: { gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: spacing.md, borderRadius: 16, marginTop: spacing.md }, planOptions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }, planOption: { flex: 1, minHeight: 116, justifyContent: 'center', gap: 5, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: spacing.sm }, planOptionSelected: { borderColor: colors.accentLime, backgroundColor: colors.accentFaint }, featuresTitle: { marginTop: spacing.lg, marginBottom: spacing.sm }, featureList: { gap: spacing.sm }, feature: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, emailLabel: { paddingTop: spacing.md, paddingBottom: spacing.sm } });
+function Setting({ label, value, disabled, onValueChange }: { label: string; value: boolean; disabled: boolean; onValueChange: (value: boolean) => void }) { return <View style={styles.setting}><AppText variant="bodyStrong">{label}</AppText><Switch value={value} disabled={disabled} onValueChange={onValueChange} trackColor={{ true: colors.accent, false: colors.borderStrong }} thumbColor={colors.textPrimary} /></View>; }
+const styles = StyleSheet.create({ back: { marginBottom: spacing.md, marginLeft: -spacing.sm }, form: { gap: spacing.md, marginTop: spacing.lg }, intro: { marginTop: spacing.sm }, settings: { marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border }, setting: { paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }, editAvatar: { alignItems: 'center', marginTop: spacing.lg }, avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentAmber, alignItems: 'center', justifyContent: 'center' }, previewNote: { marginTop: spacing.md }, planCard: { gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: spacing.md, borderRadius: 16, marginTop: spacing.md }, planOptions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }, planOption: { flex: 1, minHeight: 116, justifyContent: 'center', gap: 5, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: spacing.sm }, planOptionSelected: { borderColor: colors.accentLime, backgroundColor: colors.accentFaint }, featuresTitle: { marginTop: spacing.lg, marginBottom: spacing.sm }, featureList: { gap: spacing.sm }, feature: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, emailLabel: { paddingTop: spacing.md, paddingBottom: spacing.sm } });

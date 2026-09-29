@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { computeWeekKey } from '../utils/weekKey';
-import { defaultGoals, mockActivity, type ActivityEntry, type WeeklyGoals } from '../services/mock/tracker';
+import { defaultGoals, type ActivityEntry, type WeeklyGoals } from '../services/mock/tracker';
 
 type TrackerState = {
   entries: ActivityEntry[];
@@ -12,7 +12,7 @@ type TrackerState = {
 };
 
 export const useTrackerStore = create<TrackerState>((set, get) => ({
-  entries: mockActivity,
+  entries: [],
   goals: {},
   addEntry: (entry) => {
     const weekKey = computeWeekKey(entry.date);

@@ -120,25 +120,3 @@ export async function removeFavorite(userId: string, contactId: string) {
   const { error } = await supabase.from('favorites').delete().eq('user_id', userId).eq('contact_id', contactId);
   if (error) throw error;
 }
-
-/**
- * "Mark as contacted" writes a real activity row (handbook §4.2 / §3) —
- * `week_key` is computed client-side at creation time in the user's own
- * timezone and stored, never derived later by querying date ranges.
- */
-export async function logContactedActivity(params: {
-  userId: string;
-  contactId: string;
-  contactName: string;
-  weekKey: string;
-}) {
-  const { error } = await supabase.from('activity').insert({
-    user_id: params.userId,
-    type: 'contact',
-    title: `Marked ${params.contactName} as contacted`,
-    contact_id: params.contactId,
-    date: new Date().toISOString(),
-    week_key: params.weekKey,
-  });
-  if (error) throw error;
-}

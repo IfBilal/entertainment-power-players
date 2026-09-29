@@ -1,14 +1,39 @@
-import { FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, FlatList, Pressable, StyleSheet, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, EmptyState, Screen, SectionHeader } from '../../components';
+import { AppText, EmptyState, ErrorState, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useUserActivity } from '../../hooks/useUserActivity';
+import { activityQueryKey, deleteActivity } from '../../services/supabase/activity';
+import type { ActivityEntry } from '../../services/mock/tracker';
 
 const typeLabels = { contact: 'Contact', event: 'Event', followUp: 'Follow-up', challenge: 'Challenge' } as const;
 
 export function TrackerHistoryScreen() {
-  const entries = useTrackerStore((s) => s.entries);
+  const localEntries = useTrackerStore((s) => s.entries);
   const removeEntry = useTrackerStore((s) => s.removeEntry);
+  const userId = useAuthStore((state) => state.userId);
+  const activityQuery = useUserActivity();
+  const queryClient = useQueryClient();
+  const entries = [...(activityQuery.data ?? []), ...localEntries].sort((a, b) => b.date.localeCompare(a.date));
+
+  async function handleDelete(entry: ActivityEntry) {
+    if (localEntries.some((local) => local.id === entry.id)) {
+      removeEntry(entry.id);
+      return;
+    }
+    if (!userId) return;
+    try {
+      await deleteActivity(userId, entry.id);
+      queryClient.setQueryData<ActivityEntry[]>(activityQueryKey(userId), (current) =>
+        current?.filter((item) => item.id !== entry.id) ?? [],
+      );
+    } catch {
+      Alert.alert('Could not delete activity', 'Check your connection and try again.');
+    }
+  }
 
   const grouped = Object.entries(
     entries.reduce<Record<string, typeof entries>>((acc, entry) => {
@@ -24,13 +49,15 @@ export function TrackerHistoryScreen() {
         data={grouped}
         keyExtractor={([weekKey]) => weekKey}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={
+        ListEmptyComponent={activityQuery.isPending ? <ActivityIndicator color={colors.accentLime} /> : activityQuery.isError ? (
+          <ErrorState title="Couldn't load history" description="Check your connection and try again." onRetry={() => activityQuery.refetch()} />
+        ) : (
           <EmptyState
             icon="time-outline"
             title="Your week starts here."
             description="Log your first connection, event, or follow-up and start building momentum."
           />
-        }
+        )}
         renderItem={({ item: [weekKey, weekEntries] }) => (
           <View style={styles.group}>
             <SectionHeader label={weekKey} />
@@ -43,8 +70,9 @@ export function TrackerHistoryScreen() {
                 <View style={styles.rowContent}>
                   <AppText variant="bodyStrong">{entry.title}</AppText>
                   <AppText variant="caption" color={colors.textSecondary}>{typeLabels[entry.type]}</AppText>
+                  {entry.notes ? <AppText variant="caption" color={colors.textSecondary}>{entry.notes}</AppText> : null}
                 </View>
-                <Pressable onPress={() => removeEntry(entry.id)} accessibilityLabel="Delete entry" hitSlop={8}>
+                <Pressable onPress={() => handleDelete(entry)} accessibilityLabel="Delete entry" hitSlop={8}>
                   <Ionicons name="trash-outline" size={17} color={colors.textTertiary} />
                 </Pressable>
               </View>

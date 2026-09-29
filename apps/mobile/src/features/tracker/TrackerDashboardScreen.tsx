@@ -1,8 +1,11 @@
-import { ScrollView, StyleSheet, View } from 'react-native';
+import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, BarChart, Button, Card, Divider, MomentumRow, ProgressRing, Screen, StatCard } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useTrackerStore } from '../../store/useTrackerStore';
+import { useUserActivity } from '../../hooks/useUserActivity';
+import { useUserGoals } from '../../hooks/useUserGoals';
+import { goalsForWeek } from '../../services/supabase/goals';
 import { countsForWeek, last8WeeksTotals } from '../../services/mock/tracker';
 import { computeWeekKey } from '../../utils/weekKey';
 import type { TrackerStackParamList } from '../../navigation/types';
@@ -10,12 +13,14 @@ import type { TrackerStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
 
 export function TrackerDashboardScreen({ navigation }: Props) {
-  const entries = useTrackerStore((s) => s.entries);
-  const goalsForWeek = useTrackerStore((s) => s.goalsForWeek);
+  const localEntries = useTrackerStore((s) => s.entries);
+  const activityQuery = useUserActivity();
+  const entries = [...(activityQuery.data ?? []), ...localEntries];
+  const goalsQuery = useUserGoals();
   const now = new Date();
   const weekKey = computeWeekKey(now);
   const counts = countsForWeek(entries, weekKey);
-  const goals = goalsForWeek(weekKey);
+  const goals = goalsForWeek(goalsQuery.data ?? {}, weekKey);
   const chartData = last8WeeksTotals(entries, now).map((w, i) => ({ label: `W${i + 1}`, value: w.total }));
 
   const totalActions = counts.contacts + counts.events + counts.followUps;
@@ -31,8 +36,26 @@ export function TrackerDashboardScreen({ navigation }: Props) {
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppText variant="title" style={styles.heading}>Tracker</AppText>
-        <View style={styles.tabs}><AppText variant="bodyStrong">This Week</AppText><AppText variant="body" color={colors.textSecondary}>Week History</AppText></View>
+        <View style={styles.tabs}>
+          <View style={styles.activeTab}><AppText variant="bodyStrong">This Week</AppText></View>
+          <Pressable
+            onPress={() => navigation.navigate('TrackerHistory')}
+            accessibilityRole="button"
+            accessibilityLabel="Week History"
+            style={styles.historyTab}
+          >
+            <AppText variant="body" color={colors.textSecondary}>Week History</AppText>
+          </Pressable>
+        </View>
         <AppText variant="caption" color={colors.textSecondary} style={styles.date}>{weekKey}</AppText>
+        <Pressable onPress={() => navigation.navigate('GoalsEditor')} accessibilityRole="button" accessibilityLabel="Edit weekly goals" style={styles.editGoals}>
+          <AppText variant="captionStrong" color={colors.accentLime}>Edit weekly goals</AppText>
+        </Pressable>
+        {activityQuery.isError ? (
+          <Pressable onPress={() => activityQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry tracker activity">
+            <AppText variant="caption" color={colors.danger}>Couldn't load activity. Tap to retry.</AppText>
+          </Pressable>
+        ) : null}
 
         <View style={styles.progressWrap}>
           <ProgressRing progress={goals.contacts ? counts.contacts / goals.contacts : 0} size={170} strokeWidth={14} />
@@ -64,8 +87,11 @@ export function TrackerDashboardScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
   heading: { marginBottom: spacing.sm },
-  tabs: { flexDirection: 'row', gap: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
+  tabs: { flexDirection: 'row', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
+  activeTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, backgroundColor: colors.accentSoft },
+  historyTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, borderWidth: 1, borderColor: colors.border },
   date: { marginTop: spacing.md, marginBottom: spacing.sm },
+  editGoals: { alignSelf: 'flex-end', paddingVertical: spacing.xs, marginBottom: spacing.sm },
   progressWrap: { alignItems: 'center', marginVertical: spacing.md },
   progressCopy: {
     position: 'absolute',

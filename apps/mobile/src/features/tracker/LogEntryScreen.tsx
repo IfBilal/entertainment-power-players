@@ -1,9 +1,13 @@
 import { useState } from 'react';
 import { StyleSheet, View } from 'react-native';
+import { useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, FormField, Screen } from '../../components';
-import { spacing } from '../../theme';
-import { useTrackerStore } from '../../store/useTrackerStore';
+import { colors, spacing } from '../../theme';
+import { useAuthStore } from '../../store/useAuthStore';
+import { activityQueryKey, createActivity } from '../../services/supabase/activity';
+import { computeWeekKey } from '../../utils/weekKey';
+import type { ActivityEntry } from '../../services/mock/tracker';
 import type { TrackerStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<TrackerStackParamList, 'LogEntry'>;
@@ -14,12 +18,32 @@ export function LogEntryScreen({ route, navigation }: Props) {
   const { type } = route.params;
   const [title, setTitle] = useState('');
   const [notes, setNotes] = useState('');
-  const addEntry = useTrackerStore((s) => s.addEntry);
+  const [saving, setSaving] = useState(false);
+  const [saveError, setSaveError] = useState(false);
+  const userId = useAuthStore((state) => state.userId);
+  const queryClient = useQueryClient();
 
-  function save() {
-    if (!title.trim()) return;
-    addEntry({ type, title: title.trim(), notes: notes.trim() || undefined, date: new Date() });
-    navigation.goBack();
+  async function save() {
+    if (!title.trim() || !userId || saving) return;
+    setSaving(true);
+    setSaveError(false);
+    try {
+      const date = new Date();
+      const entry = await createActivity({
+        userId,
+        type,
+        title: title.trim(),
+        notes: notes.trim() || undefined,
+        date,
+        weekKey: computeWeekKey(date),
+      });
+      queryClient.setQueryData<ActivityEntry[]>(activityQueryKey(userId), (current) => [entry, ...(current ?? [])]);
+      navigation.popToTop();
+    } catch {
+      setSaveError(true);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -39,7 +63,8 @@ export function LogEntryScreen({ route, navigation }: Props) {
           onChangeText={setNotes}
           multiline
         />
-        <Button label="Save" onPress={save} disabled={!title.trim()} />
+        <Button label={saving ? 'Saving…' : 'Save'} onPress={save} disabled={!title.trim() || !userId || saving} />
+        {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save this activity. Please try again.</AppText> : null}
       </View>
     </Screen>
   );

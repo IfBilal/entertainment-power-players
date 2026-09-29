@@ -35,6 +35,9 @@ type AuthState = {
 };
 
 async function loadProfileInto(set: (partial: Partial<AuthState>) => void, session: Session) {
+  const setIfCurrentUser = (partial: Partial<AuthState>) => {
+    if (useAuthStore.getState().userId === session.user.id) set(partial);
+  };
   void fetchPremiumAccess()
     .then((hasAccess) => {
       if (useAuthStore.getState().userId === session.user.id) useAppStore.getState().setIsPro(hasAccess);
@@ -46,7 +49,7 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
   try {
     const profile = await fetchProfile(session.user.id);
     const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
-    set({
+    setIfCurrentUser({
       selectedTrackSlugs: profile?.selectedTracks ?? [],
       displayName: profile?.displayName?.trim() || displayNameFromMetadata(metadata),
       photoUrl: profile?.photoUrl ?? (typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null),
@@ -57,7 +60,7 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
     // tracks yet" and let them proceed to TrackPicker, which will retry
     // the write when they continue.
     const metadata = session.user.user_metadata as Record<string, unknown> | undefined;
-    set({
+    setIfCurrentUser({
       selectedTrackSlugs: [],
       displayName: displayNameFromMetadata(metadata),
       photoUrl: typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null,

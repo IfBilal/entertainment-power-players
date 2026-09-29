@@ -10,10 +10,11 @@ type CounterControlProps = {
   target: number;
   onIncrement: () => void;
   onDecrement: () => void;
+  disabled?: boolean;
 };
 
 /** Counter-challenge stepper — "2 of 5" with +/- and a progress bar (spec §24). */
-export function CounterControl({ count, target, onIncrement, onDecrement }: CounterControlProps) {
+export function CounterControl({ count, target, onIncrement, onDecrement, disabled = false }: CounterControlProps) {
   const complete = count >= target;
   const scale = useRef(new Animated.Value(1)).current;
 
@@ -28,7 +29,7 @@ export function CounterControl({ count, target, onIncrement, onDecrement }: Coun
   return (
     <View style={styles.container}>
       <View style={styles.stepperRow}>
-        <Pressable onPress={onDecrement} disabled={count <= 0} hitSlop={8} accessibilityLabel="Decrease count">
+        <Pressable onPress={onDecrement} disabled={disabled || count <= 0} hitSlop={8} accessibilityLabel="Decrease count">
           <Ionicons name="remove-circle-outline" size={26} color={count <= 0 ? colors.border : colors.accent} />
         </Pressable>
         <Animated.View style={{ transform: [{ scale }] }}>
@@ -36,7 +37,7 @@ export function CounterControl({ count, target, onIncrement, onDecrement }: Coun
             {count} of {target}
           </AppText>
         </Animated.View>
-        <Pressable onPress={onIncrement} disabled={complete} hitSlop={8} accessibilityLabel="Increase count">
+        <Pressable onPress={onIncrement} disabled={disabled || complete} hitSlop={8} accessibilityLabel="Increase count">
           <Ionicons name="add-circle-outline" size={26} color={complete ? colors.border : colors.accent} />
         </Pressable>
       </View>

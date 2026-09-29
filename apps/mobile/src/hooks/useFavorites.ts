@@ -3,7 +3,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { addFavorite, fetchFavoriteContactIds, removeFavorite } from '../services/supabase/directory';
 import { useAuthStore } from '../store/useAuthStore';
 
-const FAVORITES_KEY = ['favorites'];
+export function favoritesQueryKey(userId: string | null) {
+  return ['favorites', userId] as const;
+}
 
 /**
  * Favourites live in the `favorites` table (RLS: owner-only), not local
@@ -13,9 +15,10 @@ const FAVORITES_KEY = ['favorites'];
 export function useFavorites() {
   const userId = useAuthStore((s) => s.userId);
   const queryClient = useQueryClient();
+  const queryKey = favoritesQueryKey(userId);
 
   const { data: favoriteIds = [] } = useQuery({
-    queryKey: FAVORITES_KEY,
+    queryKey,
     queryFn: () => fetchFavoriteContactIds(userId!),
     enabled: Boolean(userId),
   });
@@ -29,19 +32,19 @@ export function useFavorites() {
     // Optimistic: the heart should flip instantly, then reconcile. On failure
     // the previous list is restored so the UI never lies about what's saved.
     onMutate: async ({ contactId, next }) => {
-      await queryClient.cancelQueries({ queryKey: FAVORITES_KEY });
-      const previous = queryClient.getQueryData<string[]>(FAVORITES_KEY) ?? [];
+      await queryClient.cancelQueries({ queryKey });
+      const previous = queryClient.getQueryData<string[]>(queryKey) ?? [];
       queryClient.setQueryData<string[]>(
-        FAVORITES_KEY,
+        queryKey,
         next ? [...previous, contactId] : previous.filter((id) => id !== contactId),
       );
       return { previous };
     },
     onError: (_err, _vars, context) => {
-      if (context?.previous) queryClient.setQueryData(FAVORITES_KEY, context.previous);
+      if (context?.previous) queryClient.setQueryData(queryKey, context.previous);
     },
     onSettled: () => {
-      queryClient.invalidateQueries({ queryKey: FAVORITES_KEY });
+      queryClient.invalidateQueries({ queryKey });
     },
   });
 

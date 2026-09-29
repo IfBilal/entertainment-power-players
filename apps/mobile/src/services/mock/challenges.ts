@@ -23,6 +23,8 @@ export const tracks: Track[] = seedData.tracks as Track[];
 export type ChallengeProgress = {
   status: 'not_started' | 'complete';
   count: number;
+  note?: string;
+  completedAt?: string;
 };
 
 export type ChallengeProgressMap = Record<string, ChallengeProgress>;
@@ -50,14 +52,16 @@ export function applyChallengeAction(
   const base: ChallengeProgress = current ?? { status: 'not_started', count: 0 };
 
   if (challenge.type === 'single') {
-    return base.status === 'complete' ? { status: 'not_started', count: 0 } : { status: 'complete', count: 1 };
+    return base.status === 'complete' ? { ...base, status: 'not_started', count: 0, completedAt: undefined } : { ...base, status: 'complete', count: 1 };
   }
 
   const target = challenge.target ?? 1;
   const delta = action === 'decrement' ? -1 : 1;
   const nextCount = Math.max(0, Math.min(target, base.count + delta));
   return {
+    ...base,
     count: nextCount,
     status: nextCount >= target ? 'complete' : 'not_started',
+    completedAt: nextCount >= target ? base.completedAt : undefined,
   };
 }

@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from 'react';
+import { useCallback, useEffect, useRef } from 'react';
 import { Platform, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
@@ -23,7 +23,7 @@ import { TrackDetailScreen } from './src/features/challenges/TrackDetailScreen';
 import { ChallengeDetailScreen } from './src/features/challenges/ChallengeDetailScreen';
 import { EditProfileScreen, NotificationsScreen, SubscriptionScreen } from './src/features/profile/ProfileSettingsScreens';
 import { useAppStore } from './src/store/useAppStore';
-import { useChallengesStore } from './src/store/useChallengesStore';
+import { useAuthStore } from './src/store/useAuthStore';
 import { colors, useAppFonts } from './src/theme';
 import { AuthDeepLinkHandler } from './src/features/onboarding/AuthDeepLinkHandler';
 import { flushPendingAuthNavigation, rootNavigationRef } from './src/navigation/rootNavigation';
@@ -31,6 +31,16 @@ import { flushPendingAuthNavigation, rootNavigationRef } from './src/navigation/
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
 const queryClient = new QueryClient();
+
+function AuthCacheGuard() {
+  const userId = useAuthStore((state) => state.userId);
+  const previousUserId = useRef(userId);
+  useEffect(() => {
+    if (previousUserId.current !== userId) queryClient.clear();
+    previousUserId.current = userId;
+  }, [userId]);
+  return null;
+}
 
 // Built on DarkTheme, not DefaultTheme: the light base leaves white flashes
 // between screen transitions and a white card colour behind modals.
@@ -55,7 +65,6 @@ function previewScreen() {
   const name = new URLSearchParams(globalThis.location?.search ?? '').get('preview');
   if (!name) return null;
   useAppStore.setState({ isPro: true });
-  useChallengesStore.setState({ progress: { 'creators-producers_3': { status: 'not_started', count: 1 } } });
 
   const noop = { navigate: () => {}, goBack: () => {}, replace: () => {} };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -167,6 +176,7 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayoutRootView}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
+          <AuthCacheGuard />
           <NavigationContainer
             ref={rootNavigationRef}
             onReady={flushPendingAuthNavigation}

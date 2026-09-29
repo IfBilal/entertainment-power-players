@@ -1,11 +1,11 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Pressable, StyleSheet, TextInput, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, CounterControl, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { applyChallengeAction, tracks } from '../../services/mock/challenges';
-import { useChallengesStore } from '../../store/useChallengesStore';
+import { tracks } from '../../services/mock/challenges';
+import { useChallengeActions } from '../../hooks/useChallengeActions';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'ChallengeDetail'>;
@@ -14,21 +14,16 @@ export function ChallengeDetailScreen({ route, navigation }: Props) {
   const { trackSlug, challengeOrder } = route.params;
   const track = tracks.find((candidate) => candidate.slug === trackSlug);
   const foundChallenge = track?.challenges.find((candidate) => candidate.order === challengeOrder);
-  const key = `${trackSlug}_${challengeOrder}`;
-  const entry = useChallengesStore((state) => state.progress[key]);
-  const act = useChallengesStore((state) => state.act);
+  const challenge = foundChallenge ?? { order: challengeOrder, title: '', description: '', type: 'single' as const };
+  const { progress: entry, disabled, error, act, complete: markComplete, saveNote } = useChallengeActions(trackSlug, challenge);
   const [note, setNote] = useState('');
+  useEffect(() => setNote(entry?.note ?? ''), [entry?.note]);
   if (!track || !foundChallenge) return <Screen><AppText variant="body">Challenge not found.</AppText></Screen>;
-  const challenge = foundChallenge;
   const count = entry?.count ?? 0;
   const target = challenge.target ?? 1;
   const complete = entry?.status === 'complete';
 
-  function change(action: 'increment' | 'decrement') { act(trackSlug, challenge, action); }
-  function markComplete() {
-    if (challenge.type === 'counter') while ((useChallengesStore.getState().progress[key]?.count ?? 0) < target) act(trackSlug, challenge, 'increment');
-    else act(trackSlug, challenge, 'toggle');
-  }
+  function change(action: 'increment' | 'decrement') { act(action, note); }
 
   return (
     <Screen>
@@ -36,9 +31,10 @@ export function ChallengeDetailScreen({ route, navigation }: Props) {
       <AppText variant="title" style={styles.title}>{challenge.title}</AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.description}>{challenge.description}</AppText>
       <View style={styles.progress}><ProgressRing progress={target ? count / target : Number(complete)} size={156} strokeWidth={12} label={`${challenge.type === 'counter' ? count : Number(complete)}/${target}`} /><AppText variant="caption" color={colors.textSecondary} style={styles.completed}>Completed</AppText></View>
-      {challenge.type === 'counter' ? <><AppText variant="captionStrong" color={colors.accentAmber} style={styles.counterLabel}>Counter · Target {target}</AppText><CounterControl count={count} target={target} onIncrement={() => change('increment')} onDecrement={() => change('decrement')} /></> : null}
-      <TextInput value={note} onChangeText={setNote} placeholder="Add Note" placeholderTextColor={colors.textMuted} style={styles.note} />
-      <View style={styles.bottom}><Button label={complete ? 'Completed' : 'Mark as Complete'} onPress={markComplete} disabled={complete} /></View>
+      {challenge.type === 'counter' ? <><AppText variant="captionStrong" color={colors.accentAmber} style={styles.counterLabel}>Counter · Target {target}</AppText><CounterControl count={count} target={target} onIncrement={() => change('increment')} onDecrement={() => change('decrement')} disabled={disabled} /></> : null}
+      <TextInput value={note} onChangeText={setNote} onBlur={() => { if (note !== (entry?.note ?? '')) saveNote(note); }} editable={!disabled} placeholder="Add Note" placeholderTextColor={colors.textMuted} style={styles.note} />
+      {error ? <AppText variant="caption" color={colors.danger}>Couldn't save challenge. Try again.</AppText> : null}
+      <View style={styles.bottom}><Button label={complete ? 'Completed' : 'Mark as Complete'} onPress={() => markComplete(note)} disabled={disabled || complete} /></View>
     </Screen>
   );
 }

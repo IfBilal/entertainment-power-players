@@ -7,8 +7,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Avatar, Card, ProgressBar, Screen } from '../../components';
 import { colors, radius, spacing, type IoniconName } from '../../theme';
 import { countsForWeek, type WeeklyGoals } from '../../services/mock/tracker';
-import { useTrackerStore } from '../../store/useTrackerStore';
-import { useUserActivity } from '../../hooks/useUserActivity';
+import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { useUserGoals } from '../../hooks/useUserGoals';
 import { goalsForWeek } from '../../services/supabase/goals';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -60,9 +59,7 @@ function weekRangeLabel(date: Date): string {
 
 export function HomeScreen({ navigation }: Props) {
   const tabNavigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
-  const localEntries = useTrackerStore((s) => s.entries);
-  const activityQuery = useUserActivity();
-  const entries = [...(activityQuery.data ?? []), ...localEntries];
+  const { entries } = useTrackerEntries();
   const goalsQuery = useUserGoals();
   const displayName = useAuthStore((s) => s.displayName);
 

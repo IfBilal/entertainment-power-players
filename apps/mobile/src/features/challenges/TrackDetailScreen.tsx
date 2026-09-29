@@ -1,49 +1,27 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
-import { applyChallengeAction, tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
+import { tracks, trackCompletionCount, type Challenge } from '../../services/mock/challenges';
 import { useAppStore } from '../../store/useAppStore';
-import { useChallengesStore } from '../../store/useChallengesStore';
-import { useTrackerStore } from '../../store/useTrackerStore';
+import { useChallengeActions } from '../../hooks/useChallengeActions';
+import { useChallengeProgress } from '../../hooks/useChallengeProgress';
 import { isScreenLocked } from '../../utils/paywall';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackDetail'>;
 
 function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: string; challenge: Challenge; onOpen: () => void }) {
-  const key = `${trackSlug}_${challenge.order}`;
-  const entry = useChallengesStore((s) => s.progress[key]);
-  const act = useChallengesStore((s) => s.act);
-  const addEntry = useTrackerStore((s) => s.addEntry);
+  const { progress: entry, disabled, error, act, saveNote } = useChallengeActions(trackSlug, challenge);
   const [note, setNote] = useState('');
+  useEffect(() => setNote(entry?.note ?? ''), [entry?.note]);
 
   const isComplete = entry?.status === 'complete';
   const count = entry?.count ?? 0;
 
-  function afterComplete(nowComplete: boolean) {
-    if (nowComplete) {
-      addEntry({ type: 'challenge', title: `Completed "${challenge.title}"`, date: new Date(), notes: note || undefined });
-    }
-  }
-
-  function onToggle() {
-    const next = applyChallengeAction(challenge, entry, 'toggle');
-    act(trackSlug, challenge, 'toggle');
-    afterComplete(next.status === 'complete' && !isComplete);
-  }
-
-  function onStep(action: 'increment' | 'decrement') {
-    const wasComplete = isComplete;
-    act(trackSlug, challenge, action);
-    if (action === 'increment' && !wasComplete && count + 1 >= (challenge.target ?? 1)) {
-      afterComplete(true);
-    }
-  }
-
   return (
-    <ChallengeRow
+    <><ChallengeRow
       title={challenge.title}
       description={challenge.description}
       type={challenge.type}
@@ -51,12 +29,14 @@ function ConnectedChallengeRow({ trackSlug, challenge, onOpen }: { trackSlug: st
       count={count}
       target={challenge.target}
       note={note}
-      onToggle={onToggle}
-      onIncrement={() => onStep('increment')}
-      onDecrement={() => onStep('decrement')}
+      onToggle={() => act('toggle', note)}
+      onIncrement={() => act('increment', note)}
+      onDecrement={() => act('decrement', note)}
       onNoteChange={setNote}
+      onNoteBlur={() => { if (note !== (entry?.note ?? '')) saveNote(note); }}
+      disabled={disabled}
       onOpen={onOpen}
-    />
+    />{error ? <AppText variant="caption" color={colors.danger}>Couldn't save challenge. Try again.</AppText> : null}</>
   );
 }
 
@@ -64,7 +44,8 @@ export function TrackDetailScreen({ route, navigation }: Props) {
   const { trackSlug } = route.params;
   const track = tracks.find((t) => t.slug === trackSlug);
   const isPro = useAppStore((s) => s.isPro);
-  const progress = useChallengesStore((s) => s.progress);
+  const progressQuery = useChallengeProgress();
+  const progress = progressQuery.data ?? {};
 
   if (!track) {
     return (
@@ -109,6 +90,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
       ) : (
         <AppText variant="subtitle" style={styles.celebration}>Keep the momentum going.</AppText>
       )}
+      {progressQuery.isError ? <AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Reopen this track to retry.</AppText> : null}
 
       <FlatList
         data={[...track.challenges].sort((a, b) => a.order - b.order)}

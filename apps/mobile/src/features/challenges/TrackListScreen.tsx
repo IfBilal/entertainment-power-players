@@ -1,20 +1,23 @@
+import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Card, IconTile, ProgressRing, Screen } from '../../components';
+import { AppText, Card, EmptyState, IconTile, Screen } from '../../components';
 import { colors, spacing, trackIcons, type GradientToken } from '../../theme';
 import { tracks, trackCompletionCount } from '../../services/mock/challenges';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useChallengesStore } from '../../store/useChallengesStore';
+import { useChallengeProgress } from '../../hooks/useChallengeProgress';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackList'>;
 
 export function TrackListScreen({ navigation }: Props) {
   const selectedSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
-  const progress = useChallengesStore((s) => s.progress);
+  const progressQuery = useChallengeProgress();
+  const progress = progressQuery.data ?? {};
+  const [tab, setTab] = useState<'mine' | 'all'>('mine');
   const tones: GradientToken[] = ['barOrange', 'green', 'brand', 'barLime', 'ember', 'barAmber'];
 
-  const sorted = [...tracks].sort((a, b) => {
+  const sorted = (tab === 'mine' ? tracks.filter((track) => selectedSlugs.includes(track.slug)) : [...tracks]).sort((a, b) => {
     const aSelected = selectedSlugs.includes(a.slug);
     const bSelected = selectedSlugs.includes(b.slug);
     if (aSelected !== bSelected) return aSelected ? -1 : 1;
@@ -24,16 +27,20 @@ export function TrackListScreen({ navigation }: Props) {
   return (
     <Screen>
       <AppText variant="title" style={styles.heading}>Challenges</AppText>
-      <View style={styles.tabs}><AppText variant="bodyStrong">My Tracks</AppText><AppText variant="body" color={colors.textSecondary}>All Tracks</AppText></View>
+      <View style={styles.tabs}>
+        <Pressable onPress={() => setTab('mine')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'mine' }}><AppText variant={tab === 'mine' ? 'bodyStrong' : 'body'} color={tab === 'mine' ? colors.textPrimary : colors.textSecondary}>My Tracks</AppText></Pressable>
+        <Pressable onPress={() => setTab('all')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'all' }}><AppText variant={tab === 'all' ? 'bodyStrong' : 'body'} color={tab === 'all' ? colors.textPrimary : colors.textSecondary}>All Tracks</AppText></Pressable>
+      </View>
+      {progressQuery.isError ? <Pressable onPress={() => progressQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Tap to retry.</AppText></Pressable> : null}
       <FlatList
         data={sorted}
         keyExtractor={(t) => t.slug}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
+        ListEmptyComponent={<EmptyState icon="trophy-outline" title="No tracks selected" description="Choose tracks in Profile, or view All Tracks." />}
         renderItem={({ item }) => {
           const { done, total } = trackCompletionCount(item, progress);
           const isSelected = selectedSlugs.includes(item.slug);
-          const pct = total > 0 ? done / total : 0;
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
               <Card style={styles.row} elevation="none">

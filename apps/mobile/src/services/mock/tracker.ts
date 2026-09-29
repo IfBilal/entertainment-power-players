@@ -41,10 +41,3 @@ export function last8WeeksTotals(entries: ActivityEntry[], endDate: Date): Array
   }
   return weeks;
 }
-
-const now = new Date();
-export const mockActivity: ActivityEntry[] = [
-  { id: 'activity_1', type: 'contact', title: 'Met Jane Doe', contactId: 'contact_1', date: now.toISOString(), weekKey: computeWeekKey(now) },
-  { id: 'activity_2', type: 'event', title: 'Industry mixer', date: now.toISOString(), weekKey: computeWeekKey(now) },
-  { id: 'activity_3', type: 'followUp', title: 'Follow up with John Smith', contactId: 'contact_2', date: now.toISOString(), weekKey: computeWeekKey(now) },
-];

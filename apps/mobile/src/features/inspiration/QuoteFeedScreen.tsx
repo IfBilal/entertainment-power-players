@@ -3,11 +3,10 @@ import { FlatList, Pressable, Share, StyleSheet, View } from 'react-native';
 import { AppText, QuoteCard, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
 import { mockQuotes, type Quote } from '../../services/mock/quotes';
-import { useFavoritesStore } from '../../store/useFavoritesStore';
+import { useSavedQuotes } from '../../hooks/useSavedQuotes';
 
 export function QuoteFeedScreen() {
-  const favoriteIds = useFavoritesStore((s) => s.favoriteQuoteIds);
-  const toggleQuote = useFavoritesStore((s) => s.toggleQuote);
+  const { ids: favoriteIds, toggle: toggleQuote, saveError, query } = useSavedQuotes();
   const [tab, setTab] = useState<'quotes' | 'saved'>('quotes');
   const featured = mockQuotes.find((quote) => quote.id === 'quote_featured');
   const visibleQuotes = tab === 'saved' ? mockQuotes.filter((quote) => favoriteIds.has(quote.id)) : mockQuotes.filter((quote) => quote.id !== featured?.id);
@@ -20,6 +19,8 @@ export function QuoteFeedScreen() {
     <Screen>
       <View style={styles.heading}><AppText variant="title">Inspiration</AppText></View>
       <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'quotes' ? colors.textPrimary : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'saved' ? colors.textPrimary : colors.textSecondary}>Saved</AppText></Pressable></View>
+      {query.isError ? <Pressable onPress={() => query.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load saved quotes. Tap to retry.</AppText></Pressable> : null}
+      {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save quote. Please try again.</AppText> : null}
       <FlatList
         data={visibleQuotes}
         keyExtractor={(q) => q.id}

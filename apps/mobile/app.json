@@ -2,7 +2,7 @@
   "expo": {
     "name": "Power Players",
     "slug": "mobile",
-    "version": "1.0.1",
+    "version": "1.0.2",
     "scheme": "com.entertainmentpowerplayers.app",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",

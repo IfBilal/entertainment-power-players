@@ -3,27 +3,20 @@ import { useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, EmptyState, ErrorState, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
-import { useTrackerStore } from '../../store/useTrackerStore';
 import { useAuthStore } from '../../store/useAuthStore';
-import { useUserActivity } from '../../hooks/useUserActivity';
+import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { activityQueryKey, deleteActivity } from '../../services/supabase/activity';
 import type { ActivityEntry } from '../../services/mock/tracker';
 
 const typeLabels = { contact: 'Contact', event: 'Event', followUp: 'Follow-up', challenge: 'Challenge' } as const;
 
 export function TrackerHistoryScreen() {
-  const localEntries = useTrackerStore((s) => s.entries);
-  const removeEntry = useTrackerStore((s) => s.removeEntry);
   const userId = useAuthStore((state) => state.userId);
-  const activityQuery = useUserActivity();
+  const { entries: trackerEntries, activityQuery, challengeQuery } = useTrackerEntries();
   const queryClient = useQueryClient();
-  const entries = [...(activityQuery.data ?? []), ...localEntries].sort((a, b) => b.date.localeCompare(a.date));
+  const entries = [...trackerEntries].sort((a, b) => b.date.localeCompare(a.date));
 
   async function handleDelete(entry: ActivityEntry) {
-    if (localEntries.some((local) => local.id === entry.id)) {
-      removeEntry(entry.id);
-      return;
-    }
     if (!userId) return;
     try {
       await deleteActivity(userId, entry.id);
@@ -49,8 +42,8 @@ export function TrackerHistoryScreen() {
         data={grouped}
         keyExtractor={([weekKey]) => weekKey}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={activityQuery.isPending ? <ActivityIndicator color={colors.accentLime} /> : activityQuery.isError ? (
-          <ErrorState title="Couldn't load history" description="Check your connection and try again." onRetry={() => activityQuery.refetch()} />
+        ListEmptyComponent={activityQuery.isPending || challengeQuery.isPending ? <ActivityIndicator color={colors.accentLime} /> : activityQuery.isError || challengeQuery.isError ? (
+          <ErrorState title="Couldn't load history" description="Check your connection and try again." onRetry={() => { activityQuery.refetch(); challengeQuery.refetch(); }} />
         ) : (
           <EmptyState
             icon="time-outline"
@@ -72,9 +65,11 @@ export function TrackerHistoryScreen() {
                   <AppText variant="caption" color={colors.textSecondary}>{typeLabels[entry.type]}</AppText>
                   {entry.notes ? <AppText variant="caption" color={colors.textSecondary}>{entry.notes}</AppText> : null}
                 </View>
-                <Pressable onPress={() => handleDelete(entry)} accessibilityLabel="Delete entry" hitSlop={8}>
-                  <Ionicons name="trash-outline" size={17} color={colors.textTertiary} />
-                </Pressable>
+                {entry.id.startsWith('challenge_') ? null : (
+                  <Pressable onPress={() => handleDelete(entry)} accessibilityLabel="Delete entry" hitSlop={8}>
+                    <Ionicons name="trash-outline" size={17} color={colors.textTertiary} />
+                  </Pressable>
+                )}
               </View>
             ))}
           </View>

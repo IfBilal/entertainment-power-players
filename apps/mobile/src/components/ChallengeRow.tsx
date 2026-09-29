@@ -20,6 +20,8 @@ type ChallengeRowProps = {
   onIncrement: () => void;
   onDecrement: () => void;
   onNoteChange: (note: string) => void;
+  onNoteBlur?: () => void;
+  disabled?: boolean;
   onOpen?: () => void;
 };
 
@@ -36,6 +38,8 @@ export function ChallengeRow({
   onIncrement,
   onDecrement,
   onNoteChange,
+  onNoteBlur,
+  disabled = false,
   onOpen,
 }: ChallengeRowProps) {
   const [noteOpen, setNoteOpen] = useState(Boolean(note));
@@ -77,7 +81,7 @@ export function ChallengeRow({
           ) : null}
         </View>
         {type === 'single' ? (
-          <Pressable onPress={toggleComplete} accessibilityLabel={`Complete ${title}`} accessibilityRole="checkbox" accessibilityState={{ checked: isComplete }} hitSlop={8}>
+          <Pressable onPress={toggleComplete} disabled={disabled} accessibilityLabel={`Complete ${title}`} accessibilityRole="checkbox" accessibilityState={{ checked: isComplete }} hitSlop={8}>
             <Animated.View style={{ transform: [{ scale: checkScale }] }}>
               <Ionicons name={isComplete ? 'checkmark-circle' : 'ellipse-outline'} size={28} color={isComplete ? colors.success : colors.accent} />
             </Animated.View>
@@ -86,7 +90,7 @@ export function ChallengeRow({
       </View>
 
       {type === 'counter' ? (
-        <CounterControl count={count} target={target} onIncrement={onIncrement} onDecrement={onDecrement} />
+        <CounterControl count={count} target={target} onIncrement={onIncrement} onDecrement={onDecrement} disabled={disabled} />
       ) : null}
 
       {noteOpen ? (
@@ -94,6 +98,8 @@ export function ChallengeRow({
           placeholder="Add a note (optional)"
           value={note}
           onChangeText={onNoteChange}
+          onBlur={onNoteBlur}
+          editable={!disabled}
           style={styles.noteInput}
           placeholderTextColor={colors.textMuted}
           multiline

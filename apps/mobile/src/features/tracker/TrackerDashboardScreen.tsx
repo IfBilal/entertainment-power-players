@@ -2,8 +2,7 @@ import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, BarChart, Button, Card, Divider, MomentumRow, ProgressRing, Screen, StatCard } from '../../components';
 import { colors, spacing } from '../../theme';
-import { useTrackerStore } from '../../store/useTrackerStore';
-import { useUserActivity } from '../../hooks/useUserActivity';
+import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { useUserGoals } from '../../hooks/useUserGoals';
 import { goalsForWeek } from '../../services/supabase/goals';
 import { countsForWeek, last8WeeksTotals } from '../../services/mock/tracker';
@@ -13,9 +12,7 @@ import type { TrackerStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
 
 export function TrackerDashboardScreen({ navigation }: Props) {
-  const localEntries = useTrackerStore((s) => s.entries);
-  const activityQuery = useUserActivity();
-  const entries = [...(activityQuery.data ?? []), ...localEntries];
+  const { entries, activityQuery, challengeQuery } = useTrackerEntries();
   const goalsQuery = useUserGoals();
   const now = new Date();
   const weekKey = computeWeekKey(now);
@@ -54,6 +51,11 @@ export function TrackerDashboardScreen({ navigation }: Props) {
         {activityQuery.isError ? (
           <Pressable onPress={() => activityQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry tracker activity">
             <AppText variant="caption" color={colors.danger}>Couldn't load activity. Tap to retry.</AppText>
+          </Pressable>
+        ) : null}
+        {challengeQuery.isError ? (
+          <Pressable onPress={() => challengeQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry challenge history">
+            <AppText variant="caption" color={colors.danger}>Couldn't load challenge history. Tap to retry.</AppText>
           </Pressable>
         ) : null}
 

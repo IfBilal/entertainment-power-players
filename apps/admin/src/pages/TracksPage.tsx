@@ -53,13 +53,11 @@ export function TracksPage() {
     const index = sorted.findIndex((t) => t.slug === track.slug);
     const swapWith = sorted[index + direction];
     if (!swapWith) return;
+    const nextSlugs = sorted.map((item) => item.slug);
+    [nextSlugs[index], nextSlugs[index + direction]] = [nextSlugs[index + direction], nextSlugs[index]];
     setError(null);
-    const [a, b] = [
-      supabase.from('tracks').update({ order: swapWith.order }).eq('slug', track.slug),
-      supabase.from('tracks').update({ order: track.order }).eq('slug', swapWith.slug),
-    ];
-    const [resA, resB] = await Promise.all([a, b]);
-    if (resA.error || resB.error) setError(resA.error?.message ?? resB.error?.message ?? 'Could not reorder.');
+    const { error: moveError } = await supabase.rpc('reorder_tracks', { p_track_slugs: nextSlugs });
+    if (moveError) setError(moveError.message);
     else await load();
   }
 

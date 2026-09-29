@@ -12,6 +12,7 @@ type Challenge = {
   description: string;
   type: 'single' | 'counter';
   target: number | null;
+  active: boolean;
 };
 
 const EMPTY_FORM = { title: '', description: '', type: 'single' as 'single' | 'counter', target: 5 };
@@ -26,19 +27,22 @@ export function TrackChallengesPage() {
   const [form, setForm] = useState({ ...EMPTY_FORM });
   const [formOpen, setFormOpen] = useState(false);
   const [saving, setSaving] = useState(false);
+  const [reorderEnabled, setReorderEnabled] = useState(false);
 
   async function load() {
     if (!slug) return;
     setLoading(true);
     setError(null);
-    const [trackRes, challengesRes] = await Promise.all([
+    const [trackRes, challengesRes, configRes] = await Promise.all([
       supabase.from('tracks').select('slug, name').eq('slug', slug).single(),
       supabase.from('track_challenges').select('*').eq('track_slug', slug).order('order'),
+      supabase.from('app_config').select('challenge_reorder_enabled').eq('id', true).maybeSingle(),
     ]);
     if (trackRes.error) setError(trackRes.error.message);
     else setTrack(trackRes.data as Track);
     if (challengesRes.error) setError(challengesRes.error.message);
     else setChallenges(challengesRes.data as Challenge[]);
+    setReorderEnabled(configRes.data?.challenge_reorder_enabled === true);
     setLoading(false);
   }
 
@@ -77,12 +81,18 @@ export function TrackChallengesPage() {
       type: form.type,
       target: form.type === 'counter' ? form.target : null,
     };
+    if (!payload.title || (payload.type === 'counter' && (!Number.isInteger(payload.target) || (payload.target ?? 0) < 1))) {
+      setError('Enter a title and a positive whole-number counter target.');
+      setSaving(false);
+      return;
+    }
 
     const res = editing
       ? await supabase.from('track_challenges').update(payload).eq('id', editing.id)
       : await supabase.from('track_challenges').insert({
           id: `${slug}_${Date.now()}`,
           order: challenges.length > 0 ? Math.max(...challenges.map((c) => c.order)) + 1 : 1,
+          active: true,
           ...payload,
         });
 
@@ -94,13 +104,13 @@ export function TrackChallengesPage() {
     setSaving(false);
   }
 
-  async function remove(challenge: Challenge) {
-    if (!window.confirm(`Remove "${challenge.title}"?\n\nThis challenge has no soft-delete state — removing it deletes it permanently. Any member progress tied to it stays, referenced by its id.`)) {
+  async function setActive(challenge: Challenge, active: boolean) {
+    if (!window.confirm(`${active ? 'Restore' : 'Deactivate'} "${challenge.title}"?\n\nMember progress and history will be preserved.`)) {
       return;
     }
     setError(null);
-    const { error: deleteError } = await supabase.from('track_challenges').delete().eq('id', challenge.id);
-    if (deleteError) setError(deleteError.message);
+    const { error: updateError } = await supabase.from('track_challenges').update({ active }).eq('id', challenge.id);
+    if (updateError) setError(updateError.message);
     else await load();
   }
 
@@ -109,12 +119,15 @@ export function TrackChallengesPage() {
     const index = sorted.findIndex((c) => c.id === challenge.id);
     const swapWith = sorted[index + direction];
     if (!swapWith) return;
+    if (!reorderEnabled) {
+      setError('Challenge reordering is paused until the updated mobile app is in use.');
+      return;
+    }
+    const nextIds = sorted.map((item) => item.id);
+    [nextIds[index], nextIds[index + direction]] = [nextIds[index + direction], nextIds[index]];
     setError(null);
-    const [resA, resB] = await Promise.all([
-      supabase.from('track_challenges').update({ order: swapWith.order }).eq('id', challenge.id),
-      supabase.from('track_challenges').update({ order: challenge.order }).eq('id', swapWith.id),
-    ]);
-    if (resA.error || resB.error) setError(resA.error?.message ?? resB.error?.message ?? 'Could not reorder.');
+    const { error: moveError } = await supabase.rpc('reorder_track_challenges', { p_track_slug: slug, p_challenge_ids: nextIds });
+    if (moveError) setError(moveError.message);
     else await load();
   }
 
@@ -128,12 +141,13 @@ export function TrackChallengesPage() {
       <div className="row between">
         <div>
           <h1>{track?.name ?? slug}</h1>
-          <p className="muted small">{challenges.length} challenge{challenges.length === 1 ? '' : 's'} in admin-set order</p>
+          <p className="muted small">{challenges.filter((challenge) => challenge.active).length} active / {challenges.length} total challenges in admin-set order</p>
         </div>
         <button onClick={openCreate}>+ Add challenge</button>
       </div>
 
       {error ? <p className="error small">{error}</p> : null}
+      {!reorderEnabled ? <p className="muted small">Challenge reordering is paused while older app builds are still in use.</p> : null}
       {loading ? <p className="muted small">Loading…</p> : null}
 
       {!loading && sorted.length === 0 ? (
@@ -142,23 +156,24 @@ export function TrackChallengesPage() {
         </div>
       ) : (
         sorted.map((c, i) => (
-          <div key={c.id} className="card row between">
+          <div key={c.id} className="card row between" style={{ opacity: c.active ? 1 : 0.65 }}>
             <div className="row" style={{ gap: '0.9rem', flex: 1 }}>
               <div className="row" style={{ gap: '0.15rem', flexDirection: 'column' }}>
-                <button className="ghost small" style={{ padding: 2 }} onClick={() => move(c, -1)} disabled={i === 0} aria-label="Move up">▲</button>
-                <button className="ghost small" style={{ padding: 2 }} onClick={() => move(c, 1)} disabled={i === sorted.length - 1} aria-label="Move down">▼</button>
+                <button className="ghost small" style={{ padding: 2 }} onClick={() => move(c, -1)} disabled={!reorderEnabled || i === 0} aria-label="Move up">▲</button>
+                <button className="ghost small" style={{ padding: 2 }} onClick={() => move(c, 1)} disabled={!reorderEnabled || i === sorted.length - 1} aria-label="Move down">▼</button>
               </div>
               <div style={{ flex: 1 }}>
                 <div className="row" style={{ gap: '0.5rem' }}>
                   <strong>{c.title}</strong>
                   <span className="badge">{c.type === 'counter' ? `COUNTER · TARGET ${c.target}` : 'SINGLE'}</span>
+                  {!c.active ? <span className="badge badge-muted">INACTIVE</span> : null}
                 </div>
                 {c.description ? <p className="muted small" style={{ margin: '0.2rem 0 0' }}>{c.description}</p> : null}
               </div>
             </div>
             <div className="row">
               <button className="ghost small" onClick={() => openEdit(c)}>Edit</button>
-              <button className="ghost small" style={{ color: 'var(--danger)' }} onClick={() => remove(c)}>Remove</button>
+              <button className="ghost small" style={{ color: c.active ? 'var(--danger)' : undefined }} onClick={() => setActive(c, !c.active)}>{c.active ? 'Deactivate' : 'Restore'}</button>
             </div>
           </div>
         ))

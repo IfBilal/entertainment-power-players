@@ -35,3 +35,11 @@ Phase 0 checkpoint: `499ff87`, pushed to `main`. The new contracts typecheck. Ex
 - `20260929191746_week3_admin_reorder.sql`: atomic full-list track/challenge reorders. Challenge reorder defaults **disabled** in `app_config.challenge_reorder_enabled` until old order-based APKs are retired.
 - Local test assembled legacy fixture → all three migrations → RLS/backfill/transition/reorder checks in one transaction, then `ROLLBACK`. Passed: owner/other quote isolation, legacy progress→stable ID, exactly one completion activity, untick/decrement cleanup, counter cap, free-user rejection, admin reorder and cutover gate. No Week 3 migration is applied to the local or remote database yet.
 - Remaining for Phase 1 acceptance: reconcile/verify EPP remote migration history; run advisors on migrated schema; migrate EPP staging and verify actual RLS/API access; retire/coordinate old APK progress writes; tighten direct-write rules after cutover. Therefore **Phase 1 is not complete** despite green local SQL tests.
+
+Phase 1 local checkpoint: `56b1f87`, pushed to `main`. No database deployment occurred.
+
+## Phase 2 — admin content changes (in progress, 2026-09-30)
+
+- The admin challenge page now deactivates/restores instead of hard-deleting, includes inactive rows, validates positive counter targets, and uses the gated atomic reorder RPC. Track reorder uses its atomic RPC.
+- Admin `npm run typecheck`, `npm test` (19 passed), and `npm run build` all pass. No Vercel deployment yet: its current EPP database lacks the un-applied Week 3 migrations, so shipping this UI first would produce schema/RPC errors.
+- Mobile live-content rewiring, deployed admin testing, and open-screen content refresh are still pending. Phase 2 is **not complete**.

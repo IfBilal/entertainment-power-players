@@ -211,6 +211,9 @@ export function TrackChallengesPage() {
                 />
               </div>
             ) : null}
+            {editing && (form.type !== editing.type || (form.type === 'counter' && form.target !== editing.target)) ? (
+              <p className="muted small">Type and target changes are blocked once any member has progress. To preserve their history, deactivate this challenge and create a replacement if the save is rejected.</p>
+            ) : null}
 
             {error ? <p className="error small">{error}</p> : null}
 

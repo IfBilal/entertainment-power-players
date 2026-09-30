@@ -115,10 +115,9 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
 
 export function SubscriptionScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Subscription'>) {
   const isPro = useAppStore((state) => state.isPro);
-  const [plan, setPlan] = useState<'monthly' | 'annual'>('annual');
 
   function choosePlan() {
-    navigation.getParent()?.getParent()?.navigate('Paywall', { plan });
+    navigation.getParent()?.getParent()?.navigate('Paywall');
   }
 
   return (
@@ -135,36 +134,12 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
 
       {!isPro ? (
         <>
-          <AppText variant="subtitle" style={styles.featuresTitle}>Choose your plan</AppText>
-          <View style={styles.planOptions}>
-            <Pressable
-              accessibilityRole="radio"
-              accessibilityLabel="Annual plan, $49.99 per year"
-              accessibilityState={{ selected: plan === 'annual' }}
-              onPress={() => setPlan('annual')}
-              style={[styles.planOption, plan === 'annual' && styles.planOptionSelected]}
-            >
-              <AppText variant="bodyStrong">Annual</AppText>
-              <AppText variant="title">$49.99</AppText>
-              <AppText variant="caption" color={colors.textSecondary}>per year · Save 25%</AppText>
-            </Pressable>
-            <Pressable
-              accessibilityRole="radio"
-              accessibilityLabel="Monthly plan, $9.99 per month"
-              accessibilityState={{ selected: plan === 'monthly' }}
-              onPress={() => setPlan('monthly')}
-              style={[styles.planOption, plan === 'monthly' && styles.planOptionSelected]}
-            >
-              <AppText variant="bodyStrong">Monthly</AppText>
-              <AppText variant="title">$9.99</AppText>
-              <AppText variant="caption" color={colors.textSecondary}>per month</AppText>
-            </Pressable>
-          </View>
+          <AppText variant="body" color={colors.textSecondary} style={styles.featuresTitle}>See monthly and annual prices from your app store.</AppText>
           <Button label="Choose a plan" onPress={choosePlan} />
         </>
       ) : (
         <AppText variant="caption" color={colors.textSecondary} style={styles.previewNote}>
-          Premium is active in test mode. Billing management will be available when purchases launch.
+          Premium access is active. Plan and billing management will appear here after store reconciliation is connected.
         </AppText>
       )}
 

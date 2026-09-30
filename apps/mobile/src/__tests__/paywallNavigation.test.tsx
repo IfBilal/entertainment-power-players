@@ -7,6 +7,7 @@ import { activatePreviewPlan } from '../services/supabase/billing';
 
 jest.mock('../services/supabase/billing', () => ({
   activatePreviewPlan: jest.fn(async () => undefined),
+  fetchPremiumAccess: jest.fn(async () => true),
 }));
 
 jest.mock('../services/supabase/directory', () => ({
@@ -102,8 +103,8 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     expect(await screen.findByText(/Unlock the full/)).toBeTruthy();
     expect(screen.getByText('Monthly')).toBeTruthy();
     expect(screen.getByText('Annual')).toBeTruthy();
-    fireEvent.press(screen.getByLabelText('Monthly plan, $9.99 per month'));
-    await waitFor(() => expect(screen.getByLabelText('Monthly plan, $9.99 per month').props.accessibilityState.selected).toBe(true));
+    fireEvent.press(screen.getByLabelText('Monthly plan'));
+    await waitFor(() => expect(screen.getByLabelText('Monthly plan').props.accessibilityState.selected).toBe(true));
     fireEvent.press(screen.getByText('Activate Premium (test)'));
 
     await waitFor(() => expect(activatePreviewPlan).toHaveBeenCalledWith('monthly'));

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -10,6 +10,7 @@ import { useAppStore } from '../../store/useAppStore';
 import { requestEmailChange } from '../../services/supabase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
 import { defaultNotificationPrefs, fetchNotificationPrefs, updateNotificationPrefs, updateProfile, type NotificationPrefs } from '../../services/supabase/profile';
+import { fetchSubscriptionStatus } from '../../services/supabase/billing';
 
 function Back({ onPress }: { onPress: () => void }) { return <Pressable onPress={onPress} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>; }
 
@@ -115,6 +116,12 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
 
 export function SubscriptionScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Subscription'>) {
   const isPro = useAppStore((state) => state.isPro);
+  const userId = useAuthStore((state) => state.userId);
+  const statusQuery = useQuery({ queryKey: ['subscriptionStatus', userId], queryFn: () => fetchSubscriptionStatus(userId!), enabled: Boolean(userId), refetchOnMount: 'always' });
+  const subscription = statusQuery.data;
+  const activeUntil = subscription?.activeUntil ? new Date(subscription.activeUntil).toLocaleDateString() : null;
+  const manageUrl = subscription?.platform === 'apple' ? 'https://apps.apple.com/account/subscriptions'
+    : subscription?.platform === 'google' ? 'https://play.google.com/store/account/subscriptions' : null;
 
   function choosePlan() {
     navigation.getParent()?.getParent()?.navigate('Paywall');
@@ -126,10 +133,11 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
       <AppText variant="title">Subscription</AppText>
       <View style={styles.planCard}>
         <AppText variant="label" color={colors.textSecondary}>CURRENT PLAN</AppText>
-        <AppText variant="title" color={isPro ? colors.accentLime : colors.textPrimary}>{isPro ? 'Premium' : 'Free'}</AppText>
+        <AppText variant="title" color={isPro ? colors.accentLime : colors.textPrimary}>{isPro ? `${subscription?.plan === 'annual' ? 'Annual' : subscription?.plan === 'monthly' ? 'Monthly' : 'Premium'}` : 'Free'}</AppText>
         <AppText variant="caption" color={colors.textSecondary}>
-          {isPro ? 'Your premium access is active.' : 'Choose a plan to unlock premium features.'}
+          {isPro ? subscription?.state === 'cancelled' ? `Cancelled · access through ${activeUntil ?? 'the paid period'}` : subscription?.state === 'trial' ? `Trial · ${activeUntil ? `ends ${activeUntil}` : 'active'}` : `Active${activeUntil ? ` · ${subscription?.willRenew ? 'renews' : 'ends'} ${activeUntil}` : ''}` : 'Choose a plan to unlock premium features.'}
         </AppText>
+        {statusQuery.isError ? <Pressable onPress={() => statusQuery.refetch()}><AppText variant="caption" color={colors.danger}>Billing details unavailable. Tap to retry.</AppText></Pressable> : null}
       </View>
 
       {!isPro ? (
@@ -138,9 +146,9 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
           <Button label="Choose a plan" onPress={choosePlan} />
         </>
       ) : (
-        <AppText variant="caption" color={colors.textSecondary} style={styles.previewNote}>
-          Premium access is active. Plan and billing management will appear here after store reconciliation is connected.
-        </AppText>
+        <View style={styles.previewNote}>
+          {manageUrl ? <Button label="Manage or cancel in store" variant="ghost" onPress={() => { void Linking.openURL(manageUrl); }} /> : <AppText variant="caption" color={colors.textSecondary}>This access is not linked to an app-store subscription.</AppText>}
+        </View>
       )}
 
       <AppText variant="subtitle" style={styles.featuresTitle}>Features</AppText>

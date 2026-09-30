@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef } from 'react';
-import { Platform, View } from 'react-native';
+import { AppState, Platform, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
 import { NavigationContainer, DarkTheme } from '@react-navigation/native';
@@ -27,6 +27,7 @@ import { useAuthStore } from './src/store/useAuthStore';
 import { colors, useAppFonts } from './src/theme';
 import { AuthDeepLinkHandler } from './src/features/onboarding/AuthDeepLinkHandler';
 import { flushPendingAuthNavigation, rootNavigationRef } from './src/navigation/rootNavigation';
+import { fetchPremiumAccess } from './src/services/supabase/billing';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -38,6 +39,28 @@ function AuthCacheGuard() {
   useEffect(() => {
     if (previousUserId.current !== userId) queryClient.clear();
     previousUserId.current = userId;
+  }, [userId]);
+  return null;
+}
+
+function PremiumForegroundSync() {
+  const userId = useAuthStore((state) => state.userId);
+  useEffect(() => {
+    if (!userId) return;
+    const listener = AppState.addEventListener('change', (state) => {
+      if (state !== 'active') return;
+      void fetchPremiumAccess().then((hasAccess) => {
+        if (useAuthStore.getState().userId !== userId) return;
+        const previous = useAppStore.getState().isPro;
+        useAppStore.getState().setIsPro(hasAccess);
+        if (previous && !hasAccess) queryClient.clear();
+      }).catch(() => {
+        if (useAuthStore.getState().userId !== userId) return;
+        useAppStore.getState().setIsPro(false);
+        queryClient.clear();
+      });
+    });
+    return () => listener.remove();
   }, [userId]);
   return null;
 }
@@ -177,6 +200,7 @@ export default function App() {
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
           <AuthCacheGuard />
+          <PremiumForegroundSync />
           <NavigationContainer
             ref={rootNavigationRef}
             onReady={flushPendingAuthNavigation}

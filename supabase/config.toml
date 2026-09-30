@@ -4,6 +4,11 @@
 # working directory name when running `supabase init`.
 project_id = "markhor-proj"
 
+[functions.revenuecat-webhook]
+# RevenueCat has no Supabase JWT. The function verifies the configured
+# authorization header AND an HMAC signature before touching service-role data.
+verify_jwt = false
+
 [api]
 enabled = true
 # Port to use for the API URL.

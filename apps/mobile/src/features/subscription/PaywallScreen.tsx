@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Logo, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import type { RootStackParamList } from '../../navigation/types';
-import { activatePreviewPlan, fetchPremiumAccess } from '../../services/supabase/billing';
+import { activatePreviewPlan, fetchPremiumAccess, requestBillingReconcile } from '../../services/supabase/billing';
 import { billingIsConfigured, getBillingPlans, purchaseBillingPlan, restoreBillingPurchases, type PlanKind } from '../../services/billing/revenuecat';
 import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -47,6 +47,9 @@ export function PaywallScreen({ navigation, route }: Props) {
   async function confirmAccess() {
     setConfirming(true);
     try {
+      // A webhook may arrive later; ask the authenticated server to verify
+      // this caller directly so the paywall need not trust CustomerInfo.
+      try { await requestBillingReconcile(); } catch { /* webhook/polling fallback */ }
       if (await waitForServerAccess()) {
         setIsPro(true);
         navigation.goBack();

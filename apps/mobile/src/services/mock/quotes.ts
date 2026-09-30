@@ -21,7 +21,7 @@ export const mockQuotes: Quote[] = [
  * only the active quotes, ordered stably by `order`.
  */
 export function quoteOfTheDay(quotes: Quote[], date: Date): Quote | null {
-  const active = quotes.filter((q) => q.active).sort((a, b) => a.order - b.order);
+  const active = quotes.filter((q) => q.active).sort((a, b) => a.order - b.order || a.id.localeCompare(b.id));
   if (active.length === 0) return null;
 
   const dayKey = `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`;

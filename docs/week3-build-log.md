@@ -58,3 +58,13 @@ Admin checkpoint: `da5fa69`, pushed to `main`; deployment intentionally withheld
 - History rows reveal a delete action on left swipe (with a visible accessibility fallback), confirm before server deletion, show a pending state, and invalidate the activity cache after the server succeeds. Challenge history remains read-only.
 - Added integration tests for directory linking, event creation, durable deletion/reopen, and unit tests for eight-week gaps, ISO year rollover, zero goal carry-forward and persisted-week counting. `npm run typecheck` and `npm test -- --runInBand --silent` pass: **32 suites / 86 tests**.
 - Not yet a Phase 3 acceptance claim: the native picker/swipe and force-stop/reopen flow have not been exercised on a device against migrated EPP. The EPP migration remains unavailable from this session, so no APK should be released from the current branch yet.
+
+Tracker client checkpoint: `6ff89dd`, pushed to `main`.
+
+## Phase 4 — Inspiration client checkpoint (in progress, 2026-09-30)
+
+- Inspiration now reads active, deterministically ordered quotes from Supabase and computes a featured quote per local calendar date. The screen refreshes its date while open and on foreground, and live content continues to poll.
+- Saved quotes now use owner-scoped `quote_favorites` as the source of truth. The per-user SecureStore list is imported once, idempotently, for IDs still present in active server content; another signed-in user does not receive those saves. A failed migration remains retryable. Server favorites refetch while mounted; offline saves are not queued, and failures show an error without claiming success.
+- Share opens a branded preview; its primary action captures a PNG and opens native file sharing. Text share is only the fallback when file sharing is unavailable. Installed the SDK-compatible `react-native-view-shot` and `expo-sharing` packages.
+- Mobile `npm run typecheck` and `npm test -- --runInBand --silent` pass: **33 suites / 89 tests**. Tests cover save/unsave, account isolation, migration retry/idempotency and the PNG share call. The actual exported image and native share sheet remain **unverified on Android/iOS devices**. No deployed EPP quote/favorite API test is possible until Phase 1 migration is applied.
+- Phase 4A challenge target-change reconciliation and paid-plan navigation remain open; therefore Phase 4 is **not complete**.

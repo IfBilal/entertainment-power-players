@@ -4,7 +4,7 @@ import { useAuthStore } from '../store/useAuthStore';
 import { useChallengeProgress } from './useChallengeProgress';
 import { activityQueryKey } from '../services/supabase/activity';
 import { challengeProgressQueryKey, transitionChallenge } from '../services/supabase/challenges';
-import { legacyChallengeKey, type ChallengeProgressMap } from '../utils/challengeProgress';
+import type { ChallengeProgressMap } from '../utils/challengeProgress';
 import { computeWeekKey } from '../utils/weekKey';
 import type { ChallengeRecord } from '../types/week3';
 
@@ -12,8 +12,7 @@ export function useChallengeActions(challenge: ChallengeRecord) {
   const userId = useAuthStore((state) => state.userId);
   const queryClient = useQueryClient();
   const progressQuery = useChallengeProgress();
-  const legacyKey = legacyChallengeKey(challenge.trackSlug, challenge.order);
-  const progress = progressQuery.data?.[challenge.id] ?? progressQuery.data?.[legacyKey];
+  const progress = progressQuery.data?.[challenge.id];
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState(false);
   const queue = useRef<Promise<void>>(Promise.resolve());
@@ -27,13 +26,12 @@ export function useChallengeActions(challenge: ChallengeRecord) {
     const job = queue.current.then(async () => {
       if (useAuthStore.getState().userId !== userId) return;
       const currentMap = queryClient.getQueryData<ChallengeProgressMap>(challengeProgressQueryKey(userId));
-      const current = currentMap?.[challenge.id] ?? currentMap?.[legacyKey];
+      const current = currentMap?.[challenge.id];
       if (onlyIfIncomplete && current?.status === 'complete') return;
       const saved = await transitionChallenge(challenge, action, note ?? current?.note, computeWeekKey(new Date()));
       queryClient.setQueryData<ChallengeProgressMap>(challengeProgressQueryKey(userId), (previous) => ({
         ...previous,
         [challenge.id]: saved,
-        [legacyKey]: saved,
       }));
       await queryClient.invalidateQueries({ queryKey: activityQueryKey(userId) });
       setError(false);

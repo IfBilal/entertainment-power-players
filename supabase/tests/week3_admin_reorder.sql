@@ -30,7 +30,8 @@ begin
   select progress.track_slug, progress.challenge_id
   into v_track_slug, stable_id
   from public.challenge_progress as progress
-  where progress.user_id = auth.uid() and progress.note = 'legacy completion';
+  where progress.user_id = auth.uid()
+  order by progress.challenge_id limit 1;
 
   select array_agg(id order by "order" desc)
   into challenge_ids from public.track_challenges
@@ -43,8 +44,16 @@ begin
     raise exception 'challenge reorder did not take effect';
   end if;
   if (select challenge_id from public.challenge_progress
-      where user_id = auth.uid() and note = 'legacy completion') <> stable_id then
+      where user_id = auth.uid() and challenge_id = stable_id) <> stable_id then
     raise exception 'challenge reorder detached legacy progress';
+  end if;
+  if exists (
+    select 1 from public.challenge_progress as progress
+    join public.track_challenges as challenge on challenge.id = progress.challenge_id
+    where progress.user_id = auth.uid() and progress.challenge_id = stable_id
+      and (progress.track_slug <> challenge.track_slug or progress.challenge_order <> challenge."order")
+  ) then
+    raise exception 'read-only legacy positions were not synchronized after reorder';
   end if;
 
   begin

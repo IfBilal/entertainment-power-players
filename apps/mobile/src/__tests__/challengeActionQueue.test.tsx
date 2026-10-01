@@ -24,8 +24,8 @@ jest.mock('../services/supabase/challenges', () => ({
 }));
 
 function Harness() {
-  const single = useChallengeActions({ id: 'creators-producers_1', trackSlug: 'creators-producers', order: 1, title: 'Create Something New', description: '', type: 'single', target: null, active: true });
-  const counter = useChallengeActions({ id: 'creators-producers_3', trackSlug: 'creators-producers', order: 3, title: 'Find 3 POWER PLAYERS', description: '', type: 'counter', target: 3, active: true });
+  const single = useChallengeActions({ id: 'db-id-single-a17e', trackSlug: 'creators-producers', order: 1, title: 'Create Something New', description: '', type: 'single', target: null, active: true });
+  const counter = useChallengeActions({ id: 'db-id-counter-d425', trackSlug: 'creators-producers', order: 3, title: 'Find 3 POWER PLAYERS', description: '', type: 'counter', target: 3, active: true });
   return <>
     <Text>{single.disabled || counter.disabled ? 'Loading' : 'Ready'}</Text>
     <Pressable onPress={() => { single.saveNote('Drafted a pitch'); single.complete('Drafted a pitch'); }}><Text>Note and complete</Text></Pressable>
@@ -40,6 +40,6 @@ it('serializes note/completion and rapid counter taps against fresh saved state'
   await screen.findByText('Ready');
   fireEvent.press(screen.getByText('Note and complete'));
   fireEvent.press(screen.getByText('Rapid increments'));
-  await waitFor(() => expect(mockProgress['creators-producers_1']).toEqual(expect.objectContaining({ status: 'complete', note: 'Drafted a pitch' })));
-  await waitFor(() => expect(mockProgress['creators-producers_3']).toEqual(expect.objectContaining({ status: 'complete', count: 3 })));
+  await waitFor(() => expect(mockProgress['db-id-single-a17e']).toEqual(expect.objectContaining({ status: 'complete', note: 'Drafted a pitch' })));
+  await waitFor(() => expect(mockProgress['db-id-counter-d425']).toEqual(expect.objectContaining({ status: 'complete', count: 3 })));
 });

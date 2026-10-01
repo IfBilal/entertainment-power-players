@@ -7,7 +7,6 @@ import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
 import { useAppStore } from '../../store/useAppStore';
-import { legacyChallengeKey } from '../../utils/challengeProgress';
 import type { ChallengesStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackList'>;
@@ -49,9 +48,7 @@ export function TrackListScreen({ navigation }: Props) {
         renderItem={({ item }) => {
           const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === item.slug);
           const total = challenges.length;
-          const done = challenges.filter((challenge) => (
-            progress[challenge.id] ?? progress[legacyChallengeKey(challenge.trackSlug, challenge.order)]
-          )?.status === 'complete').length;
+          const done = challenges.filter((challenge) => progress[challenge.id]?.status === 'complete').length;
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
               <Card style={styles.row} elevation="none">

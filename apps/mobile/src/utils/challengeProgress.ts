@@ -5,9 +5,5 @@ export type ChallengeProgress = {
   completedAt?: string;
 };
 
-/** During the old-APK compatibility window, data may have only a position key. */
+/** Progress keys are immutable challenge IDs; display order is never identity. */
 export type ChallengeProgressMap = Record<string, ChallengeProgress>;
-
-export function legacyChallengeKey(trackSlug: string, challengeOrder: number): string {
-  return `${trackSlug}_${challengeOrder}`;
-}

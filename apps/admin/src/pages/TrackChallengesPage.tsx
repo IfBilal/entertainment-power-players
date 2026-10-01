@@ -71,6 +71,15 @@ export function TrackChallengesPage() {
   async function handleSave(e: FormEvent) {
     e.preventDefault();
     if (!slug) return;
+
+    const configChanged = Boolean(editing && (
+      form.type !== editing.type ||
+      (form.type === 'counter' ? form.target : null) !== editing.target
+    ));
+    if (configChanged && !window.confirm(
+      'This will recalculate saved progress for every member. Counter counts will be clamped to the new target; completion and its linked Tracker history will be updated together. Continue?',
+    )) return;
+
     setSaving(true);
     setError(null);
 
@@ -88,7 +97,13 @@ export function TrackChallengesPage() {
     }
 
     const res = editing
-      ? await supabase.from('track_challenges').update(payload).eq('id', editing.id)
+      ? await supabase.rpc('update_challenge_configuration', {
+          p_challenge_id: editing.id,
+          p_title: payload.title,
+          p_description: payload.description,
+          p_type: payload.type,
+          p_target: payload.target,
+        })
       : await supabase.from('track_challenges').insert({
           id: `${slug}_${Date.now()}`,
           order: challenges.length > 0 ? Math.max(...challenges.map((c) => c.order)) + 1 : 1,
@@ -211,8 +226,8 @@ export function TrackChallengesPage() {
                 />
               </div>
             ) : null}
-            {editing && (form.type !== editing.type || (form.type === 'counter' && form.target !== editing.target)) ? (
-              <p className="muted small">Type and target changes are blocked once any member has progress. To preserve their history, deactivate this challenge and create a replacement if the save is rejected.</p>
+            {editing && (form.type !== editing.type || (form.type === 'counter' ? form.target : null) !== editing.target) ? (
+              <p className="muted small">Saving recalculates existing progress: counter counts are clamped to the target, and completion plus linked Tracker history are updated together.</p>
             ) : null}
 
             {error ? <p className="error small">{error}</p> : null}

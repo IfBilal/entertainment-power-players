@@ -8,12 +8,17 @@ import type { ChallengeProgressMap } from '../services/mock/challenges';
 import type { ChallengeRecord } from '../types/week3';
 
 const mockProgress: ChallengeProgressMap = {};
+const mockStableChallengeId = 'challenge-db-id-7f3a';
 
 jest.mock('../services/supabase/content', () => {
   const { testTracks, testChallenges } = jest.requireActual('../testing/mockContent');
   return {
     fetchActiveTracks: jest.fn(async () => testTracks),
-    fetchActiveChallenges: jest.fn(async () => testChallenges),
+    fetchActiveChallenges: jest.fn(async () => testChallenges.map((challenge: ChallengeRecord) => (
+      challenge.trackSlug === 'creators-producers' && challenge.order === 1
+        ? { ...challenge, id: mockStableChallengeId }
+        : challenge
+    ))),
     fetchActiveQuotes: jest.fn(async () => []),
   };
 });
@@ -51,10 +56,10 @@ it('persists a challenge note and completion from its detail screen after reopen
   fireEvent.changeText(note, 'Drafted a pitch');
   await waitFor(() => expect(screen.getByDisplayValue('Drafted a pitch')).toBeTruthy());
   fireEvent(note, 'blur');
-  await waitFor(() => expect(mockProgress['creators-producers_1']?.note).toBe('Drafted a pitch'));
+  await waitFor(() => expect(mockProgress[mockStableChallengeId]?.note).toBe('Drafted a pitch'));
   fireEvent.press(screen.getByRole('button', { name: 'Mark as Complete' }));
-  await waitFor(() => expect(mockProgress['creators-producers_1']?.status).toBe('complete'));
-  expect(transitionChallenge).toHaveBeenCalledWith(expect.objectContaining({ id: 'creators-producers_1' }), 'toggle', 'Drafted a pitch', expect.any(String));
+  await waitFor(() => expect(mockProgress[mockStableChallengeId]?.status).toBe('complete'));
+  expect(transitionChallenge).toHaveBeenCalledWith(expect.objectContaining({ id: mockStableChallengeId }), 'toggle', 'Drafted a pitch', expect.any(String));
 
   visit.unmount();
   await renderWithProviders(<ChallengesNavigator />);

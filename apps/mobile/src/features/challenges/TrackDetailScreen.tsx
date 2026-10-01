@@ -4,7 +4,6 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
-import { legacyChallengeKey } from '../../utils/challengeProgress';
 import type { ChallengeRecord } from '../../types/week3';
 import { useAppStore } from '../../store/useAppStore';
 import { useChallengeActions } from '../../hooks/useChallengeActions';
@@ -77,9 +76,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
   }
 
   const total = challenges.length;
-  const done = challenges.filter((challenge) => (
-    progress[challenge.id] ?? progress[legacyChallengeKey(challenge.trackSlug, challenge.order)]
-  )?.status === 'complete').length;
+  const done = challenges.filter((challenge) => progress[challenge.id]?.status === 'complete').length;
   const complete = total > 0 && done === total;
 
   return (

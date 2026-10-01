@@ -1,7 +1,7 @@
 import { applyChallengeAction, trackCompletionCount, type Challenge, type ChallengeProgressMap, type Track } from '../services/mock/challenges';
 
-const single: Challenge = { order: 1, title: 'Create Something New', description: '', type: 'single' };
-const counter: Challenge = { order: 2, title: 'Find 3 Power Players', description: '', type: 'counter', target: 3 };
+const single: Challenge = { id: 'stable-single-id', order: 1, title: 'Create Something New', description: '', type: 'single' };
+const counter: Challenge = { id: 'stable-counter-id', order: 2, title: 'Find 3 Power Players', description: '', type: 'counter', target: 3 };
 
 describe('applyChallengeAction', () => {
   it('toggles a single challenge complete then back to not started', () => {
@@ -38,8 +38,8 @@ describe('trackCompletionCount', () => {
   it('counts only completed challenges for this track', () => {
     const track: Track = { slug: 'fashion', name: 'Fashion', order: 1, active: true, challenges: [single, counter] };
     const progress: ChallengeProgressMap = {
-      fashion_1: { status: 'complete', count: 1 },
-      fashion_2: { status: 'not_started', count: 1 },
+      'stable-single-id': { status: 'complete', count: 1 },
+      'stable-counter-id': { status: 'not_started', count: 1 },
     };
     expect(trackCompletionCount(track, progress)).toEqual({ done: 1, total: 2 });
   });

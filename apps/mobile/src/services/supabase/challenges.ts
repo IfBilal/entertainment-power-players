@@ -1,5 +1,5 @@
 import { supabase } from './client';
-import { legacyChallengeKey, type ChallengeProgress, type ChallengeProgressMap } from '../../utils/challengeProgress';
+import type { ChallengeProgress, ChallengeProgressMap } from '../../utils/challengeProgress';
 import type { ChallengeRecord } from '../../types/week3';
 
 export function challengeProgressQueryKey(userId: string | null) {
@@ -8,19 +8,19 @@ export function challengeProgressQueryKey(userId: string | null) {
 
 export async function fetchChallengeProgress(userId: string): Promise<ChallengeProgressMap> {
   const { data, error } = await supabase.from('challenge_progress')
-    .select('challenge_id, track_slug, challenge_order, status, count, note, completed_at')
+    .select('challenge_id, status, count, note, completed_at')
     .eq('user_id', userId);
   if (error) throw error;
   const progress: ChallengeProgressMap = {};
   for (const row of data ?? []) {
+    if (!row.challenge_id) throw new Error('Challenge progress is missing its stable challenge ID. Update the app or contact support.');
     const entry = {
       status: row.status as ChallengeProgress['status'],
       count: row.count,
       note: row.note ?? undefined,
       completedAt: row.completed_at ?? undefined,
     };
-    progress[legacyChallengeKey(row.track_slug, row.challenge_order)] = entry;
-    if (row.challenge_id) progress[row.challenge_id] = entry;
+    progress[row.challenge_id] = entry;
   }
   return progress;
 }

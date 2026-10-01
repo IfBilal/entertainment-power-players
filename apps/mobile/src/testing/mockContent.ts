@@ -8,7 +8,7 @@ export const testTracks: TrackRecord[] = seededTracks.map(({ slug, name, order, 
 
 export const testChallenges: ChallengeRecord[] = seededTracks.flatMap((track) => (
   track.challenges.map((challenge) => ({
-    id: `${track.slug}_${challenge.order}`,
+    id: challenge.id,
     trackSlug: track.slug,
     order: challenge.order,
     title: challenge.title,

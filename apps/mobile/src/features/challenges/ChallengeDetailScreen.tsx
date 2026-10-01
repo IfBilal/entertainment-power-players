@@ -13,16 +13,14 @@ import type { ChallengesStackParamList } from '../../navigation/types';
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'ChallengeDetail'>;
 
 export function ChallengeDetailScreen({ route, navigation }: Props) {
-  const { trackSlug, challengeId, challengeOrder } = route.params;
+  const { trackSlug, challengeId } = route.params;
   const tracksQuery = useTracks();
   const challengesQuery = useChallenges();
   const isPro = useAppStore((state) => state.isPro);
   const track = tracksQuery.data?.find((candidate) => candidate.slug === trackSlug);
-  const foundChallenge = challengesQuery.data?.find((candidate) => candidate.trackSlug === trackSlug && (
-    challengeId ? candidate.id === challengeId : candidate.order === challengeOrder
-  ));
+  const foundChallenge = challengesQuery.data?.find((candidate) => candidate.trackSlug === trackSlug && candidate.id === challengeId);
   const challenge: ChallengeRecord = foundChallenge ?? {
-    id: challengeId ?? 'missing', trackSlug, order: challengeOrder ?? -1,
+    id: challengeId, trackSlug, order: -1,
     title: '', description: '', type: 'single', target: null, active: false,
   };
   const { progress: entry, disabled, error, act, saveNote } = useChallengeActions(challenge);

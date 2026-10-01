@@ -1,23 +1,21 @@
--- Run inside rollback transaction after progress fixtures and guard migration.
+-- Run after the stable-ID cutover. The reject-only guard was replaced by an
+-- atomic progress/activity reconciliation trigger and an admin-only RPC.
 reset role;
 do $$
-declare
-  target_challenge text;
 begin
-  select challenge_id into target_challenge
-  from public.challenge_progress
-  where user_id = '30000000-0000-0000-0000-000000000001'
-  order by challenge_id limit 1;
-  if target_challenge is null then raise exception 'No progress fixture for guard test'; end if;
-  begin
-    update public.track_challenges
-    set target = coalesce(target, 1) + 1
-    where id = target_challenge;
-    raise exception 'Target changed despite existing progress';
-  exception when check_violation then null;
-  end;
-  update public.track_challenges
-  set title = title || ' edited'
-  where id = target_challenge;
+  if to_regprocedure('public.guard_challenge_configuration_change()') is not null then
+    raise exception 'obsolete reject-only challenge guard is still installed';
+  end if;
+  if not exists (
+    select 1 from pg_trigger
+    where tgrelid = 'public.track_challenges'::regclass
+      and tgname = 'reconcile_challenge_progress_on_config_change'
+      and not tgisinternal
+  ) then
+    raise exception 'progress reconciliation trigger is missing';
+  end if;
+  if to_regprocedure('public.update_challenge_configuration(text,text,text,text,integer)') is null then
+    raise exception 'admin challenge configuration RPC is missing';
+  end if;
 end;
 $$;

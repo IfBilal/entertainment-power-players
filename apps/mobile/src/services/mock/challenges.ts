@@ -3,6 +3,7 @@ import seedData from './challenges-seed.json';
 export type ChallengeType = 'single' | 'counter';
 
 export type Challenge = {
+  id: string;
   order: number;
   title: string;
   description: string;
@@ -18,7 +19,15 @@ export type Track = {
   challenges: Challenge[];
 };
 
-export const tracks: Track[] = seedData.tracks as Track[];
+type SeedTrack = Omit<Track, 'challenges'> & { challenges: Omit<Challenge, 'id'>[] };
+
+export const tracks: Track[] = (seedData.tracks as SeedTrack[]).map((track) => ({
+  ...track,
+  challenges: track.challenges.map((challenge) => ({
+    ...challenge,
+    id: `${track.slug}_${challenge.order}`,
+  })),
+}));
 
 export type ChallengeProgress = {
   status: 'not_started' | 'complete';
@@ -29,13 +38,9 @@ export type ChallengeProgress = {
 
 export type ChallengeProgressMap = Record<string, ChallengeProgress>;
 
-export function challengeKey(trackSlug: string, challengeOrder: number): string {
-  return `${trackSlug}_${challengeOrder}`;
-}
-
 export function trackCompletionCount(track: Track, progress: ChallengeProgressMap): { done: number; total: number } {
   const total = track.challenges.length;
-  const done = track.challenges.filter((c) => progress[challengeKey(track.slug, c.order)]?.status === 'complete').length;
+  const done = track.challenges.filter((c) => progress[c.id]?.status === 'complete').length;
   return { done, total };
 }
 

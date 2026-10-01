@@ -24,7 +24,7 @@ jest.mock('../services/supabase/challenges', () => {
   return {
     ...actual,
     fetchChallengeProgress: jest.fn(async () => ({
-      'creators-producers_1': { status: 'complete', count: 1, note: 'Drafted a pitch', completedAt: new Date().toISOString() },
+      'database-stable-id': { status: 'complete', count: 1, note: 'Drafted a pitch', completedAt: new Date().toISOString() },
     })),
   };
 });

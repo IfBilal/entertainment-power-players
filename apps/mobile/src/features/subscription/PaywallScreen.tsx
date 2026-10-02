@@ -14,7 +14,14 @@ import { useAuthStore } from '../../store/useAuthStore';
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
 const benefits = ['Full contact directory', 'All challenge track details'];
-const previewPurchasesEnabled = __DEV__ && !billingIsConfigured();
+// Demo/test unlock: available in dev, or in any build that explicitly opts in
+// via EXPO_PUBLIC_ENABLE_TEST_PURCHASES (set for the client-facing preview
+// APK, which has no RevenueCat key). The `!billingIsConfigured()` guard is
+// load-bearing, not redundant -- it means this can never fire in a real
+// release build that *does* have RevenueCat configured, even if the env flag
+// were left on by mistake.
+const testPurchasesRequested = __DEV__ || process.env.EXPO_PUBLIC_ENABLE_TEST_PURCHASES === 'true';
+const previewPurchasesEnabled = testPurchasesRequested && !billingIsConfigured();
 
 async function waitForServerAccess(): Promise<boolean> {
   for (let attempt = 0; attempt < 8; attempt += 1) {

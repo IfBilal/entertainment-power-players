@@ -3,7 +3,7 @@ import { QuoteFeedScreen } from '../features/inspiration/QuoteFeedScreen';
 import { useAuthStore } from '../store/useAuthStore';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { fetchQuoteFavoriteIds, setQuoteFavorite } from '../services/supabase/quoteFavorites';
-import { mockQuotes } from '../services/mock/quotes';
+import { mockQuotes, quoteOfTheDay } from '../services/mock/quotes';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 
@@ -32,17 +32,20 @@ describe('quote feed favorites', () => {
   it('saves and unsaves quotes from More to Explore and shows them in Saved', async () => {
     await renderWithProviders(<QuoteFeedScreen />);
 
-    const quoteText = 'Opportunities don’t happen. You create them.';
-    expect(await screen.findByText(quoteText)).toBeTruthy();
+    // A quote can become featured on any calendar day, so choose an Explore
+    // card rather than assuming quote_1 is always below the daily hero.
+    const featuredId = quoteOfTheDay(mockQuotes, new Date())?.id;
+    const target = mockQuotes.find((quote) => quote.id !== featuredId && quote.id !== 'quote_featured')!;
+    expect(await screen.findByText(target.text)).toBeTruthy();
     await waitFor(() => expect(fetchQuoteFavoriteIds).toHaveBeenCalledWith('test-user'));
-    fireEvent.press(screen.getByLabelText('Save quote by Chris Grosser'));
-    await waitFor(() => expect(mockSavedByUser['test-user']).toContain('quote_1'));
-    expect(await screen.findByLabelText('Remove saved quote by Chris Grosser')).toBeTruthy();
+    fireEvent.press(screen.getByLabelText(`Save quote by ${target.author}`));
+    await waitFor(() => expect(mockSavedByUser['test-user']).toContain(target.id));
+    expect(await screen.findByLabelText(`Remove saved quote by ${target.author}`)).toBeTruthy();
 
     fireEvent.press((await screen.findAllByText('Saved'))[0]);
-    expect(screen.getByText(quoteText)).toBeTruthy();
-    fireEvent.press(await screen.findByLabelText('Remove saved quote by Chris Grosser'));
-    await waitFor(() => expect(mockSavedByUser['test-user']).not.toContain('quote_1'));
+    expect(screen.getByText(target.text)).toBeTruthy();
+    fireEvent.press(await screen.findByLabelText(`Remove saved quote by ${target.author}`));
+    await waitFor(() => expect(mockSavedByUser['test-user']).not.toContain(target.id));
     expect(setQuoteFavorite).toHaveBeenCalled();
   });
 

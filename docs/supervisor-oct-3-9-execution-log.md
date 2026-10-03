@@ -20,7 +20,7 @@ Status: **in progress**. Starting commit: `8f9fe32e49da23ad72f75a821b145238afd99
 | Android device | `adb devices -l` returned no attached device; no local Android SDK/emulator found | Blocked device smoke |
 | Directory template | Papa Parse: exact nine headers, 3 sample rows, no parser errors, no duplicate headers, UTF-8 without BOM | Passed template inspection; real contacts not imported |
 | Questions template | Papa Parse: exact seven headers, 2 sample rows, no parser errors, no duplicate headers, UTF-8 without BOM | Passed template inspection; 125 client questions outstanding |
-| Current screen capture | Expo web bundled but Supabase SecureStore is unsupported there and auth hydration errors; headless capture was a dark blank frame, not a usable app screenshot | Failed web preview; Android screenshot still needed |
+| Current screen capture | Expo web initially failed auth hydration because SecureStore has no web implementation. A platform storage fallback now lets a real-time headless browser render the signed-out intro at 390×844; the private baseline screenshot is `/tmp/epp-phase0-baseline/mobile-web-real-time-390x844.png` | Partial: intro captured; five priority screens and Android still needed |
 | Admin deployment | Local Vercel project link identifies `entertainment-power-players-admin`; Vercel CLI is unavailable locally | Deployment state unverified |
 
 The current APK uses a **demo premium unlock**, not a real store purchase. No client content count, iOS sign-in, or store purchase was verified during this baseline.
@@ -33,9 +33,11 @@ Admin routes: home, contacts, import, categories, quotes, tracks, track challeng
 
 Known visual violations before redesign: `app.json` requests a dark native appearance and splash; mobile theme uses near-black surfaces; `Screen` renders an aurora; bottom tabs have a dark bar and glowing pill; onboarding bundles `onboarding-concert.png` with people; `Avatar` can render a remote profile image; Fashion defaults to generic glasses; Sports defaults to trophy/football in local maps; some visible full-brand strings omit `®`. The full render-path and admin CSS audit remains open.
 
+The browser-rendered before frame confirms the dark concert-crowd intro. Browser capture is a useful visual baseline but is not a substitute for Android/iOS screen or interaction testing. A date-dependent quote-feed test also failed just after the calendar changed: it assumed a fixed quote always belonged to Explore, but the current date-hash selector can make it the featured quote. The test now chooses a non-featured Explore card. After that fix, mobile typecheck and the full suite passed again: 34 suites, 91 tests.
+
 ### Phase 0 gate still open
 
-- Capture usable **before** screenshots for the five priority screen families on compact and tall phone sizes. The failed Expo-web frame does not count. No Android device or emulator is currently attached.
+- Capture usable **before** screenshots for the five priority screen families on compact and tall phone sizes. The new intro browser frame is valid evidence for that screen only. No Android device or emulator is currently attached.
 - Install and smoke the existing APK on Android, including independent/offline launch and login. APK existence alone does not pass this check.
 - Verify the current Vercel deployment in a browser and record its deployment ID and route smoke.
 - Record iOS signing/tester availability and privately send Bilal the requested APK/backend/Apple-test note; no outbound message has been sent.

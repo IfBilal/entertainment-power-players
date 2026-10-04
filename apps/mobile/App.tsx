@@ -9,6 +9,7 @@ import { RootNavigator } from './src/navigation/RootNavigator';
 import { MainTabNavigator } from './src/navigation/MainTabNavigator';
 import { TrackPickerScreen } from './src/features/onboarding/TrackPickerScreen';
 import { SplashScreen as SplashScreen2 } from './src/features/onboarding/SplashScreen';
+import { IntroSlidesScreen } from './src/features/onboarding/IntroSlidesScreen';
 import { HomeScreen } from './src/features/home/HomeScreen';
 import { CategoryGridScreen } from './src/features/directory/CategoryGridScreen';
 import { TrackerDashboardScreen } from './src/features/tracker/TrackerDashboardScreen';
@@ -142,6 +143,8 @@ function previewScreen() {
       return <TrackPickerScreen {...props} />;
     case 'Splash':
       return <SplashScreen2 {...props} />;
+    case 'IntroSlides':
+      return <IntroSlidesScreen {...props} />;
     case 'Home':
       return <HomeScreen {...props} />;
     case 'CategoryGrid':

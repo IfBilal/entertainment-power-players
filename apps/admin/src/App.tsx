@@ -16,13 +16,15 @@ export default function App() {
 
   if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('preview') === 'contacts') {
     return (
+      <BrowserRouter>
       <div className="shell">
         <nav className="sidebar">
-          <div className="brand"><img className="brand-mark" src={logoMark} alt="EPP" />EPP Admin</div>
+          <div className="brand"><img className="brand-mark" src={logoMark} alt="EPP" />Entertainment Power Players® Admin</div>
           <a href="#">Dashboard</a><a className="active" href="#">Contacts</a><a href="#">Categories</a><a href="#">Quotes</a><a href="#">Tracks</a><div className="spacer" /><a href="#">Settings</a><a href="#">Logout</a>
         </nav>
         <main className="content"><ContactsPage preview /></main>
       </div>
+      </BrowserRouter>
     );
   }
 
@@ -45,7 +47,7 @@ export default function App() {
       <div className="centered">
         <div className="auth-wordmark" style={{ opacity: 0.6 }}>
           <span className="mark">P</span>
-          <h1 style={{ fontSize: '1.4rem' }}>Power Players</h1>
+          <h1 style={{ fontSize: '1.4rem' }}>Entertainment Power Players®</h1>
         </div>
       </div>
     );
@@ -60,7 +62,7 @@ export default function App() {
         <nav className="sidebar">
           <div className="brand">
             <img className="brand-mark" src={logoMark} alt="EPP" />
-            EPP Admin
+            Entertainment Power Players® Admin
           </div>
           <NavLink to="/" end className={({ isActive }) => (isActive ? 'active' : '')}>
             <HomeIcon />

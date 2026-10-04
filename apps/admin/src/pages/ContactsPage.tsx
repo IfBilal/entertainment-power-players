@@ -158,7 +158,7 @@ export function ContactsPage({ preview = false }: { preview?: boolean }) {
       <div className="row between">
         <div>
           <h1>Contacts</h1>
-          <p className="muted">Manage the people in your Entertainment Power Players directory.</p>
+          <p className="muted">Manage the people in your Entertainment Power Players® directory.</p>
         </div>
         <div className="row wrap">
           <Link className="button-link" to="/import">Import CSV</Link>

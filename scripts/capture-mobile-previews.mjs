@@ -6,7 +6,7 @@ import path from 'node:path';
 const baseUrl = process.argv[2] ?? 'http://localhost:8090';
 const outputDir = process.argv[3] ?? '/tmp/epp-mobile-previews';
 const port = process.argv[4] ?? '9225';
-const screens = ['Splash', 'CategoryGrid', 'ContactList', 'ContactDetail', 'Tracker', 'Challenges'];
+const screens = ['Splash', 'IntroSlides', 'CategoryGrid', 'ContactList', 'ContactDetail', 'Tracker', 'Challenges'];
 const viewports = [{ width: 360, height: 800 }, { width: 390, height: 844 }];
 
 const targets = await fetch(`http://127.0.0.1:${port}/json`).then((response) => response.json());

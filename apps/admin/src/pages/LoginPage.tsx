@@ -64,14 +64,14 @@ export function LoginPage() {
         <ConnectionMotif />
         <div className="visual-brand">
           <span className="mark">P</span>
-          Power Players
+          Entertainment Power Players®
         </div>
         <div className="visual-copy">
-          <div className="eyebrow" style={{ color: '#e8b98a' }}>Admin access</div>
+          <div className="eyebrow">Admin access</div>
           <h2>Where entertainment careers get built.</h2>
           <p>Manage the directory, tracks, and inspiration your members see every day.</p>
         </div>
-        <p className="visual-foot">Entertainment Power Players &middot; Internal tool</p>
+        <p className="visual-foot">Entertainment Power Players® &middot; Internal tool</p>
       </div>
 
       <div className="auth-panel">

@@ -1,48 +1,40 @@
 @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&display=swap');
 
-/*
- * Warm editorial, matching apps/mobile (docs/design-system.md): cream paper,
- * warm near-black ink, one confident terracotta accent, Fraunces for
- * headlines, Inter for everything else. This is an internal tool, not the
- * product itself -- but it's still the client's first impression of the
- * build quality, so it gets the same design language, not a bare-forms
- * placeholder.
- */
+/* Supervisor light direction: white canvas, ink text, restrained brand accents. */
 :root {
-  --bg: #050f11;
-  --bg-texture: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(144, 208, 16, 0.07), transparent 60%),
-    radial-gradient(ellipse 700px 600px at 100% 0%, rgba(240, 80, 0, 0.05), transparent 55%);
-  --surface: #0b1a17;
-  --surface-subtle: #091412;
-  --surface-strong: #12211c;
-  --surface-raised: #14231e;
-  --border: rgba(255,255,255,0.08);
-  --border-subtle: rgba(255,255,255,0.05);
-  --border-strong: rgba(255,255,255,0.14);
-  --ink: #ffffff;
-  --text-secondary: rgba(255,255,255,0.68);
-  --text-tertiary: rgba(255,255,255,0.50);
-  --text-muted: rgba(255,255,255,0.38);
-  --accent: #90d010;
-  --accent-deep: #75da3d;
-  --accent-soft: rgba(144,208,16,0.16);
-  --accent-faint: rgba(144,208,16,0.08);
-  --success: #6fd13b;
-  --success-soft: rgba(111, 209, 59, 0.14);
-  --danger: #ff6b5a;
-  --danger-soft: rgba(255, 107, 90, 0.14);
-  --warning: #f0a010;
-  --warning-soft: rgba(240, 160, 16, 0.14);
-  --info: #5fc8d8;
-  --info-soft: rgba(95, 200, 216, 0.14);
+  --bg: #ffffff;
+  --bg-texture: none;
+  --surface: #ffffff;
+  --surface-subtle: #f7f9f7;
+  --surface-strong: #edf3ed;
+  --surface-raised: #ffffff;
+  --border: #dce4dc;
+  --border-subtle: #ebf0eb;
+  --border-strong: #becbbe;
+  --ink: #142019;
+  --text-secondary: #526258;
+  --text-tertiary: #68776d;
+  --text-muted: #68776d;
+  --accent: #216b36;
+  --accent-deep: #174e2a;
+  --accent-soft: rgba(33,107,54,0.10);
+  --accent-faint: rgba(33,107,54,0.06);
+  --success: #17753c;
+  --success-soft: rgba(23,117,60,0.10);
+  --danger: #b42318;
+  --danger-soft: rgba(180,35,24,0.09);
+  --warning: #8f5b00;
+  --warning-soft: rgba(143,91,0,0.10);
+  --info: #196a9a;
+  --info-soft: rgba(25,106,154,0.10);
 
   --font-serif: 'DM Sans', system-ui, sans-serif;
   --font-sans: 'DM Sans', system-ui, sans-serif;
 
-  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.18), 0 1px 3px rgba(0, 0, 0, 0.12);
-  --shadow-card: 0 2px 8px rgba(0, 0, 0, 0.20), 0 8px 24px rgba(0, 0, 0, 0.12);
-  --shadow-raised: 0 6px 20px rgba(0, 0, 0, 0.28), 0 2px 6px rgba(0, 0, 0, 0.16);
-  --shadow-floating: 0 20px 50px rgba(0, 0, 0, 0.48), 0 6px 16px rgba(0, 0, 0, 0.2);
+  --shadow-sm: 0 1px 3px rgba(20,32,25,0.05);
+  --shadow-card: 0 3px 16px rgba(20,32,25,0.06);
+  --shadow-raised: 0 8px 24px rgba(20,32,25,0.09);
+  --shadow-floating: 0 20px 50px rgba(20,32,25,0.12);
 
   --radius-xs: 6px;
   --radius-sm: 10px;
@@ -90,12 +82,12 @@ button {
   border-radius: 999px;
   border: 1px solid transparent;
   padding: 0.6rem 1.3rem;
-  background: linear-gradient(100deg, #75da3d 0%, #9cbb2a 38%, #f27c10 68%, #fc5d06 100%);
-  color: #06120e;
-  box-shadow: 0 4px 14px rgba(240, 80, 0, 0.16);
+  background: var(--accent);
+  color: #ffffff;
+  box-shadow: none;
   transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease, background 0.15s ease;
 }
-button:hover:not(:disabled) { filter: brightness(1.08); box-shadow: 0 6px 18px rgba(240, 80, 0, 0.22); transform: translateY(-1px); }
+button:hover:not(:disabled) { filter: brightness(1.08); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
 button:active:not(:disabled) { transform: translateY(0); }
 button:disabled { opacity: 0.4; cursor: not-allowed; box-shadow: none; }
 button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
@@ -151,7 +143,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .sidebar {
   width: 224px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #091412 0%, #050f11 100%);
+  background: var(--surface-subtle);
   border-right: 1px solid var(--border);
   padding: 1.75rem 1.1rem;
   display: flex;
@@ -194,8 +186,8 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   font-size: 0.92rem;
   transition: background 0.15s ease, color 0.15s ease;
 }
-.sidebar a:hover { background: rgba(255, 255, 255, 0.04); color: var(--ink); text-decoration: none; }
-.sidebar a.active { background: rgba(144, 208, 16, 0.12); color: var(--accent); font-weight: 600; box-shadow: none; }
+.sidebar a:hover { background: var(--accent-faint); color: var(--ink); text-decoration: none; }
+.sidebar a.active { background: var(--accent-soft); color: var(--accent); font-weight: 600; box-shadow: none; }
 .sidebar a svg { flex-shrink: 0; opacity: 0.85; }
 .sidebar a.active svg { opacity: 1; }
 .sidebar .spacer { flex: 1; }
@@ -212,7 +204,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .contacts-page .inactive-toggle { display: none; }
 .contacts-page table { min-width: 480px; }
 .contacts-page th { color: var(--text-tertiary); }
-.status-pill { padding: 0.25rem 0.55rem; background: rgba(111, 209, 59, 0.12); color: var(--success); border: 1px solid rgba(111,209,59,0.18); border-radius: 999px; font-size: 0.76rem; box-shadow: none; }
+.status-pill { padding: 0.25rem 0.55rem; background: var(--success-soft); color: var(--success); border: 1px solid var(--border); border-radius: 999px; font-size: 0.76rem; box-shadow: none; }
 .status-pill:hover:not(:disabled) { filter: brightness(1.12); transform: none; box-shadow: none; }
 .status-pill.inactive { color: var(--text-secondary); background: var(--surface-strong); border-color: var(--border); }
 .row-action {
@@ -230,8 +222,8 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 }
 .row-action:hover:not(:disabled) {
   color: var(--accent);
-  background: rgba(144, 208, 16, 0.12);
-  border-color: rgba(144, 208, 16, 0.35);
+  background: var(--accent-soft);
+  border-color: var(--accent);
   transform: translateX(1px);
   box-shadow: none;
 }
@@ -296,8 +288,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   margin-bottom: 0.6rem;
 }
 
-/* Login screen: a dark editorial visual panel (brand story + motion) next to
-   the actual form, so the page doesn't read as a bare, empty forms screen. */
+/* A light, minimal brand panel balances the admin login form. */
 .auth-shell {
   min-height: 100vh;
   display: flex;
@@ -308,10 +299,8 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   min-width: 0;
   position: relative;
   overflow: hidden;
-  background:
-    radial-gradient(ellipse 70% 55% at 82% 12%, rgba(240, 80, 0, 0.18), transparent 68%),
-    radial-gradient(ellipse 75% 65% at 8% 92%, rgba(144, 208, 16, 0.15), transparent 70%),
-    linear-gradient(145deg, #0a1814 0%, #050f11 62%, #091710 100%);
+  background: var(--surface-subtle);
+  border-right: 1px solid var(--border);
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -333,7 +322,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   width: 34px;
   height: 34px;
   border-radius: 10px;
-  background: rgba(144, 208, 16, 0.14);
+  background: var(--accent-soft);
   display: grid;
   place-items: center;
   font-family: var(--font-serif);
@@ -348,7 +337,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 .auth-visual .visual-copy h2 {
   font-size: 2.1rem;
   line-height: 1.22;
-  color: #fff9f2;
+  color: var(--ink);
   overflow-wrap: break-word;
 }
 .auth-visual .visual-copy p {
@@ -371,7 +360,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   height: 100%;
 }
 .motif-lines line {
-  stroke: rgba(144, 208, 16, 0.24);
+  stroke: rgba(33, 107, 54, 0.22);
   stroke-width: 1;
   stroke-dasharray: 5 7;
   animation: motif-dash 14s linear infinite;
@@ -380,7 +369,7 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
   to { stroke-dashoffset: -120; }
 }
 .motif-nodes circle {
-  fill: #90d010;
+  fill: var(--accent);
   transform-box: fill-box;
   transform-origin: center;
   animation: motif-pulse 4.5s ease-in-out infinite;
@@ -421,7 +410,7 @@ table { width: 100%; min-width: 560px; border-collapse: separate; border-spacing
 th, td { text-align: left; padding: 0.75rem 0.6rem; border-bottom: 1px solid var(--border); }
 th { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.07em; font-weight: 700; color: var(--text-muted); }
 tbody tr { transition: background 0.12s ease; }
-tbody tr:hover { background: rgba(255, 255, 255, 0.025); }
+tbody tr:hover { background: var(--surface-subtle); }
 tbody tr:last-child td { border-bottom: none; }
 tr.inactive td { opacity: 0.45; }
 
@@ -630,7 +619,7 @@ tr.inactive td { opacity: 0.45; }
 .dropzone input[type='file'] { display: none; }
 .dropzone .pill-icon { margin: 0 auto 0.75rem; width: 42px; height: 42px; }
 
-dialog::backdrop { background: rgba(34, 27, 20, 0.45); }
+dialog::backdrop { background: rgba(20, 32, 25, 0.38); }
 dialog {
   border: 1px solid var(--border);
   border-radius: var(--radius-lg);
@@ -664,7 +653,7 @@ dialog {
   height: 38px;
   border-radius: 11px;
   background: var(--accent);
-  color: #fff9f2;
+  color: #ffffff;
   display: grid;
   place-items: center;
   font-family: var(--font-serif);

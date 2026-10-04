@@ -1,24 +1,20 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { Image } from 'expo-image';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Path, Stop } from 'react-native-svg';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, IconTile, Screen } from '../../components';
+import { AppText, Button, CategoryGlyph, IconTile, Screen } from '../../components';
 import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'IntroSlides'>;
 
-const concertPhoto = require('../../../assets/onboarding-concert.png');
-
 type Slide = {
   title: string;
   body: string;
-  /** Slide 1 is photographic (mockup 2); the rest are built from components. */
-  photo?: boolean;
+  hero?: boolean;
   tiles?: Array<{ icon: IoniconName; tone: GradientToken }>;
   stat?: boolean;
 };
@@ -55,11 +51,9 @@ function SlideEntrance({ children }: { children: ReactNode }) {
 
 const slides: Slide[] = [
   {
-    // The mockup breaks this across four narrow lines rather than two wide
-    // ones, which is what gives the slide its poster-like proportions.
-    title: 'Real\nConnections.\nBigger\nOpportunities.',
+    title: 'Real Connections.\nBigger Opportunities.',
     body: 'Join a community of industry professionals, creators and decision makers.',
-    photo: true,
+    hero: true,
   },
   {
     title: 'Track Your\nProgress.',
@@ -83,6 +77,13 @@ const slides: Slide[] = [
  * Mockup 3: a tilted panel carrying a rising trend line, with the stat rows
  * overlapping its lower half.
  */
+function CategoryHero() {
+  const slugs = ['fashion', 'film-tv', 'gaming', 'music', 'sports'];
+  return <View style={styles.categoryHero} accessibilityLabel="Fashion, Film and TV, Gaming, Music, and Sports">
+    {slugs.map((slug) => <View key={slug} style={styles.categoryHeroIcon}><CategoryGlyph slug={slug} size={28} color={colors.accent} /></View>)}
+  </View>;
+}
+
 function StatPreview() {
   const rows: Array<{ icon: IoniconName; label: string; value: string; tone: GradientToken }> = [
     { icon: 'people-outline', label: 'Contacts', value: '12', tone: 'brand' },
@@ -93,12 +94,6 @@ function StatPreview() {
   return (
     <View style={styles.previewWrap}>
       <View style={styles.chartPanel}>
-        <LinearGradient
-          colors={['rgba(144,208,16,0.14)', 'rgba(5,15,17,0.2)']}
-          start={{ x: 0, y: 0 }}
-          end={{ x: 1, y: 1 }}
-          style={StyleSheet.absoluteFill}
-        />
         <Svg width="100%" height="100%" viewBox="0 0 300 150">
           <Defs>
             <SvgGradient id="trend" x1="0" y1="1" x2="1" y2="0">
@@ -155,12 +150,7 @@ function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
               { marginLeft: (i % 2 === 0 ? 0 : 74) + i * 6, borderColor: `${hue}55` },
             ]}
           >
-            <LinearGradient
-              colors={[`${hue}26`, 'rgba(5,15,17,0.15)']}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 1 }}
-              style={StyleSheet.absoluteFill}
-            />
+            <LinearGradient colors={[`${hue}16`, colors.surface]} style={StyleSheet.absoluteFill} />
             <Ionicons name={t.icon} size={38} color={hue} />
           </View>
         );
@@ -180,25 +170,7 @@ export function IntroSlidesScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen aurora={slide.photo ? false : 'warm'} padded={false}>
-      {slide.photo ? (
-        <View style={StyleSheet.absoluteFill} pointerEvents="none">
-          {/* `contain` rather than `cover`: the source is 1290x2000 (0.645)
-              against a ~0.46 phone, so cover crops the sides hard and throws
-              most of the crowd away. Containing it keeps the full frame, and
-              the letterboxed edges fall under the scrim and the background. */}
-          <Image source={concertPhoto} style={styles.photo} contentFit="contain" />
-          {/* Scrim stays clear of the upper half so the stage and crowd read as
-              brightly as they do in the mockup, then ramps hard behind the
-              headline block in the lower third. */}
-          <LinearGradient
-            colors={['rgba(5,15,17,0)', 'rgba(5,15,17,0.10)', 'rgba(5,15,17,0.92)', '#050F11']}
-            locations={[0, 0.34, 0.60, 0.74]}
-            style={StyleSheet.absoluteFill}
-          />
-        </View>
-      ) : null}
-
+    <Screen padded={false}>
       <View style={styles.inner}>
         <View style={styles.topRow}>
           <AppText variant="bodyStrong" color={colors.accentAmber}>
@@ -209,11 +181,9 @@ export function IntroSlidesScreen({ navigation }: Props) {
           </AppText>
         </View>
 
-        {/* The photo slide stacks headline-last over the image; the two
-            illustrated slides lead with the headline and put the graphic
-            underneath, as mockups 3 and 4 do. */}
         <SlideEntrance key={index}>
-          <View style={slide.photo ? styles.body : styles.bodyTop}>
+          <View style={styles.bodyTop}>
+            {slide.hero ? <CategoryHero /> : null}
             <AppText variant="hero" style={styles.title}>
               {slide.title}
             </AppText>
@@ -252,36 +222,24 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     paddingTop: spacing.sm,
   },
-  photo: {
-    position: 'absolute',
-    left: 0,
-    right: 0,
-    top: 0,
-    // The mockup's image/crowd transition sits near 40% of the phone. Limiting
-    // this frame to 62% keeps the contained portrait crop from dropping the
-    // crowd and headline too far down the screen.
-    height: '62%',
-  },
-  body: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    paddingBottom: spacing.lg,
-  },
   bodyTop: {
     flex: 1,
     paddingTop: spacing.xl,
+    alignItems: 'center',
   },
   title: {
-    // Measured off the mockup: ~30px over ~36pt lines, tighter than the
-    // default hero so four lines still clear the body copy.
     fontSize: 30,
     lineHeight: 36,
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   slideBody: {
     marginTop: spacing.sm,
     maxWidth: 330,
+    textAlign: 'center',
   },
+  categoryHero: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, maxWidth: 250, marginVertical: spacing.xxl },
+  categoryHeroIcon: { width: 62, height: 62, borderRadius: 20, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   previewWrap: {
     marginTop: spacing.xxl,
   },

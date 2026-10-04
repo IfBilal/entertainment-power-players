@@ -62,7 +62,7 @@ describe('quote feed favorites', () => {
     await renderWithProviders(<QuoteFeedScreen />);
     const actions = await screen.findAllByLabelText('Share quote');
     fireEvent.press(actions[0]);
-    expect(await screen.findByText('ENTERTAINMENT POWER PLAYERS')).toBeTruthy();
+    expect(await screen.findByText('ENTERTAINMENT POWER PLAYERS®')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Share quote image'));
     await waitFor(() => expect(captureRef).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ format: 'png', width: 1080, height: 1440 })));
     expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///tmp/quote.png', expect.objectContaining({ mimeType: 'image/png' }));

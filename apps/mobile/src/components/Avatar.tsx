@@ -1,15 +1,13 @@
-import { StyleSheet, type ImageStyle, type StyleProp, type ViewStyle } from 'react-native';
+import { StyleSheet, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { Image } from 'expo-image';
 import { AppText } from './AppText';
-import { colors, radius } from '../theme';
+import { colors } from '../theme';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
 type AvatarProps = {
   name: string;
-  /** Optional real photo. Falls back to initials when absent or on load error,
-   *  so the directory works whether or not contacts ever get photos. */
+  /** Stored photos are intentionally not rendered under the no-people brief. */
   imageUrl?: string | null;
   size?: AvatarSize;
   style?: ViewStyle;
@@ -28,21 +26,9 @@ const dimensions: Record<AvatarSize, { box: number; text: number }> = {
  * faces for them would be misleading. The hue pair is derived from the name so
  * a given person keeps the same colours everywhere in the app.
  */
-export function Avatar({ name, imageUrl, size = 'md', style }: AvatarProps) {
+export function Avatar({ name, size = 'md', style }: AvatarProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: d.box / 2 };
-
-  if (imageUrl) {
-    return (
-      <Image
-        source={{ uri: imageUrl }}
-        style={[box, styles.image, style] as StyleProp<ImageStyle>}
-        contentFit="cover"
-        transition={180}
-        accessibilityLabel={name}
-      />
-    );
-  }
 
   const pair = gradientFor(name);
 
@@ -98,9 +84,5 @@ const styles = StyleSheet.create({
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',
-  },
-  image: {
-    backgroundColor: colors.surfaceStrong,
-    borderRadius: radius.pill,
   },
 });

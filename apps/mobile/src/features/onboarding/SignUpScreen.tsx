@@ -82,7 +82,7 @@ export function SignUpScreen({ navigation }: Props) {
           Create your account
         </AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
-          Join Entertainment Power Players today.
+          Join Entertainment Power Players® today.
         </AppText>
 
         <View style={styles.rule} />

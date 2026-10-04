@@ -96,7 +96,7 @@ export function QuoteFeedScreen() {
             <AppText style={styles.shareMark} color={colors.accentOrange}>&ldquo;</AppText>
             <AppText variant="subtitle" style={styles.shareText}>{shareQuote?.text}</AppText>
             <AppText variant="body" color={colors.textSecondary}>— {shareQuote?.author}</AppText>
-            <View style={styles.shareBrand}><Logo variant="mark" width={84} /><AppText variant="captionStrong" color={colors.accentLime}>ENTERTAINMENT POWER PLAYERS</AppText></View>
+            <View style={styles.shareBrand}><Logo variant="mark" width={84} /><AppText variant="captionStrong" color={colors.accentLime}>ENTERTAINMENT POWER PLAYERS®</AppText></View>
           </View>
           <Pressable accessibilityRole="button" accessibilityLabel="Share quote image" disabled={sharing} onPress={() => { void shareImage(); }} style={styles.shareButton}><AppText variant="button">{sharing ? 'Preparing image…' : 'Share image'}</AppText></Pressable>
           <Pressable accessibilityRole="button" accessibilityLabel="Close share preview" onPress={() => setShareQuote(null)} style={styles.closeShare}><AppText variant="body" color={colors.textSecondary}>Close</AppText></Pressable>

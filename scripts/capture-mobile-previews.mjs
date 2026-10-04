@@ -6,8 +6,14 @@ import path from 'node:path';
 const baseUrl = process.argv[2] ?? 'http://localhost:8090';
 const outputDir = process.argv[3] ?? '/tmp/epp-mobile-previews';
 const port = process.argv[4] ?? '9225';
-const screens = ['Splash', 'IntroSlides', 'CategoryGrid', 'ContactList', 'ContactDetail', 'Tracker', 'Challenges'];
-const viewports = [{ width: 360, height: 800 }, { width: 390, height: 844 }];
+const screens = (process.argv[5] ?? 'Splash,IntroSlides,CategoryGrid,ContactList,ContactDetail,Tracker,Challenges,TrackDetail,ChallengeDetail').split(',');
+const state = process.argv[6] ?? 'normal';
+const dataset = process.argv[7] ?? 'normal';
+const onlyViewport = process.argv[8];
+const viewports = (onlyViewport ? [onlyViewport] : ['360x800', '390x844']).map((viewport) => {
+  const [width, height] = viewport.split('x').map(Number);
+  return { width, height };
+});
 
 const targets = await fetch(`http://127.0.0.1:${port}/json`).then((response) => response.json());
 const page = targets.find((target) => target.type === 'page');
@@ -42,7 +48,7 @@ await send('Page.enable');
 for (const { width, height } of viewports) {
   await send('Emulation.setDeviceMetricsOverride', { width, height, deviceScaleFactor: 1, mobile: true });
   for (const screen of screens) {
-    const url = `${baseUrl}/?preview=${encodeURIComponent(screen)}`;
+    const url = `${baseUrl}/?preview=${encodeURIComponent(screen)}${state === 'normal' ? '' : `&state=${encodeURIComponent(state)}`}${dataset === 'normal' ? '' : `&dataset=${encodeURIComponent(dataset)}`}`;
     await send('Page.navigate', { url });
     await new Promise((resolve) => setTimeout(resolve, 3000));
     const image = await send('Page.captureScreenshot', { format: 'png', captureBeyondViewport: false });

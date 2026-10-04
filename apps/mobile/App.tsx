@@ -90,9 +90,11 @@ const navigationTheme = {
  */
 function previewScreen() {
   if (!__DEV__ || Platform.OS !== 'web') return null;
-  const name = new URLSearchParams(globalThis.location?.search ?? '').get('preview');
+  const previewParams = new URLSearchParams(globalThis.location?.search ?? '');
+  const name = previewParams.get('preview');
   if (!name) return null;
-  useAppStore.setState({ isPro: true });
+  const previewState = previewParams.get('state');
+  useAppStore.setState({ isPro: previewState !== 'locked' });
   useAuthStore.setState({ status: 'signedIn', userId: 'preview-user', selectedTrackSlugs: ['fashion', 'sports'], hydrated: true });
 
   const noop = { navigate: () => {}, goBack: () => {}, replace: () => {} };
@@ -117,7 +119,9 @@ function previewScreen() {
     { id: 'caleb', name: 'Caleb Wright', nameLower: 'caleb wright', sortKey: 'caleb wright', categorySlug: 'fashion', role: 'Buyer', company: 'Voyager Group', city: 'Milan' },
   ];
   queryClient.setQueryData(['contacts', 'fashion'], sampleContacts);
-  queryClient.setQueryData(['contact', 'alex'], sampleContacts[0]);
+  queryClient.setQueryData(['contact', 'alex'], previewParams.get('dataset') === 'long'
+    ? { ...sampleContacts[0], name: 'Alexandra-Élodie Rivera-Montgomery', role: 'International Fashion Casting Director', company: 'Rikna Studio and Global Creative Partners', notes: 'Met at London Fashion Week. '.repeat(16) }
+    : sampleContacts[0]);
   queryClient.setQueryData(week3QueryKeys.tracks, [
     { slug: 'fashion', name: 'Fashion', order: 1, active: true },
     { slug: 'film-tv', name: 'Film + TV', order: 2, active: true },
@@ -135,6 +139,14 @@ function previewScreen() {
   queryClient.setQueryData(activityQueryKey('preview-user'), [
     { id: 'preview-activity-1', userId: 'preview-user', type: 'contact', title: 'Alex Rivera', contactId: 'alex', challengeId: null, date: new Date().toISOString(), weekKey: previewWeek, notes: null },
   ]);
+  if (previewState === 'empty') {
+    queryClient.setQueryData(['categories'], []);
+    queryClient.setQueryData(['contacts', 'fashion'], []);
+    queryClient.setQueryData(['contact', 'alex'], null);
+    queryClient.setQueryData(week3QueryKeys.tracks, []);
+    queryClient.setQueryData(['challenges', 'active'], []);
+    queryClient.setQueryData(activityQueryKey('preview-user'), []);
+  }
 
   switch (name) {
     case 'Tabs':
@@ -176,8 +188,11 @@ function previewScreen() {
       return <LogActivityScreen {...props} />;
     case 'Challenges':
       return <TrackListScreen {...props} />;
+    case 'TrackDetail':
+      props.route.params = { trackSlug: 'fashion' };
+      return <TrackDetailScreen {...props} />;
     case 'ChallengeDetail':
-      props.route.params = { trackSlug: 'creators-producers', challengeOrder: 3 };
+      props.route.params = { trackSlug: 'fashion', challengeId: 'preview-challenge-1' };
       return <ChallengeDetailScreen {...props} />;
     case 'Inspiration':
       return <QuoteFeedScreen {...props} />;

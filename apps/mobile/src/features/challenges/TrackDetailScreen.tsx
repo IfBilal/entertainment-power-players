@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Button, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
+import { AppText, Button, CategoryGlyph, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import type { ChallengeRecord } from '../../types/week3';
@@ -65,12 +65,16 @@ export function TrackDetailScreen({ route, navigation }: Props) {
   if (locked) {
     return (
       <Screen>
+        <View style={styles.identity} accessibilityLabel={`${track.name} category`}>
+          <CategoryGlyph slug={track.slug} size={34} color={colors.accent} />
+        </View>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
+        <AppText variant="body" color={colors.textSecondary} style={styles.lockedCopy}>See the challenges and track your progress with Premium.</AppText>
         <View style={styles.benefits}>
-          <PaywallCard icon="trophy-outline" text="All challenges in this track" />
+          <PaywallCard icon="checkmark-done-outline" text="All challenges in this track" />
           <PaywallCard icon="stats-chart-outline" text="Progress tracked toward your weekly goals" />
         </View>
-        <Button label="See plans" onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'challenges' })} />
+        <Button label="See plans" fullWidth onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'challenges' })} />
       </Screen>
     );
   }
@@ -82,14 +86,14 @@ export function TrackDetailScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <View style={styles.header}>
-        <View style={styles.headerText}>
-          <AppText variant="label" color={colors.textTertiary}>TRACK</AppText>
-          <AppText variant="title">{track.name}</AppText>
-          <AppText variant="caption" color={complete ? colors.success : colors.textSecondary} style={styles.ringLabel}>
-            {complete ? 'Track complete' : `${done} of ${total} complete`}
-          </AppText>
+        <View style={styles.identity} accessibilityLabel={`${track.name} category`}>
+          <CategoryGlyph slug={track.slug} size={34} color={colors.accent} />
         </View>
-        <ProgressRing progress={total > 0 ? done / total : 0} label={`${done}/${total}`} />
+        <AppText variant="title" style={styles.heading}>{track.name}</AppText>
+        <ProgressRing progress={total > 0 ? done / total : 0} size={132} strokeWidth={11} label={`${done}/${total}`} />
+        <AppText variant="bodyStrong" color={complete ? colors.success : colors.textSecondary} style={styles.ringLabel}>
+          {complete ? 'Track complete' : `${done} of ${total} complete`}
+        </AppText>
       </View>
 
       {complete ? (
@@ -97,7 +101,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
       ) : (
         <AppText variant="subtitle" style={styles.celebration}>Keep the momentum going.</AppText>
       )}
-      {progressQuery.isError ? <AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Reopen this track to retry.</AppText> : null}
+      {progressQuery.isError ? <Button label="Retry loading progress" variant="ghost" onPress={() => progressQuery.refetch()} /> : null}
       {challengesQuery.isError ? <Button label="Retry loading challenges" onPress={() => challengesQuery.refetch()} /> : null}
 
       <FlatList
@@ -113,11 +117,12 @@ export function TrackDetailScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.md },
+  heading: { marginBottom: spacing.md, textAlign: 'center' },
+  identity: { width: 72, height: 72, borderRadius: 24, backgroundColor: colors.accentSoft, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm, marginBottom: spacing.sm },
+  lockedCopy: { textAlign: 'center', marginHorizontal: spacing.md },
   benefits: { gap: spacing.sm, marginTop: spacing.lg, marginBottom: spacing.xl },
-  header: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  headerText: { flex: 1, marginRight: spacing.md },
-  ringLabel: { marginTop: spacing.xs },
-  celebration: { marginTop: spacing.md, marginBottom: spacing.sm },
+  header: { alignItems: 'center' },
+  ringLabel: { marginTop: spacing.sm, textAlign: 'center' },
+  celebration: { marginTop: spacing.lg, marginBottom: spacing.md, textAlign: 'center' },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
 });

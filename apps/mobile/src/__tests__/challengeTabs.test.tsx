@@ -24,4 +24,6 @@ it('switches between selected tracks and all tracks', async () => {
   expect(screen.queryByText('Fashion')).toBeNull();
   fireEvent.press(screen.getByText('All Tracks'));
   expect(await screen.findByText('Fashion')).toBeTruthy();
+  fireEvent.press(screen.getByText('Fashion'));
+  expect(await screen.findByLabelText('Fashion category')).toBeTruthy();
 });

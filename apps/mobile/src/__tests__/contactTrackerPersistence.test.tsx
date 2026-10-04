@@ -47,9 +47,10 @@ it('keeps a contact marked as added to Tracker after reopening the app', async (
   expect(mockActivityRows).toHaveLength(1);
 
   firstVisit.unmount();
-  await renderWithProviders(<RootNavigator />);
+  const reopened = await renderWithProviders(<RootNavigator />);
   fireEvent.press(await screen.findByLabelText('Directory'));
   fireEvent.press(await screen.findByText('Fashion'));
   fireEvent.press(await screen.findByText('Jane Doe'));
   expect(await screen.findByText('Added to Tracker')).toBeTruthy();
+  reopened.unmount();
 });

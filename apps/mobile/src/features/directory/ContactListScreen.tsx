@@ -3,7 +3,7 @@ import { Pressable, SectionList, StyleSheet, TextInput, View, useWindowDimension
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, BottomSheet, Button, ContactRow, ErrorState, PaywallCard, Screen } from '../../components';
+import { AppText, BottomSheet, Button, CategoryGlyph, ContactRow, ErrorState, PaywallCard, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { fetchCategories, fetchContactsByCategory, type Contact } from '../../services/supabase/directory';
 import {
@@ -50,6 +50,7 @@ export function ContactListScreen({ route, navigation }: Props) {
   const { favoriteIds, isFavorite, toggleFavorite } = useFavorites();
 
   const category = categoriesQuery.data?.find((c) => c.slug === categorySlug);
+  const categoryName = category?.name ?? categorySlug.replace(/-/g, ' ');
   const categoryContacts = useMemo(() => contactsQuery.data ?? [], [contactsQuery.data]);
 
   const filtered = useMemo(
@@ -79,9 +80,8 @@ export function ContactListScreen({ route, navigation }: Props) {
   if (locked) {
     return (
       <Screen>
-        <AppText variant="label" color={colors.textTertiary}>
-          {category?.name?.toUpperCase() ?? 'DIRECTORY'}
-        </AppText>
+        <View style={styles.categoryIcon} accessibilityLabel={`${categoryName} category`}><CategoryGlyph slug={categorySlug} size={28} color={colors.accent} /></View>
+        <AppText variant="label" color={colors.textTertiary} style={styles.lockedLabel}>{categoryName.toUpperCase()}</AppText>
         <AppText variant="title" style={styles.lockedHeading}>
           Your industry network is waiting.
         </AppText>
@@ -101,7 +101,10 @@ export function ContactListScreen({ route, navigation }: Props) {
   return (
     <Screen padded={false}>
       <View style={styles.header}>
-        <AppText variant="title">{category?.name ?? 'Directory'}</AppText>
+        <View style={styles.categoryHeader}>
+          <View style={styles.categoryIcon} accessibilityLabel={`${categoryName} category`}><CategoryGlyph slug={categorySlug} size={28} color={colors.accent} /></View>
+          <AppText variant="title" style={styles.categoryName}>{categoryName}</AppText>
+        </View>
         <View style={styles.searchRow}>
           <View style={styles.searchWrap}>
             <Ionicons name="search-outline" size={17} color={colors.textTertiary} style={styles.searchIcon} />
@@ -175,12 +178,13 @@ export function ContactListScreen({ route, navigation }: Props) {
         />
         <View style={styles.jumpBar}>
           {ALPHABET.map((letter) => {
-            const hasSection = sections.length > 0;
+            const hasSection = sections.some((section) => section.title === letter);
             return (
               <Pressable
                 key={letter}
                 onPress={() => jumpToLetter(letter)}
                 disabled={!hasSection}
+                accessibilityState={{ disabled: !hasSection }}
                 hitSlop={5}
                 accessibilityRole="button"
                 accessibilityLabel={`Jump to ${letter}`}
@@ -260,13 +264,18 @@ export function ContactListScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   header: { paddingHorizontal: spacing.md, paddingBottom: spacing.sm },
-  lockedHeading: { marginTop: spacing.md },
-  lockedBody: { marginTop: spacing.sm, marginBottom: spacing.lg },
+  categoryHeader: { alignItems: 'center', marginBottom: spacing.sm },
+  categoryIcon: { width: 52, height: 52, borderRadius: 18, backgroundColor: colors.accentSoft, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.xs },
+  categoryName: { textAlign: 'center' },
+  lockedLabel: { textAlign: 'center' },
+  lockedHeading: { marginTop: spacing.md, textAlign: 'center' },
+  lockedBody: { marginTop: spacing.sm, marginBottom: spacing.lg, textAlign: 'center' },
   benefits: { gap: spacing.sm, marginBottom: spacing.xl },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginTop: spacing.sm },
   searchWrap: { flex: 1, position: 'relative', justifyContent: 'center' },
   searchIcon: { position: 'absolute', left: spacing.sm + 2, zIndex: 1 },
   search: {
+    minHeight: 48,
     borderWidth: 1,
     borderColor: colors.border,
     borderRadius: radius.md,
@@ -277,8 +286,8 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceRaised,
   },
   filterButton: {
-    width: 42,
-    height: 42,
+    width: 48,
+    height: 48,
     borderRadius: radius.md,
     borderWidth: 1,
     borderColor: colors.border,

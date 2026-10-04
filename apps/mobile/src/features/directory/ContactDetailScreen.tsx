@@ -1,9 +1,9 @@
 import { useState } from 'react';
-import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Linking, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Card, CategoryGlyph, EmptyState, Screen, Tag } from '../../components';
+import { AppText, Button, Card, CategoryGlyph, EmptyState, ErrorState, Screen, Tag } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { fetchCategories, fetchContactById } from '../../services/supabase/directory';
 import { activityQueryKey, createActivity } from '../../services/supabase/activity';
@@ -11,31 +11,49 @@ import { useUserActivity } from '../../hooks/useUserActivity';
 import type { ActivityEntry } from '../../services/mock/tracker';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useAppStore } from '../../store/useAppStore';
+import { isScreenLocked } from '../../utils/paywall';
 import { computeWeekKey } from '../../utils/weekKey';
 import type { DirectoryStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<DirectoryStackParamList, 'ContactDetail'>;
 
-export function ContactDetailScreen({ route }: Props) {
+export function ContactDetailScreen({ route, navigation }: Props) {
   const { contactId } = route.params;
   const userId = useAuthStore((s) => s.userId);
+  const isPro = useAppStore((s) => s.isPro);
+  const locked = isScreenLocked('directoryContactDetail', isPro);
   const queryClient = useQueryClient();
   const activityQuery = useUserActivity();
   const { isFavorite, toggleFavorite } = useFavorites();
   const [contactedState, setContactedState] = useState<'idle' | 'saving' | 'error'>('idle');
+  const [methodError, setMethodError] = useState<string | null>(null);
   const weekKey = computeWeekKey(new Date());
 
   const contactQuery = useQuery({
     queryKey: ['contact', contactId],
     queryFn: () => fetchContactById(contactId),
+    enabled: !locked,
   });
   const categoriesQuery = useQuery({ queryKey: ['categories'], queryFn: fetchCategories });
   const contact = contactQuery.data;
   const city = contact?.city?.trim() || route.params.city?.trim();
   const categoryName = categoriesQuery.data?.find((c) => c.slug === contact?.categorySlug)?.name;
 
+  if (locked) {
+    return <Screen>
+      <AppText variant="title" style={styles.lockedTitle}>Unlock contact details</AppText>
+      <AppText variant="body" color={colors.textSecondary} style={styles.lockedCopy}>Choose a plan to view contact information and add people to your tracker.</AppText>
+      <Button label="See plans" fullWidth onPress={() => navigation.getParent()?.getParent()?.navigate('Paywall', { reason: 'directory' })} />
+    </Screen>;
+  }
+
   if (contactQuery.isLoading) {
-    return <Screen />;
+    return <Screen style={styles.loading}><ActivityIndicator color={colors.accent} accessibilityLabel="Loading contact" /><AppText variant="body" color={colors.textSecondary}>Loading contact…</AppText></Screen>;
+  }
+
+  if (contactQuery.isError) {
+    return <Screen><ErrorState title="Couldn't load contact" description="Check your connection and try again." onRetry={() => { void contactQuery.refetch(); }} /></Screen>;
   }
 
   if (!contact) {
@@ -66,11 +84,20 @@ export function ContactDetailScreen({ route }: Props) {
     }
   }
 
-  type ContactField = { icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; onPress: () => void };
+  async function openMethod(label: string, url: string) {
+    setMethodError(null);
+    try {
+      await Linking.openURL(url);
+    } catch {
+      setMethodError(`Could not open ${label}. Check that an app is available and try again.`);
+    }
+  }
+
+  type ContactField = { icon: keyof typeof Ionicons.glyphMap; label: string; value?: string; url: string };
   const allFields: ContactField[] = [
-    { icon: 'call-outline', label: 'Call', value: contact.phone, onPress: () => { if (contact.phone) Linking.openURL(`tel:${contact.phone}`); } },
-    { icon: 'mail-outline', label: 'Email', value: contact.email, onPress: () => { if (contact.email) Linking.openURL(`mailto:${contact.email}`); } },
-    { icon: 'globe-outline', label: 'Website', value: contact.website, onPress: () => { if (contact.website) Linking.openURL(contact.website); } },
+    { icon: 'call-outline', label: 'Call', value: contact.phone, url: `tel:${contact.phone}` },
+    { icon: 'mail-outline', label: 'Email', value: contact.email, url: `mailto:${contact.email}` },
+    { icon: 'globe-outline', label: 'Website', value: contact.website, url: contact.website?.match(/^https?:\/\//i) ? contact.website : `https://${contact.website}` },
   ];
   const fields = allFields.filter((f) => Boolean(f.value));
 
@@ -80,8 +107,8 @@ export function ContactDetailScreen({ route }: Props) {
   ) ?? false;
 
   return (
-    <Screen>
-
+    <Screen padded={false}>
+      <ScrollView contentContainerStyle={styles.content} keyboardShouldPersistTaps="handled">
       <View style={styles.topActions}>
         <Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel={favorited ? 'Remove favourite' : 'Add favourite'}>
           <Ionicons name={favorited ? 'star' : 'star-outline'} size={27} color={colors.accent} />
@@ -108,9 +135,10 @@ export function ContactDetailScreen({ route }: Props) {
 
       {fields.length > 0 ? (
         <View style={styles.fields}>
-          {fields.map((f) => <Pressable key={f.label} onPress={f.onPress} style={styles.contactAction}><Ionicons name={f.icon} size={20} color={colors.accentAmber} /><AppText variant="bodyStrong">{f.label}</AppText></Pressable>)}
+          {fields.map((f) => <Pressable key={f.label} onPress={() => { void openMethod(f.label, f.url); }} accessibilityRole="button" accessibilityLabel={f.label} style={styles.contactAction}><Ionicons name={f.icon} size={20} color={colors.accentAmber} /><AppText variant="bodyStrong">{f.label}</AppText></Pressable>)}
         </View>
       ) : null}
+      {methodError ? <AppText variant="caption" color={colors.danger} style={styles.error}>{methodError}</AppText> : null}
 
       {contact.notes ? (
         <Card style={styles.notes} elevation="none"><AppText variant="title" style={styles.sectionTitle}>Notes</AppText>
@@ -118,8 +146,8 @@ export function ContactDetailScreen({ route }: Props) {
         </Card>
       ) : null}
 
-      <View style={styles.spacer} />
-
+      </ScrollView>
+      <View style={styles.footer}>
       <Button
         fullWidth
         label={contacted ? 'Added to Tracker' : 'Add to Tracker'}
@@ -136,11 +164,17 @@ export function ContactDetailScreen({ route }: Props) {
           Couldn't log that. Check your connection and try again.
         </AppText>
       ) : null}
+      </View>
     </Screen>
   );
 }
 
 const styles = StyleSheet.create({
+  loading: { alignItems: 'center', justifyContent: 'center', gap: spacing.md },
+  content: { flexGrow: 1, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
+  footer: { paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.sm, backgroundColor: colors.background, borderTopWidth: 1, borderTopColor: colors.borderSubtle },
+  lockedTitle: { textAlign: 'center', marginTop: spacing.xl },
+  lockedCopy: { textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.xl },
   topActions: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.sm },
   profile: { alignItems: 'center', marginBottom: spacing.md },
   categoryBadge: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
@@ -156,6 +190,5 @@ const styles = StyleSheet.create({
   notes: { marginTop: spacing.lg, backgroundColor: colors.surfaceSubtle },
   sectionTitle: { marginBottom: spacing.sm },
   notesText: { marginTop: spacing.xs },
-  spacer: { flex: 1, minHeight: spacing.lg },
   error: { marginTop: spacing.xs, textAlign: 'center' },
 });

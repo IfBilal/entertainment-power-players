@@ -38,7 +38,7 @@ The browser-rendered before frame confirms the dark concert-crowd intro. Browser
 
 ### Phase 0 gate still open
 
-- Capture usable **before** screenshots for the five priority screen families on compact and tall phone sizes. The new intro browser frame is valid evidence for that screen only. No Android device or emulator is currently attached.
+- Capture usable **before** screenshots for the five priority screen families on compact and tall phone sizes. Browser baseline frames are now in `/tmp/epp-phase1-before/`; native before frames remain unavailable because no Android device or emulator is attached.
 - Install and smoke the existing APK on Android, including independent/offline launch and login. APK existence alone does not pass this check.
 - Verify the current Vercel deployment in a browser and record its deployment ID and route smoke.
 - Record iOS signing/tester availability and privately send Bilal the requested APK/backend/Apple-test note; no outbound message has been sent.
@@ -48,13 +48,17 @@ Do not mark Phase 0 passed or the five redesigned screens delivered from the gre
 
 ## Phase 1 — priority mobile screens (started 4 October 2026)
 
-Status: **implementation in progress; acceptance gate open**. The supervisor's message, not the old dark mockups, governs this redesign.
+Status: **five-family implementation and automated checks complete; native/supervisor acceptance gate open**. The supervisor's message, not the old dark mockups, governs this redesign.
 
 The first pass changes the native startup canvas and shared mobile palette to white, uses Inter with 18 sp primary button labels, removes the dark navigation treatment, and introduces one slug-based category glyph resolver. Fashion now uses sunglasses and Sports a basketball regardless of server icon metadata. Splash, directory grid/list, contact detail, tracker dashboard, and challenge track list have been restyled without replacing their live data and navigation paths. The decorative ellipsis on contact detail was removed because it had no action.
 
 An isolated **development-web-only** preview can now render these screens with synthetic fixture data. A local headless browser captured compact/tall 360×800 and 390×844 frames in `/tmp/epp-phase1-refresh/`; the five priority frames visually show the white canvas, icons, city, contact actions, centered `1/5` tracker ratio, and selected challenges. These are review aids, **not native Android screenshots** and not proof of Supabase persistence. The preview route is compiled only under `__DEV__` and web.
 
-After this pass, `apps/mobile` typecheck passes and Jest reports 34 suites / 91 tests passed. The runner still emits substantial pre-existing React `act(...)` warnings. The priority-screen gate remains open for real-device interaction/persistence smoke, screen recording, native startup/icon review, large-font/system-dark checks, and Bilal's visual review. The five frames have not been privately sent outside this workspace.
+The follow-up pass also centers challenge track/detail summaries, gives contact detail a scrollable body and fixed bottom tracker action, restores a visible loading/error/retry state, reports failed phone/email/web intents, normalizes bare websites to HTTPS, blocks cached paid contact details after entitlement loss, and disables A–Z letters without matching sections. Navigation tests cover category icon/count labels, contact method errors, locked detail, contact retry, and challenge category identity. The live EPP Supabase project was checked read-only: five categories, 142 active contacts, six active tracks, 60 active challenges, 20 activity rows, and one challenge progress row at the time of the check. Those counts verify data shape, not a user-session persistence flow.
+
+Evidence at 4 October 2026: latest development-web after frames for Splash, CategoryGrid, ContactList, ContactDetail, Tracker, Challenges, TrackDetail and ChallengeDetail at both 360×800 and 390×844 are in `/tmp/epp-phase1-final-normal/`; free/locked frames are in `/tmp/epp-phase1-final-locked/`, empty frames in `/tmp/epp-phase1-final-empty/`, and the long-name/long-notes fixed-footer contact frame in `/tmp/epp-phase1-long-sticky/`. Browser captures use synthetic fixtures and are review aids, **not native Android screenshots**. `apps/mobile` typecheck and the full Jest suite pass: 36 suites, 93 tests. The test suite exercises existing tracker activity, goal/history, challenge progress, contact state, splash fast-auth and paywall navigation behaviors; it does not replace a real Supabase account/device smoke. `git diff --check` is clean.
+
+The priority-screen gate remains open for native Android installation and interaction/persistence smoke, native app icon/splash review, large-font and system-dark checks, a short real-device recording, real-account challenge live-edit/deactivation checks, and Bilal's visual approval. `adb devices -l` still shows no attached device/emulator and the host has only about 1.4 GB free. The five-screen review package exists locally only; nothing was sent outside this workspace. Do not claim Phase 1 formally accepted from the green automated/browser checks alone.
 
 ## Phase 2 — remaining screens and admin light direction (started 4 October 2026)
 

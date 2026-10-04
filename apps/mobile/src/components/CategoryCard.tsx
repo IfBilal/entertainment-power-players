@@ -42,7 +42,7 @@ export function CategoryCard({ slug, name, icon, count, onPress, tone = 'brand',
       onPressOut={pressOut}
       style={[styles.card, { transform: [{ scale }] }]}
       accessibilityRole="button"
-      accessibilityLabel={name}
+      accessibilityLabel={`${name} category, ${count === undefined ? 'count unavailable' : `${count.toLocaleString()} contact${count === 1 ? '' : 's'}`}`}
     >
       <IconTile icon={icon} categorySlug={slug} tone={tone} size="md" circle fillColor={fillColor} glyphColor={glyphColor} />
       <View style={styles.text}>

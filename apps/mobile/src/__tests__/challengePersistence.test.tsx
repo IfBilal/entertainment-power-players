@@ -51,6 +51,7 @@ it('persists a challenge note and completion from its detail screen after reopen
   const visit = await renderWithProviders(<ChallengesNavigator />);
   fireEvent.press(await screen.findByText('Creators + Producers'));
   fireEvent.press(await screen.findByText('Create Something New'));
+  expect(await screen.findByLabelText('Challenge category: Creators + Producers')).toBeTruthy();
   const note = await screen.findByPlaceholderText('Add Note');
   await waitFor(() => expect(screen.getByRole('button', { name: 'Mark as Complete' }).props.accessibilityState?.disabled).toBe(false));
   fireEvent.changeText(note, 'Drafted a pitch');

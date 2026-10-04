@@ -133,6 +133,11 @@ function previewScreen() {
     { id: 'preview-challenge-1', trackSlug: 'fashion', order: 1, title: 'Make a new connection', description: 'Connect with someone in your industry.', type: 'single', target: null, active: true },
     { id: 'preview-challenge-2', trackSlug: 'sports', order: 1, title: 'Attend an industry event', description: 'Meet other professionals.', type: 'single', target: null, active: true },
   ]);
+  queryClient.setQueryData(week3QueryKeys.quotes, [
+    { id: 'preview-quote-1', text: 'Great work grows from real connections.', author: 'EPP Preview', active: true, order: 1 },
+    { id: 'preview-quote-2', text: 'Build momentum one conversation at a time.', author: 'EPP Preview', active: true, order: 2 },
+    { id: 'preview-quote-3', text: 'The next opportunity begins with showing up.', author: 'EPP Preview', active: true, order: 3 },
+  ]);
   queryClient.setQueryData(challengeProgressQueryKey('preview-user'), {});
   const previewWeek = computeWeekKey(new Date());
   queryClient.setQueryData(goalsQueryKey('preview-user'), { [previewWeek]: { contacts: 5, events: 2, followUps: 3 } });

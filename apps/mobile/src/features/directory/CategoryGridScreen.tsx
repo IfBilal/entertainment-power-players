@@ -38,7 +38,9 @@ export function CategoryGridScreen({ navigation }: Props) {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <View style={styles.titleRow}><AppText variant="title">Directory</AppText></View>
+            <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>YOUR INDUSTRY, ONE PLACE</AppText>
+            <View style={styles.titleRow}><AppText variant="display">Directory</AppText></View>
+            <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>{total > 0 ? `${total.toLocaleString()} connections across five industries` : 'Explore the people moving the industry forward.'}</AppText>
             <View style={styles.searchRow}>
               <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
               <TextInput
@@ -72,8 +74,8 @@ export function CategoryGridScreen({ navigation }: Props) {
             </AppText>
           )
         }
-        renderItem={({ item }) => (
-          <CategoryCard slug={item.slug} name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]}
+        renderItem={({ item, index }) => (
+          <CategoryCard slug={item.slug} name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]} entranceIndex={index}
             onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })} />
         )}
       />
@@ -86,7 +88,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md },
+  eyebrow: { textAlign: 'center', letterSpacing: 1.6, marginTop: spacing.sm, marginBottom: spacing.xs },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center' },
+  subtitle: { textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.lg },
   searchRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   search: { flex: 1, color: colors.textPrimary, fontSize: 16 },
   grid: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },

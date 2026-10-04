@@ -85,10 +85,11 @@ export function ProfileHomeScreen({ navigation }: Props) {
   return (
     <Screen padded={false}>
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
-        <AppText variant="title">Profile</AppText>
+        <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>YOUR SPACE</AppText>
+        <AppText variant="display" style={styles.heading}>Profile</AppText>
         <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
-          <Avatar name={displayName || 'Your profile'} size="lg" />
-          <View style={styles.identityText}><AppText variant="title">{displayName || 'Your profile'}</AppText><AppText variant="caption" color={colors.textSecondary}>{isPro ? 'Pro Member' : 'Free Member'}</AppText></View>
+          <View style={styles.avatarHalo}><Avatar name={displayName || 'Your profile'} size="lg" /></View>
+          <View style={styles.identityText}><AppText variant="title" style={styles.identityName}>{displayName || 'Your profile'}</AppText><View style={styles.memberBadge}><AppText variant="captionStrong" color={isPro ? colors.accent : colors.textSecondary}>{isPro ? 'PRO MEMBER' : 'FREE MEMBER'}</AppText></View></View>
         </Pressable>
 
         <View style={styles.section}>
@@ -138,9 +139,14 @@ export function ProfileHomeScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-  identity: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, marginTop: spacing.md, marginBottom: spacing.lg },
-  identityText: { gap: spacing.xs },
-  section: { marginBottom: spacing.lg },
+  eyebrow: { textAlign: 'center', letterSpacing: 1.5, marginTop: spacing.sm, marginBottom: spacing.xs },
+  heading: { textAlign: 'center' },
+  identity: { alignItems: 'center', gap: spacing.sm, padding: spacing.lg, borderWidth: 1, borderColor: colors.border, borderRadius: 24, backgroundColor: colors.surfaceSubtle, marginTop: spacing.lg, marginBottom: spacing.lg },
+  avatarHalo: { padding: spacing.sm, borderRadius: 48, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  identityText: { alignItems: 'center', gap: spacing.sm },
+  identityName: { textAlign: 'center' },
+  memberBadge: { paddingHorizontal: spacing.md, paddingVertical: spacing.xs, borderRadius: 20, backgroundColor: colors.accentSoft },
+  section: { marginBottom: spacing.md, paddingHorizontal: spacing.sm, paddingVertical: spacing.xs, borderWidth: 1, borderColor: colors.border, borderRadius: 18, backgroundColor: colors.surface },
   trackList: { paddingLeft: spacing.md },
   divider: { marginBottom: spacing.md },
   error: { marginBottom: spacing.sm },

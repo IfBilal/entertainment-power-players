@@ -1,8 +1,8 @@
 import { useState } from 'react';
-import { FlatList, Pressable, StyleSheet } from 'react-native';
+import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, Screen } from '../../components';
+import { AppText, Button, IconTile, Screen } from '../../components';
 import { colors, radius, spacing, trackIcons } from '../../theme';
 import { useTracks } from '../../hooks/useContent';
 import { updateSelectedTracks } from '../../services/supabase/profile';
@@ -44,13 +44,15 @@ export function TrackPickerScreen(_props: Props) {
   }
 
   return (
-    <Screen aurora="subtle">
+    <Screen aurora={false}>
+      <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>FIND YOUR FOCUS</AppText>
       <AppText variant="display" style={styles.heading}>
         Choose Your Tracks
       </AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
         Select the areas you want to focus on. You can change this later.
       </AppText>
+      <AppText variant="captionStrong" color={colors.accent} style={styles.selectionCount}>{selected.length} selected</AppText>
       <FlatList
         data={tracks}
         keyExtractor={(t) => t.slug}
@@ -60,8 +62,7 @@ export function TrackPickerScreen(_props: Props) {
         showsVerticalScrollIndicator={false}
         renderItem={({ item, index }) => {
           const isSelected = selected.includes(item.slug);
-          // Alternating amber / lime glyphs, as the mockup's grid does.
-          const hue = index % 2 === 0 ? colors.accentAmber : colors.accentLime;
+          const hue = index % 2 === 0 ? colors.accentOrange : colors.accent;
           return (
             <Pressable
               style={[styles.card, isSelected && styles.cardSelected]}
@@ -70,10 +71,11 @@ export function TrackPickerScreen(_props: Props) {
               accessibilityState={{ checked: isSelected }}
               accessibilityLabel={item.name}
             >
-              <Ionicons name={trackIcons[item.slug] ?? 'star-outline'} size={38} color={hue} />
+              <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} size="lg" circle fillColor={index % 2 === 0 ? colors.accentOrangeSoft : colors.accentSoft} glyphColor={hue} />
               <AppText variant="bodyStrong" style={styles.cardLabel}>
                 {item.name}
               </AppText>
+              {isSelected ? <View style={styles.selectedMark}><Ionicons name="checkmark" size={13} color={colors.textInverse} /></View> : null}
             </Pressable>
           );
         }}
@@ -102,24 +104,27 @@ export function TrackPickerScreen(_props: Props) {
 }
 
 const styles = StyleSheet.create({
+  eyebrow: { textAlign: 'center', letterSpacing: 1.5, marginTop: spacing.lg, marginBottom: spacing.xs },
   heading: {
-    marginTop: spacing.xl,
+    textAlign: 'center',
   },
   subtitle: {
     marginTop: spacing.sm,
-    marginBottom: spacing.lg,
+    marginBottom: spacing.sm,
+    textAlign: 'center',
   },
+  selectionCount: { textAlign: 'center', marginBottom: spacing.lg },
   list: {
     gap: spacing.md,
     paddingBottom: spacing.md,
   },
   row: {
     gap: spacing.md,
+    justifyContent: 'center',
   },
-  // Tall tiles with the glyph stacked above a centred label, per mockup 8.
   card: {
-    flex: 1,
-    height: 146,
+    width: '47%',
+    height: 156,
     alignItems: 'center',
     justifyContent: 'center',
     gap: spacing.md,
@@ -130,9 +135,11 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
   },
   cardSelected: {
-    borderColor: colors.accentLime,
+    borderColor: colors.accent,
+    borderWidth: 2,
     backgroundColor: colors.accentFaint,
   },
+  selectedMark: { position: 'absolute', top: spacing.sm, right: spacing.sm, width: 22, height: 22, borderRadius: 11, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center' },
   cardLabel: {
     textAlign: 'center',
   },

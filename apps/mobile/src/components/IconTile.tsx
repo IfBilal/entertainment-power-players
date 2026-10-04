@@ -26,13 +26,10 @@ type IconTileProps = {
 const dimensions: Record<IconTileSize, { box: number; glyph: number; radius: number }> = {
   sm: { box: 36, glyph: 18, radius: radius.sm },
   md: { box: 44, glyph: 22, radius: radius.md },
-  lg: { box: 56, glyph: 28, radius: radius.lg },
+  lg: { box: 60, glyph: 30, radius: radius.lg },
 };
 
-/**
- * The coloured rounded-square icon holders used for categories, challenge
- * tracks and the log-activity rows in the mockups.
- */
+/** Category medallions and small action icon holders on the white UI. */
 export function IconTile({ icon, categorySlug, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, glyphColor, style }: IconTileProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: circle ? d.box / 2 : d.radius };
@@ -49,7 +46,9 @@ export function IconTile({ icon, categorySlug, tone = 'brand', size = 'md', soft
   if (circle) {
     return (
       <View style={[styles.tile, box, styles.circle, { backgroundColor: fillColor ?? colors.accentOrangeSoft }, style]}>
-        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={glyphColor ?? colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={glyphColor ?? gradient.colors[gradient.colors.length - 1]} />}
+        <View style={[styles.innerCircle, { width: d.box * 0.76, height: d.box * 0.76, borderRadius: d.box * 0.38, borderColor: `${glyphColor ?? colors.accent}35` }]}>
+          {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={glyphColor ?? colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={glyphColor ?? gradient.colors[gradient.colors.length - 1]} />}
+        </View>
       </View>
     );
   }
@@ -76,5 +75,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  circle: { borderWidth: 1, borderColor: 'rgba(255,255,255,0.05)' },
+  circle: { borderWidth: 1, borderColor: colors.border },
+  innerCircle: { borderWidth: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.48)' },
 });

@@ -90,7 +90,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
           <CategoryGlyph slug={track.slug} size={34} color={colors.accent} />
         </View>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
-        <ProgressRing progress={total > 0 ? done / total : 0} size={132} strokeWidth={11} label={`${done}/${total}`} />
+        <View style={styles.ringHalo}><ProgressRing progress={total > 0 ? done / total : 0} size={132} strokeWidth={11} label={`${done}/${total}`} /></View>
         <AppText variant="bodyStrong" color={complete ? colors.success : colors.textSecondary} style={styles.ringLabel}>
           {complete ? 'Track complete' : `${done} of ${total} complete`}
         </AppText>
@@ -118,7 +118,8 @@ export function TrackDetailScreen({ route, navigation }: Props) {
 
 const styles = StyleSheet.create({
   heading: { marginBottom: spacing.md, textAlign: 'center' },
-  identity: { width: 72, height: 72, borderRadius: 24, backgroundColor: colors.accentSoft, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm, marginBottom: spacing.sm },
+  identity: { width: 76, height: 76, borderRadius: 26, backgroundColor: colors.accentSoft, borderWidth: 3, borderColor: colors.surfaceStrong, alignSelf: 'center', alignItems: 'center', justifyContent: 'center', marginTop: spacing.sm, marginBottom: spacing.sm },
+  ringHalo: { padding: 9, borderRadius: 84, backgroundColor: colors.accentFaint },
   lockedCopy: { textAlign: 'center', marginHorizontal: spacing.md },
   benefits: { gap: spacing.sm, marginTop: spacing.lg, marginBottom: spacing.xl },
   header: { alignItems: 'center' },

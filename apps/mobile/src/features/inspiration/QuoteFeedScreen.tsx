@@ -49,8 +49,9 @@ export function QuoteFeedScreen() {
 
   return (
     <Screen>
-      <View style={styles.heading}><AppText variant="title">Inspiration</AppText></View>
-      <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'quotes' ? colors.textPrimary : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="captionStrong" color={tab === 'saved' ? colors.textPrimary : colors.textSecondary}>Saved</AppText></Pressable></View>
+      <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>WORDS THAT MOVE YOU</AppText>
+      <View style={styles.heading}><AppText variant="display">Inspiration</AppText></View>
+      <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="bodyStrong" color={tab === 'quotes' ? colors.textInverse : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="bodyStrong" color={tab === 'saved' ? colors.textInverse : colors.textSecondary}>Saved</AppText></Pressable></View>
       {query.isError ? <Pressable onPress={() => query.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load saved quotes. Tap to retry.</AppText></Pressable> : null}
       {quotesQuery.isError ? <Pressable onPress={() => quotesQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load quotes. Tap to retry.</AppText></Pressable> : null}
       {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save quote. Please try again.</AppText> : null}
@@ -59,7 +60,7 @@ export function QuoteFeedScreen() {
         data={visibleQuotes}
         keyExtractor={(q) => q.id}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<AppText variant="body" color={colors.textSecondary}>{quotesQuery.isPending ? 'Loading quotes…' : tab === 'saved' ? 'No saved quotes yet.' : 'No quotes available right now.'}</AppText>}
+        ListEmptyComponent={<AppText variant="body" color={colors.textSecondary} style={styles.empty}>{quotesQuery.isPending ? 'Loading quotes…' : tab === 'saved' ? 'No saved quotes yet.' : 'No quotes available right now.'}</AppText>}
         ListHeaderComponent={
           featured && tab === 'quotes' ? (
             <View style={styles.featuredWrap}>
@@ -107,10 +108,12 @@ export function QuoteFeedScreen() {
 }
 
 const styles = StyleSheet.create({
-  heading: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm, marginBottom: spacing.md },
-  tabs: { flexDirection: 'row', padding: 3, borderRadius: 14, backgroundColor: colors.surface, marginBottom: spacing.md },
-  tab: { flex: 1, alignItems: 'center', paddingVertical: 9, borderRadius: 11 },
-  tabActive: { backgroundColor: colors.surfaceStrong },
+  eyebrow: { textAlign: 'center', letterSpacing: 1.5, marginTop: spacing.sm, marginBottom: spacing.xs },
+  heading: { alignItems: 'center', marginBottom: spacing.md },
+  tabs: { flexDirection: 'row', alignSelf: 'center', padding: spacing.xs, borderRadius: 18, backgroundColor: colors.surfaceSubtle, marginBottom: spacing.lg },
+  tab: { minWidth: 112, alignItems: 'center', paddingVertical: spacing.sm, borderRadius: 14 },
+  tabActive: { backgroundColor: colors.accent },
+  empty: { textAlign: 'center', marginTop: spacing.xl },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
   featuredWrap: { marginBottom: spacing.sm, gap: spacing.xs },
   moreLabel: { marginTop: spacing.lg },

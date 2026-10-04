@@ -177,7 +177,7 @@ const styles = StyleSheet.create({
   lockedCopy: { textAlign: 'center', marginTop: spacing.sm, marginBottom: spacing.xl },
   topActions: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.sm },
   profile: { alignItems: 'center', marginBottom: spacing.md },
-  categoryBadge: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
+  categoryBadge: { width: 88, height: 88, borderRadius: 44, backgroundColor: colors.accentSoft, borderWidth: 5, borderColor: colors.surfaceStrong, alignItems: 'center', justifyContent: 'center' },
   headerRow: { alignItems: 'center', marginTop: spacing.xs },
   headerText: { alignItems: 'center' },
   name: { marginTop: spacing.xs, textAlign: 'center' },

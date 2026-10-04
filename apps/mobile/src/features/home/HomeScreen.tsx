@@ -4,7 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Avatar, Card, ProgressBar, Screen } from '../../components';
+import { AppText, Avatar, Card, ProgressBar, ProgressRing, Screen } from '../../components';
 import { colors, radius, spacing, type IoniconName } from '../../theme';
 import { countsForWeek, type WeeklyGoals } from '../../services/mock/tracker';
 import { useTrackerEntries } from '../../hooks/useTrackerEntries';
@@ -24,7 +24,7 @@ type Metric = {
   colour: string;
 };
 
-// Colours sampled from the mockup's three bars: amber, lime, orange.
+// Brand-family metric colours, distinct while remaining readable on white.
 const metrics: Metric[] = [
   { key: 'contacts', label: 'Contacts', icon: 'radio-button-on', tone: 'barAmber', colour: '#FDB90B' },
   { key: 'events', label: 'Events', icon: 'ellipse', tone: 'barLime', colour: '#72D222' },
@@ -71,27 +71,24 @@ export function HomeScreen({ navigation }: Props) {
   const firstName = (displayName ?? '').trim().split(/\s+/)[0] || 'there';
 
   return (
-    <Screen padded={false} aurora="standard">
+    <Screen padded={false} aurora={false}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}
       >
         <View style={styles.header}>
-          <View style={styles.greetingBlock}>
-            <AppText variant="display">{greeting(now)}</AppText>
-            <View style={styles.nameRow}>
-              <AppText variant="display">{firstName}</AppText>
-              <Ionicons name="sparkles" size={22} color={colors.accentAmber} />
-            </View>
-          </View>
-          <Avatar name={displayName ?? firstName} size="lg" />
+          <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>GOOD TO SEE YOU</AppText>
+          <View style={styles.avatarHalo}><Avatar name={displayName ?? firstName} size="lg" /></View>
+          <AppText variant="display" style={styles.greeting}>{greeting(now)}</AppText>
+          <AppText variant="subtitle" color={colors.accent} style={styles.firstName}>{firstName}</AppText>
         </View>
 
         <Card style={styles.weekCard}>
-          <AppText variant="subtitle">This Week</AppText>
+          <AppText variant="title" style={styles.weekTitle}>This Week</AppText>
           <AppText variant="caption" color={colors.textSecondary} style={styles.weekRange}>
             {weekRangeLabel(now)}
           </AppText>
+          <View style={styles.weekFocus}><ProgressRing progress={goals.contacts ? counts.contacts / goals.contacts : 0} size={126} strokeWidth={10} label={counts.contacts + '/' + goals.contacts} /><AppText variant="captionStrong" color={colors.accent} style={styles.focusLabel}>CONTACT GOAL</AppText></View>
 
           <View style={styles.metrics}>
             {metrics.map((m) => {
@@ -119,7 +116,7 @@ export function HomeScreen({ navigation }: Props) {
           </View>
         </Card>
 
-        <AppText variant="subtitle" style={styles.quickHeading}>
+        <AppText variant="title" style={styles.quickHeading}>
           Quick Access
         </AppText>
         <View style={styles.quickRow}>
@@ -151,7 +148,7 @@ export function HomeScreen({ navigation }: Props) {
               }}
             >
               <View style={styles.quickTile}>
-                <Ionicons name={q.icon} size={24} color={colors.accentLime} />
+                <Ionicons name={q.icon} size={26} color={colors.accent} />
               </View>
               <AppText variant="caption" style={styles.quickLabel}>
                 {q.label}
@@ -167,31 +164,30 @@ export function HomeScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   content: {
     paddingHorizontal: spacing.md,
-    paddingTop: spacing.lg,
+    paddingTop: spacing.sm,
     paddingBottom: spacing.xl,
   },
   header: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    justifyContent: 'space-between',
-    gap: spacing.md,
-  },
-  greetingBlock: {
-    flex: 1,
-  },
-  nameRow: {
-    flexDirection: 'row',
     alignItems: 'center',
-    gap: spacing.sm,
   },
+  eyebrow: { letterSpacing: 1.5, marginBottom: spacing.md },
+  avatarHalo: { padding: spacing.xs, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 40 },
+  greeting: { marginTop: spacing.sm, textAlign: 'center' },
+  firstName: { marginTop: 2, textAlign: 'center' },
   weekCard: {
     marginTop: spacing.lg,
+    backgroundColor: colors.surfaceSubtle,
+    borderColor: colors.border,
   },
+  weekTitle: { textAlign: 'center' },
   weekRange: {
     marginTop: 2,
+    textAlign: 'center',
   },
+  weekFocus: { alignItems: 'center', marginTop: spacing.md },
+  focusLabel: { marginTop: spacing.xs, letterSpacing: 1.1 },
   metrics: {
-    marginTop: spacing.lg,
+    marginTop: spacing.md,
     gap: spacing.md,
   },
   metric: {
@@ -208,6 +204,7 @@ const styles = StyleSheet.create({
   quickHeading: {
     marginTop: spacing.xl,
     marginBottom: spacing.md,
+    textAlign: 'center',
   },
   quickRow: {
     flexDirection: 'row',
@@ -224,7 +221,7 @@ const styles = StyleSheet.create({
     borderRadius: radius.lg,
     borderWidth: 1,
     borderColor: colors.border,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.accentFaint,
     alignItems: 'center',
     justifyContent: 'center',
   },

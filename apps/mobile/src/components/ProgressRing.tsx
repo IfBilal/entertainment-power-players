@@ -1,8 +1,9 @@
 import { useEffect, useRef } from 'react';
-import { Animated, Platform, View } from 'react-native';
+import { Animated, Easing, Platform, View } from 'react-native';
 import Svg, { Circle, Defs, LinearGradient, Stop } from 'react-native-svg';
 import { AppText } from './AppText';
 import { colors } from '../theme';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 const AnimatedCircle = Animated.createAnimatedComponent(Circle);
 
@@ -13,20 +14,23 @@ type ProgressRingProps = {
   label?: string;
 };
 
-/**
- * Sweeps the brand gradient around the arc (green at the start, orange as it
- * completes) — the focal element of the tracker dashboard in the mockups.
- */
+/** Animated progress focal point; reduced-motion users get the final state. */
 export function ProgressRing({ progress, size = 84, strokeWidth = 8, label }: ProgressRingProps) {
-  const anim = useRef(new Animated.Value(0)).current;
   const clamped = Math.max(0, Math.min(1, progress));
+  const reduceMotion = useReducedMotion();
+  const anim = useRef(new Animated.Value(reduceMotion || process.env.NODE_ENV === 'test' ? clamped : 0)).current;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test') return;
-    Animated.timing(anim, { toValue: clamped, duration: 480, useNativeDriver: false }).start();
-  }, [clamped]);
+    if (reduceMotion || process.env.NODE_ENV === 'test') {
+      anim.setValue(clamped);
+      return;
+    }
+    const animation = Animated.timing(anim, { toValue: clamped, duration: 850, easing: Easing.out(Easing.cubic), useNativeDriver: false });
+    animation.start();
+    return () => animation.stop();
+  }, [anim, clamped, reduceMotion]);
 
   const strokeDashoffset = anim.interpolate({
     inputRange: [0, 1],

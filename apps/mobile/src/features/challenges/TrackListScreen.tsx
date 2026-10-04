@@ -21,6 +21,13 @@ export function TrackListScreen({ navigation }: Props) {
   const isPro = useAppStore((state) => state.isPro);
   const [tab, setTab] = useState<'mine' | 'all'>('mine');
   const tones: GradientToken[] = ['barOrange', 'green', 'brand', 'barLime', 'ember', 'barAmber'];
+  const palettes: Record<string, { fill: string; glyph: string }> = {
+    fashion: { fill: '#FFF2E8', glyph: '#A94812' },
+    'film-tv': { fill: '#EAF5EE', glyph: '#216B36' },
+    gaming: { fill: '#EEF6E9', glyph: '#337326' },
+    music: { fill: '#FFF6E6', glyph: '#8F5B00' },
+    sports: { fill: '#E8F4F4', glyph: '#196A73' },
+  };
 
   const sorted = (tab === 'mine' ? tracks.filter((track) => selectedSlugs.includes(track.slug)) : [...tracks]).sort((a, b) => {
     const aSelected = selectedSlugs.includes(a.slug);
@@ -31,10 +38,12 @@ export function TrackListScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title" style={styles.heading}>Challenges</AppText>
+      <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>GROW WITH PURPOSE</AppText>
+      <AppText variant="display" style={styles.heading}>Challenges</AppText>
+      <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>Small steps. Bigger opportunities.</AppText>
       <View style={styles.tabs}>
-        <Pressable onPress={() => setTab('mine')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'mine' }}><AppText variant={tab === 'mine' ? 'bodyStrong' : 'body'} color={tab === 'mine' ? colors.textPrimary : colors.textSecondary}>My Tracks</AppText></Pressable>
-        <Pressable onPress={() => setTab('all')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'all' }}><AppText variant={tab === 'all' ? 'bodyStrong' : 'body'} color={tab === 'all' ? colors.textPrimary : colors.textSecondary}>All Tracks</AppText></Pressable>
+        <Pressable style={[styles.tab, tab === 'mine' && styles.activeTab]} onPress={() => setTab('mine')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'mine' }}><AppText variant="bodyStrong" color={tab === 'mine' ? colors.textInverse : colors.textSecondary}>My Tracks</AppText></Pressable>
+        <Pressable style={[styles.tab, tab === 'all' && styles.activeTab]} onPress={() => setTab('all')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'all' }}><AppText variant="bodyStrong" color={tab === 'all' ? colors.textInverse : colors.textSecondary}>All Tracks</AppText></Pressable>
       </View>
       {progressQuery.isError ? <Pressable onPress={() => progressQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Tap to retry.</AppText></Pressable> : null}
       {tracksQuery.isError ? <Pressable onPress={() => tracksQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load tracks. Tap to retry.</AppText></Pressable> : null}
@@ -49,12 +58,16 @@ export function TrackListScreen({ navigation }: Props) {
           const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === item.slug);
           const total = challenges.length;
           const done = challenges.filter((challenge) => progress[challenge.id]?.status === 'complete').length;
+          const palette = palettes[item.slug] ?? { fill: colors.accentSoft, glyph: colors.accent };
           return (
-            <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
+            <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })} accessibilityRole="button" accessibilityLabel={"Open " + item.name + " track"}>
               <Card style={styles.row} elevation="none">
-                <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="md" />
-                <View style={styles.text}><AppText variant="bodyStrong">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{!isPro ? 'Premium track' : challengesQuery.isPending ? 'Loading progress…' : `${done}/${total} completed`}</AppText></View>
-                <AppText variant="title" color={colors.textSecondary}>›</AppText>
+                <View style={styles.rowTop}>
+                  <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="lg" circle fillColor={palette.fill} glyphColor={palette.glyph} />
+                  <View style={styles.text}><AppText variant="subtitle">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{!isPro ? 'Premium track' : challengesQuery.isPending ? 'Loading progress…' : done + '/' + total + ' completed'}</AppText></View>
+                  <AppText variant="title" color={palette.glyph}>›</AppText>
+                </View>
+                {isPro && total > 0 ? <View accessibilityRole="progressbar" accessibilityLabel={item.name + ': ' + done + ' of ' + total + ' challenges complete'} accessibilityValue={{ min: 0, max: total, now: done }} style={styles.progressTrack}><View style={[styles.progressFill, { width: `${Math.min(100, done / total * 100)}%` as const, backgroundColor: palette.glyph }]} /></View> : null}
               </Card>
             </Pressable>
           );
@@ -65,10 +78,16 @@ export function TrackListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.md, textAlign: 'center' },
-  tabs: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm, marginBottom: spacing.md },
+  eyebrow: { textAlign: 'center', letterSpacing: 1.5, marginTop: spacing.sm, marginBottom: spacing.xs },
+  heading: { textAlign: 'center' },
+  subtitle: { textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.lg },
+  tabs: { flexDirection: 'row', alignSelf: 'center', gap: spacing.xs, backgroundColor: colors.surfaceSubtle, borderRadius: 18, padding: spacing.xs, marginBottom: spacing.lg },
+  tab: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: 14 },
+  activeTab: { backgroundColor: colors.accent },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
-  row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  row: { gap: spacing.md, borderColor: colors.border },
+  rowTop: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   text: { flex: 1, gap: spacing.xs },
-  titleRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.xs },
+  progressTrack: { height: 7, borderRadius: 4, backgroundColor: colors.surfaceStrong, overflow: 'hidden' },
+  progressFill: { height: '100%', borderRadius: 4 },
 });

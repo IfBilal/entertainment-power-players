@@ -59,10 +59,10 @@ export function QuoteCard({
         <AppText style={[styles.mark, isHero && styles.markHero]} color={colors.accentOrange}>
           &ldquo;
         </AppText>
-        <AppText variant={isHero ? 'subtitle' : 'body'} style={styles.text}>
+        <AppText variant={isHero ? 'subtitle' : 'body'} style={[styles.text, isHero && styles.heroText]}>
           {text}
         </AppText>
-        <View style={styles.footer}>
+        <View style={[styles.footer, isHero && styles.heroFooter]}>
           <AppText variant="caption" color={colors.textSecondary}>— {author}</AppText>
           {isHero ? (
             <Logo variant="mark" width={72} />
@@ -117,7 +117,8 @@ const styles = StyleSheet.create({
   heroCard: {
     padding: spacing.lg,
     borderRadius: radius.xl,
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceSubtle,
+    borderColor: colors.borderStrong,
   },
   feedCard: {},
   mark: {
@@ -130,16 +131,19 @@ const styles = StyleSheet.create({
     fontSize: 48,
     lineHeight: 48,
     marginBottom: -spacing.sm,
+    textAlign: 'center',
   },
   text: {
     marginTop: spacing.xs,
   },
+  heroText: { textAlign: 'center', fontSize: 22, lineHeight: 30 },
   footer: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
     marginTop: spacing.md,
   },
+  heroFooter: { flexDirection: 'column', justifyContent: 'center', gap: spacing.md },
   actions: {
     flexDirection: 'row',
     gap: spacing.sm,

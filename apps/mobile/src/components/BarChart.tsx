@@ -1,7 +1,8 @@
 import { useEffect, useRef } from 'react';
-import { Animated, StyleSheet, View } from 'react-native';
+import { Animated, Easing, StyleSheet, View } from 'react-native';
 import { AppText } from './AppText';
 import { colors, radius, spacing } from '../theme';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 export type BarChartDatum = {
   label: string;
@@ -14,13 +15,19 @@ type BarChartProps = {
 };
 
 function Bar({ value, max, height, current }: { value: number; max: number; height: number; current: boolean }) {
-  const grow = useRef(new Animated.Value(0)).current;
   const targetHeight = Math.max(3, (value / max) * height);
+  const reduceMotion = useReducedMotion();
+  const grow = useRef(new Animated.Value(reduceMotion || process.env.NODE_ENV === 'test' ? targetHeight : 0)).current;
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test') return;
-    Animated.timing(grow, { toValue: targetHeight, duration: 420, useNativeDriver: false }).start();
-  }, [targetHeight]);
+    if (reduceMotion || process.env.NODE_ENV === 'test') {
+      grow.setValue(targetHeight);
+      return;
+    }
+    const animation = Animated.timing(grow, { toValue: targetHeight, duration: 650, easing: Easing.out(Easing.cubic), useNativeDriver: false });
+    animation.start();
+    return () => animation.stop();
+  }, [grow, targetHeight, reduceMotion]);
 
   return <Animated.View style={[styles.bar, current ? styles.barCurrent : styles.barHistorical, { height: grow }]} />;
 }
@@ -77,6 +84,6 @@ const styles = StyleSheet.create({
     backgroundColor: colors.accent,
   },
   barHistorical: {
-    backgroundColor: colors.surfaceStrong,
+    backgroundColor: '#BEDDC5',
   },
 });

@@ -60,6 +60,8 @@ Evidence at 4 October 2026: latest development-web after frames for Splash, Cate
 
 The priority-screen gate remains open for native Android installation and interaction/persistence smoke, native app icon/splash review, large-font and system-dark checks, a short real-device recording, real-account challenge live-edit/deactivation checks, and Bilal's visual approval. `adb devices -l` still shows no attached device/emulator and the host has only about 1.4 GB free. The five-screen review package exists locally only; nothing was sent outside this workspace. Do not claim Phase 1 formally accepted from the green automated/browser checks alone.
 
+The follow-up was pushed on `main` as `c54cfd5`. A standalone EAS Android preview APK build was submitted from that exact commit (build `72a6b364-f820-4d0b-9171-0db41cbf21c3`, version code 7); its artifact and installation remain to be checked when the remote build finishes. EAS displayed a billing-credit warning yet accepted the upload and reported the build as in progress.
+
 ## Phase 2 — remaining screens and admin light direction (started 4 October 2026)
 
 Status: **in progress; not signed off**. The first cross-screen sweep removes the concert-crowd onboarding render and substitutes the five category pictograms on a white canvas. The `Avatar` component now displays initials even when a saved profile photo URL exists, so no remote human portrait renders. Visible full-brand text on mobile quote sharing/signup and admin login/sidebar/contacts includes one `®`. The admin CSS now uses the same white/ink/green semantic direction rather than the old dark gradient. The development-only admin contacts preview needed a `BrowserRouter` wrapper to render its React Router links; that crash was fixed.

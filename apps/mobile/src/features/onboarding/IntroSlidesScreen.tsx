@@ -73,10 +73,7 @@ const slides: Slide[] = [
   },
 ];
 
-/**
- * Mockup 3: a tilted panel carrying a rising trend line, with the stat rows
- * overlapping its lower half.
- */
+/** A centered, full-width illustration with its metrics grouped below. */
 function CategoryHero() {
   const slugs = ['fashion', 'film-tv', 'gaming', 'music', 'sports'];
   return <View style={styles.categoryHero} accessibilityLabel="Fashion, Film and TV, Gaming, Music, and Sports">
@@ -92,7 +89,7 @@ function StatPreview() {
   ];
 
   return (
-    <View style={styles.previewWrap}>
+    <View style={styles.previewWrap} accessibilityLabel="Progress preview">
       <View style={styles.chartPanel}>
         <Svg width="100%" height="100%" viewBox="0 0 300 150">
           <Defs>
@@ -130,16 +127,11 @@ function StatPreview() {
   );
 }
 
-/**
- * Mockup 4: wide dark cards carrying a single outlined glyph, cascading down
- * and alternating left/right rather than sitting in a row. Each card is nearly
- * black with a coloured edge and a faint wash — the colour comes from the
- * glyph and the border, not a filled tile.
- */
+/** Symmetric category-only icon grid for the challenges introduction. */
 function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
   return (
     <View style={styles.scatter}>
-      {tiles.map((t, i) => {
+      {tiles.map((t) => {
         const warm = t.tone === 'ember';
         const hue = warm ? colors.accentOrange : colors.accentLime;
         return (
@@ -147,7 +139,7 @@ function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
             key={t.icon}
             style={[
               styles.cascadeCard,
-              { marginLeft: (i % 2 === 0 ? 0 : 74) + i * 6, borderColor: `${hue}55` },
+              { borderColor: `${hue}55` },
             ]}
           >
             <LinearGradient colors={[`${hue}16`, colors.surface]} style={StyleSheet.absoluteFill} />
@@ -241,6 +233,9 @@ const styles = StyleSheet.create({
   categoryHero: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'center', gap: spacing.sm, maxWidth: 250, marginVertical: spacing.xxl },
   categoryHeroIcon: { width: 62, height: 62, borderRadius: 20, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
   previewWrap: {
+    width: '100%',
+    maxWidth: 340,
+    alignSelf: 'center',
     marginTop: spacing.xxl,
   },
   chartPanel: {
@@ -249,8 +244,6 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
     overflow: 'hidden',
-    // Slight tilt, as the mockup's panel sits off-axis behind the stat card.
-    transform: [{ rotate: '-2deg' }],
   },
   statCard: {
     borderRadius: radius.xl,
@@ -272,17 +265,22 @@ const styles = StyleSheet.create({
   },
   scatter: {
     marginTop: spacing.xxl,
+    width: '100%',
+    maxWidth: 330,
+    alignSelf: 'center',
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: spacing.sm,
   },
   cascadeCard: {
-    width: 165,
-    height: 88,
+    width: 96,
+    height: 96,
     borderRadius: radius.lg,
     borderWidth: 1,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',
-    // Each card overlaps the one above it, as the mockup's stack does.
-    marginTop: -spacing.lg,
   },
   dots: {
     flexDirection: 'row',

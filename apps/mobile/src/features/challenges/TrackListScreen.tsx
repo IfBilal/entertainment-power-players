@@ -44,7 +44,7 @@ export function TrackListScreen({ navigation }: Props) {
         keyExtractor={(t) => t.slug}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={tracksQuery.isPending ? <AppText variant="caption">Loading tracks…</AppText> : <EmptyState icon="trophy-outline" title="No tracks selected" description="Choose tracks in Profile, or view All Tracks." />}
+        ListEmptyComponent={tracksQuery.isPending ? <AppText variant="caption">Loading tracks…</AppText> : <EmptyState icon="shapes-outline" title="No tracks selected" description="Choose tracks in Profile, or view All Tracks." />}
         renderItem={({ item }) => {
           const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === item.slug);
           const total = challenges.length;
@@ -52,7 +52,7 @@ export function TrackListScreen({ navigation }: Props) {
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })}>
               <Card style={styles.row} elevation="none">
-                <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} tone={tones[Math.abs(item.order) % tones.length]} size="md" />
+                <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="md" />
                 <View style={styles.text}><AppText variant="bodyStrong">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{!isPro ? 'Premium track' : challengesQuery.isPending ? 'Loading progress…' : `${done}/${total} completed`}</AppText></View>
                 <AppText variant="title" color={colors.textSecondary}>›</AppText>
               </Card>
@@ -65,8 +65,8 @@ export function TrackListScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.sm },
-  tabs: { flexDirection: 'row', gap: spacing.md, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm, marginBottom: spacing.sm },
+  heading: { marginBottom: spacing.md, textAlign: 'center' },
+  tabs: { flexDirection: 'row', justifyContent: 'center', gap: spacing.xl, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm, marginBottom: spacing.md },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },
   row: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
   text: { flex: 1, gap: spacing.xs },

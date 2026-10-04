@@ -22,8 +22,8 @@ export function CategoryGridScreen({ navigation }: Props) {
   }, [categories, search]);
   const counts = countsQuery.data ?? {};
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
-  const fills: Record<string, string> = { fashion: '#44271A', 'film-tv': '#19372C', gaming: '#24341B', music: '#3A2F14', sports: '#17363A' };
-  const glyphs: Record<string, string> = { fashion: '#F87900', 'film-tv': '#EFB512', gaming: '#9BDB1B', music: '#F0A010', sports: '#CBD3D0' };
+  const fills: Record<string, string> = { fashion: '#FFF2E8', 'film-tv': '#EAF5EE', gaming: '#EEF6E9', music: '#FFF6E6', sports: '#E8F4F4' };
+  const glyphs: Record<string, string> = { fashion: '#A94812', 'film-tv': '#216B36', gaming: '#337326', music: '#8F5B00', sports: '#196A73' };
 
   return (
     <Screen padded={false}>
@@ -38,7 +38,7 @@ export function CategoryGridScreen({ navigation }: Props) {
         }}
         ListHeaderComponent={
           <View style={styles.header}>
-            <View style={styles.titleRow}><AppText variant="title">Directory</AppText><Ionicons name="chevron-down" size={18} color={colors.textSecondary} /></View>
+            <View style={styles.titleRow}><AppText variant="title">Directory</AppText></View>
             <View style={styles.searchRow}>
               <Ionicons name="search-outline" size={18} color={colors.textTertiary} />
               <TextInput
@@ -73,7 +73,7 @@ export function CategoryGridScreen({ navigation }: Props) {
           )
         }
         renderItem={({ item }) => (
-          <CategoryCard name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]}
+          <CategoryCard slug={item.slug} name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]}
             onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })} />
         )}
       />
@@ -86,9 +86,9 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingTop: spacing.sm,
   },
-  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: spacing.md },
-  searchRow: { height: 42, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: 12, borderRadius: 12, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
-  search: { flex: 1, color: colors.textPrimary, fontSize: 14 },
+  titleRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'center', marginBottom: spacing.md },
+  searchRow: { minHeight: 48, flexDirection: 'row', alignItems: 'center', gap: spacing.sm, paddingHorizontal: 14, borderRadius: 14, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
+  search: { flex: 1, color: colors.textPrimary, fontSize: 16 },
   grid: { gap: spacing.sm, paddingHorizontal: spacing.md, paddingBottom: spacing.lg },
   skeletonGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm },
   skeletonCard: { flexBasis: '100%', flexGrow: 1 },

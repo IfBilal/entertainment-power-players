@@ -1,11 +1,6 @@
 import { Platform } from 'react-native';
 
-/**
- * On a near-black ground the old warm, ink-tinted elevation was invisible.
- * Depth here comes from pure-black shadows at higher opacity, paired with the
- * hairline `colors.border` on the card itself — the border does most of the
- * separating work, the shadow just grounds the element.
- */
+/** Restrained elevation; light cards rely primarily on their border. */
 function shadow(elevation: number, opacity: number, radius: number, y: number) {
   return Platform.select({
     ios: {
@@ -23,9 +18,9 @@ function shadow(elevation: number, opacity: number, radius: number, y: number) {
 
 export const shadows = {
   none: {},
-  card: shadow(3, 0.35, 12, 4),
-  raised: shadow(8, 0.45, 20, 8),
-  floating: shadow(16, 0.55, 32, 14),
+  card: shadow(2, 0.07, 10, 3),
+  raised: shadow(5, 0.11, 18, 6),
+  floating: shadow(10, 0.15, 28, 10),
 } as const;
 
 export type ShadowToken = keyof typeof shadows;

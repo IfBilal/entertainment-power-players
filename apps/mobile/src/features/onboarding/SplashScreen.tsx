@@ -1,7 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Aurora, Logo } from '../../components';
+import { AppText, Logo } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useAuthStore } from '../../store/useAuthStore';
 import type { OnboardingStackParamList } from '../../navigation/types';
@@ -74,17 +74,13 @@ export function SplashScreen({ navigation }: Props) {
 
   return (
     <View style={styles.container}>
-      <Aurora variant="streaks" />
       <Animated.View style={[styles.mark, { opacity, transform: [{ scale }] }]}>
-        {/* The mockup pairs the star+epp mark with its own white wordmark set
-            below it, rather than the supplied lockup whose wordmark is green
-            and too small to read at this size. */}
-        <Logo variant="mark" width={252} />
+        <Logo variant="mark" width={218} />
         <AppText variant="label" color={colors.textPrimary} style={styles.wordmarkTop}>
           ENTERTAINMENT
         </AppText>
         <AppText variant="title" color={colors.textPrimary} style={styles.wordmarkMain}>
-          POWER PLAYERS
+          POWER PLAYERS®
         </AppText>
       </Animated.View>
       <Animated.View style={[styles.taglineWrap, { opacity }]}>
@@ -105,20 +101,20 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
     backgroundColor: colors.background,
+    paddingTop: '13%',
   },
   mark: {
     alignItems: 'center',
   },
   wordmarkTop: {
-    marginTop: spacing.md,
+    marginTop: spacing.xs,
     letterSpacing: 3.4,
   },
   wordmarkMain: {
     marginTop: 2,
     letterSpacing: 2.2,
   },
-  /** The mockup sets the tagline low on the screen, well clear of the logo,
-   *  rather than directly beneath it. */
+  /** Keep the secondary promise low while the compact mark/wordmark sits lower. */
   taglineWrap: {
     position: 'absolute',
     bottom: spacing.xxl,

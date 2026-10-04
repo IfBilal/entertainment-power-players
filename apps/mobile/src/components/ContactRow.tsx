@@ -2,11 +2,12 @@ import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
-import { Avatar } from './Avatar';
+import { CategoryGlyph } from './CategoryGlyph';
 import { colors, spacing } from '../theme';
 
 type ContactRowProps = {
   name: string;
+  categorySlug: string;
   role?: string;
   company?: string;
   city?: string;
@@ -16,17 +17,13 @@ type ContactRowProps = {
   onToggleFavorite: () => void;
 };
 
-/**
- * Directory list row: initials avatar, name, one meta line, favourite toggle.
- * The mockups put an avatar on every row — see Avatar for why these are
- * initials on a brand gradient rather than photographs.
- */
-export function ContactRow({ name, role, company, city, rowHeight, favorite, onPress, onToggleFavorite }: ContactRowProps) {
+/** Directory list row with a category pictogram rather than a portrait. */
+export function ContactRow({ name, categorySlug, role, company, city, rowHeight, favorite, onPress, onToggleFavorite }: ContactRowProps) {
   const bg = useRef(new Animated.Value(0)).current;
 
   const backgroundColor = bg.interpolate({
     inputRange: [0, 1],
-    outputRange: ['rgba(255,255,255,0)', 'rgba(255,255,255,0.05)'],
+    outputRange: ['rgba(33,107,54,0)', 'rgba(33,107,54,0.06)'],
   });
 
   const metaLine = [role, company, city].filter(Boolean).join(' · ');
@@ -39,7 +36,7 @@ export function ContactRow({ name, role, company, city, rowHeight, favorite, onP
         onPressOut={() => Animated.timing(bg, { toValue: 0, duration: 150, useNativeDriver: false }).start()}
         style={[styles.row, { height: rowHeight }]}
       >
-        <Avatar name={name} size="md" />
+        <View style={styles.categoryIcon}><CategoryGlyph slug={categorySlug} size={24} color={colors.accent} /></View>
         <View style={styles.text}>
           <AppText variant="bodyStrong" numberOfLines={1}>
             {name}
@@ -81,4 +78,5 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: 2,
   },
+  categoryIcon: { width: 48, height: 48, borderRadius: 24, backgroundColor: colors.accentSoft, alignItems: 'center', justifyContent: 'center' },
 });

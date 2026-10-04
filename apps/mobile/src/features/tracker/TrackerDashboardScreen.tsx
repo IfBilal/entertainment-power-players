@@ -104,7 +104,7 @@ export function TrackerDashboardScreen({ navigation }: Props) {
           </Card>
         </View>
 
-        <Button label="Log Activity" onPress={() => navigation.navigate('LogActivity')} />
+        <Button label="Log Activity" fullWidth onPress={() => navigation.navigate('LogActivity')} />
       </ScrollView>
 
     </Screen>
@@ -113,11 +113,11 @@ export function TrackerDashboardScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   content: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl },
-  heading: { marginBottom: spacing.sm },
-  tabs: { flexDirection: 'row', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
+  heading: { marginBottom: spacing.md, textAlign: 'center' },
+  tabs: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, borderBottomWidth: 1, borderBottomColor: colors.border, paddingBottom: spacing.sm },
   activeTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, backgroundColor: colors.accentSoft },
   historyTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, borderWidth: 1, borderColor: colors.border },
-  date: { marginTop: spacing.md, marginBottom: spacing.sm },
+  date: { marginTop: spacing.md, marginBottom: spacing.sm, textAlign: 'center' },
   editGoals: { alignSelf: 'flex-end', paddingVertical: spacing.xs, marginBottom: spacing.sm },
   progressWrap: { alignItems: 'center', marginVertical: spacing.md },
   progressCopy: {

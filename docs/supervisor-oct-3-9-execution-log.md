@@ -45,3 +45,13 @@ The browser-rendered before frame confirms the dark concert-crowd intro. Browser
 - Finish the asset/visible-string audit and review [the proposed light direction](supervisor-light-ui-direction.md) before the five-screen implementation gate.
 
 Do not mark Phase 0 passed or the five redesigned screens delivered from the green automated tests alone.
+
+## Phase 1 — priority mobile screens (started 4 October 2026)
+
+Status: **implementation in progress; acceptance gate open**. The supervisor's message, not the old dark mockups, governs this redesign.
+
+The first pass changes the native startup canvas and shared mobile palette to white, uses Inter with 18 sp primary button labels, removes the dark navigation treatment, and introduces one slug-based category glyph resolver. Fashion now uses sunglasses and Sports a basketball regardless of server icon metadata. Splash, directory grid/list, contact detail, tracker dashboard, and challenge track list have been restyled without replacing their live data and navigation paths. The decorative ellipsis on contact detail was removed because it had no action.
+
+An isolated **development-web-only** preview can now render these screens with synthetic fixture data. A local headless browser captured compact/tall 360×800 and 390×844 frames in `/tmp/epp-phase1-refresh/`; the five priority frames visually show the white canvas, icons, city, contact actions, centered `1/5` tracker ratio, and selected challenges. These are review aids, **not native Android screenshots** and not proof of Supabase persistence. The preview route is compiled only under `__DEV__` and web.
+
+After this pass, `apps/mobile` typecheck passes and Jest reports 34 suites / 91 tests passed. The runner still emits substantial pre-existing React `act(...)` warnings. The priority-screen gate remains open for real-device interaction/persistence smoke, screen recording, native startup/icon review, large-font/system-dark checks, and Bilal's visual review. The five frames have not been privately sent outside this workspace.

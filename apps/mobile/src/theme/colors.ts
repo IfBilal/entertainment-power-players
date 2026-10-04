@@ -1,57 +1,46 @@
-/**
- * EPP dark theme. Near-black surfaces carrying a green-teal undertone (sampled
- * from the client mockups, docs/ui-*.png) with the brand's lime->orange
- * gradient as the single source of accent. Both accent hues come straight out
- * of the logo (docs/brand-logo-mark.png): lime #90D010 and orange #F05000.
- *
- * Surfaces are deliberately not pure black — #050F11 rather than #000 — so the
- * aurora light-leaks and card borders have something to sit against.
- */
+/** Semantic light palette from the supervisor's white/minimal brief.
+ * The logo's bright lime and orange remain artwork accents; text and controls
+ * use darker green/orange values that stay readable on white. */
 export const colors = {
-  // Surfaces — a near-black ramp with a green-teal cast
-  background: '#050F11',
-  backgroundDeep: '#000A0C',
-  surface: '#0B1A17',
-  surfaceSubtle: '#091412',
-  surfaceStrong: '#12211C',
-  surfaceRaised: '#14231E',
-  surfaceTranslucent: 'rgba(255, 255, 255, 0.04)',
+  background: '#FFFFFF',
+  backgroundDeep: '#FFFFFF',
+  surface: '#FFFFFF',
+  surfaceSubtle: '#F7F9F7',
+  surfaceStrong: '#EDF3ED',
+  surfaceRaised: '#FFFFFF',
+  surfaceTranslucent: 'rgba(255, 255, 255, 0.88)',
 
-  // Hairline borders — alpha over the dark ground, never a solid grey
-  border: 'rgba(255, 255, 255, 0.08)',
-  borderSubtle: 'rgba(255, 255, 255, 0.05)',
-  borderStrong: 'rgba(255, 255, 255, 0.14)',
+  border: '#DCE4DC',
+  borderSubtle: '#EBF0EB',
+  borderStrong: '#BECBBE',
 
-  // Ink — white ramped down by opacity rather than greying toward the bg
-  ink: '#FFFFFF',
-  textPrimary: '#FFFFFF',
-  textSecondary: 'rgba(255, 255, 255, 0.68)',
-  textTertiary: 'rgba(255, 255, 255, 0.50)',
-  textMuted: 'rgba(255, 255, 255, 0.38)',
-  textInverse: '#06120E',
+  ink: '#142019',
+  textPrimary: '#142019',
+  textSecondary: '#526258',
+  textTertiary: '#68776D',
+  textMuted: '#68776D',
+  textInverse: '#FFFFFF',
 
-  // Accent — the brand gradient's two ends, plus the amber from the star
-  accent: '#90D010',
-  accentLime: '#90D010',
-  accentOrange: '#F05000',
-  accentAmber: '#F0A010',
-  accentDeep: '#108010',
-  accentSoft: 'rgba(144, 208, 16, 0.16)',
-  accentFaint: 'rgba(144, 208, 16, 0.08)',
-  accentSoftText: '#B6E64A',
-  accentOrangeSoft: 'rgba(240, 80, 0, 0.16)',
+  accent: '#216B36',
+  accentLime: '#216B36',
+  accentOrange: '#B63E11',
+  accentAmber: '#8F5B00',
+  accentDeep: '#174E2A',
+  accentSoft: 'rgba(33, 107, 54, 0.10)',
+  accentFaint: 'rgba(33, 107, 54, 0.06)',
+  accentSoftText: '#216B36',
+  accentOrangeSoft: 'rgba(182, 62, 17, 0.10)',
 
-  // Feedback — tuned for legibility on a dark ground
-  success: '#6FD13B',
-  successSoft: 'rgba(111, 209, 59, 0.14)',
-  danger: '#FF6B5A',
-  dangerSoft: 'rgba(255, 107, 90, 0.14)',
-  warning: '#F0A010',
-  warningSoft: 'rgba(240, 160, 16, 0.14)',
-  info: '#5FC8D8',
-  infoSoft: 'rgba(95, 200, 216, 0.14)',
+  success: '#17753C',
+  successSoft: 'rgba(23, 117, 60, 0.10)',
+  danger: '#B42318',
+  dangerSoft: 'rgba(180, 35, 24, 0.09)',
+  warning: '#8F5B00',
+  warningSoft: 'rgba(143, 91, 0, 0.10)',
+  info: '#196A9A',
+  infoSoft: 'rgba(25, 106, 154, 0.10)',
 
-  overlay: 'rgba(0, 6, 8, 0.72)',
+  overlay: 'rgba(20, 32, 25, 0.38)',
 } as const;
 
 export type ColorToken = keyof typeof colors;

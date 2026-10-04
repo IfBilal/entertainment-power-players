@@ -151,6 +151,7 @@ export function ContactListScreen({ route, navigation }: Props) {
           renderItem={({ item }) => (
             <ContactRow
               name={item.name}
+              categorySlug={item.categorySlug}
               role={item.role}
               company={item.company ?? undefined}
               city={item.city ?? undefined}

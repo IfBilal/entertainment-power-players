@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Avatar, Button, Card, EmptyState, Screen, Tag } from '../../components';
+import { AppText, Button, Card, CategoryGlyph, EmptyState, Screen, Tag } from '../../components';
 import { colors, radius, spacing } from '../../theme';
 import { fetchCategories, fetchContactById } from '../../services/supabase/directory';
 import { activityQueryKey, createActivity } from '../../services/supabase/activity';
@@ -82,14 +82,19 @@ export function ContactDetailScreen({ route }: Props) {
   return (
     <Screen>
 
-      <View style={styles.topActions}><View /><View style={styles.actionIcons}><Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel="Toggle favourite"><Ionicons name={favorited ? 'star' : 'star-outline'} size={27} color={colors.accentLime} /></Pressable><Ionicons name="ellipsis-horizontal" size={23} color={colors.textSecondary} /></View></View>
+      <View style={styles.topActions}>
+        <Pressable onPress={() => toggleFavorite(contact.id)} accessibilityRole="button" accessibilityLabel={favorited ? 'Remove favourite' : 'Add favourite'}>
+          <Ionicons name={favorited ? 'star' : 'star-outline'} size={27} color={colors.accent} />
+        </Pressable>
+      </View>
       <View style={styles.profile}>
-        <Avatar name={contact.name} size="lg" />
+        <View style={styles.categoryBadge}><CategoryGlyph slug={contact.categorySlug} size={36} color={colors.accent} /></View>
       </View>
       <View style={styles.headerRow}>
         <View style={styles.headerText}>
           <AppText variant="display" style={styles.name}>{contact.name}</AppText>
           <AppText variant="subtitle" color={colors.textSecondary} style={styles.role}>{contact.role}</AppText>
+          {contact.company ? <AppText variant="body" color={colors.textSecondary} style={styles.company}>{contact.company}</AppText> : null}
           {city ? (
             <View style={styles.location}>
               <Ionicons name="location" size={18} color={colors.accentAmber} />
@@ -116,6 +121,7 @@ export function ContactDetailScreen({ route }: Props) {
       <View style={styles.spacer} />
 
       <Button
+        fullWidth
         label={contacted ? 'Added to Tracker' : 'Add to Tracker'}
         onPress={handleMarkContacted}
         disabled={!userId || activityQuery.isPending || activityQuery.isError || contactedState === 'saving' || contacted}
@@ -135,17 +141,18 @@ export function ContactDetailScreen({ route }: Props) {
 }
 
 const styles = StyleSheet.create({
-  topActions: { flexDirection: 'row', justifyContent: 'space-between', marginBottom: spacing.sm },
-  actionIcons: { flexDirection: 'row', gap: spacing.md, alignItems: 'center' },
+  topActions: { flexDirection: 'row', justifyContent: 'flex-end', marginBottom: spacing.sm },
   profile: { alignItems: 'center', marginBottom: spacing.md },
+  categoryBadge: { width: 76, height: 76, borderRadius: 38, backgroundColor: colors.accentSoft, borderWidth: 1, borderColor: colors.border, alignItems: 'center', justifyContent: 'center' },
   headerRow: { alignItems: 'center', marginTop: spacing.xs },
-  headerText: { flex: 1, marginRight: spacing.md },
-  name: { marginTop: spacing.xs },
-  role: { marginTop: spacing.xs },
+  headerText: { alignItems: 'center' },
+  name: { marginTop: spacing.xs, textAlign: 'center' },
+  role: { marginTop: spacing.xs, textAlign: 'center' },
+  company: { marginTop: spacing.xs, textAlign: 'center' },
   location: { flexDirection: 'row', gap: spacing.xs, alignItems: 'center', marginTop: spacing.sm },
-  tags: { flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md },
+  tags: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.md },
   fields: { flexDirection: 'row', marginTop: spacing.lg, gap: spacing.sm },
-  contactAction: { flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.pill },
+  contactAction: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.pill },
   notes: { marginTop: spacing.lg, backgroundColor: colors.surfaceSubtle },
   sectionTitle: { marginBottom: spacing.sm },
   notesText: { marginTop: spacing.xs },

@@ -14,7 +14,7 @@ export const categoryIconOptions: Record<string, { default: IoniconName; alterna
   filmTv: { default: 'film-outline', alternates: ['videocam-outline', 'tv-outline'] },
   gaming: { default: 'game-controller-outline', alternates: ['headset-outline', 'planet-outline'] },
   music: { default: 'musical-notes-outline', alternates: ['mic-outline', 'headset-outline'] },
-  sports: { default: 'trophy-outline', alternates: ['american-football-outline', 'basketball-outline'] },
+  sports: { default: 'basketball-outline', alternates: ['basketball-outline'] },
 };
 
 export const categorySlugToKey: Record<string, keyof typeof categoryIconOptions> = {
@@ -35,7 +35,7 @@ export const trackIcons: Record<string, IoniconName> = {
   'film-tv': 'film-outline',
   gaming: 'game-controller-outline',
   music: 'musical-notes-outline',
-  sports: 'football-outline',
+  sports: 'basketball-outline',
 };
 
 export const tabIcons: Record<string, IoniconName> = {

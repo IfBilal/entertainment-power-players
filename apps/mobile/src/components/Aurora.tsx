@@ -91,6 +91,9 @@ function BrandLines() {
  */
 export function Aurora({ variant = 'standard' }: AuroraProps) {
   const instanceId = useId().replace(/:/g, '');
+  // Kept as a compatibility component until all callers are migrated. The
+  // supervisor's light brief explicitly removes the dark streak/glow layer.
+  if (!legacyBackdropEnabled) return null;
   if (variant === 'streaks') return <Streaks />;
 
   return (
@@ -126,6 +129,8 @@ export function Aurora({ variant = 'standard' }: AuroraProps) {
     </View>
   );
 }
+
+const legacyBackdropEnabled = false;
 
 const styles = StyleSheet.create({
   blob: {

@@ -6,8 +6,8 @@
     "scheme": "com.entertainmentpowerplayers.app",
     "orientation": "portrait",
     "icon": "./assets/app-icon.png",
-    "userInterfaceStyle": "dark",
-    "backgroundColor": "#050F11",
+    "userInterfaceStyle": "light",
+    "backgroundColor": "#FFFFFF",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.entertainmentpowerplayers.app"
@@ -15,7 +15,7 @@
     "android": {
       "package": "com.entertainmentpowerplayers.app",
       "adaptiveIcon": {
-        "backgroundColor": "#050F11",
+        "backgroundColor": "#FFFFFF",
         "foregroundImage": "./assets/app-icon-foreground.png"
       },
       "predictiveBackGestureEnabled": false
@@ -29,7 +29,7 @@
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#050F11",
+          "backgroundColor": "#FFFFFF",
           "image": "./assets/app-icon.png",
           "imageWidth": 120
         }

@@ -2,23 +2,18 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { LinearGradient } from 'expo-linear-gradient';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DirectoryNavigator } from '../features/directory/DirectoryNavigator';
 import { TrackerNavigator } from '../features/tracker/TrackerNavigator';
 import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator';
 import { InspirationNavigator } from '../features/inspiration/InspirationNavigator';
 import { ProfileNavigator } from '../features/profile/ProfileNavigator';
-import { colors, fontFamilies, glows, radius, tabIcons } from '../theme';
+import { colors, fontFamilies, radius, tabIcons } from '../theme';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-/**
- * The active tab in the mockups sits in a glowing tinted pill rather than just
- * changing colour — that bloom is the only thing distinguishing it at a glance
- * on a near-black bar.
- */
+/** A restrained selected pill keeps all five icons legible on the white bar. */
 function TabIcon({ route, color, size, focused }: { route: string; color: string; size: number; focused: boolean }) {
   const focus = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
@@ -58,14 +53,15 @@ export function MainTabNavigator() {
     <Tab.Navigator
       screenOptions={({ route }) => ({
         headerShown: false,
-        tabBarActiveTintColor: colors.accentLime,
+        tabBarActiveTintColor: colors.accent,
         tabBarInactiveTintColor: colors.textSecondary,
         tabBarShowLabel: true,
         tabBarLabelPosition: 'below-icon',
         tabBarBackground: () => <TabBarBackground />,
         tabBarStyle: {
-          backgroundColor: 'transparent',
-          borderTopWidth: 0,
+          backgroundColor: colors.background,
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
           width: '100%',
           height: 68 + insets.bottom,
           paddingTop: 6,
@@ -73,7 +69,7 @@ export function MainTabNavigator() {
           elevation: 0,
         },
         tabBarItemStyle: { flex: 1, width: '20%', minWidth: 0, paddingTop: 2, paddingBottom: 1 },
-        tabBarLabelStyle: { fontFamily: fontFamilies.sansSemiBold, fontSize: 10, marginTop: 2 },
+        tabBarLabelStyle: { fontFamily: fontFamilies.sansSemiBold, fontSize: 11, marginTop: 2 },
         tabBarIcon: ({ color, size, focused }) => (
           <TabIcon route={route.name} color={color} size={size} focused={focused} />
         ),
@@ -89,24 +85,11 @@ export function MainTabNavigator() {
 }
 
 function TabBarBackground() {
-  return (
-    <View style={styles.barBackground} pointerEvents="none">
-      <View style={styles.barSurface} />
-      <LinearGradient
-        colors={[colors.accentLime, colors.accentAmber, colors.accentOrange]}
-        locations={[0, 0.52, 1]}
-        start={{ x: 0, y: 0 }}
-        end={{ x: 1, y: 0 }}
-        style={styles.barAccent}
-      />
-    </View>
-  );
+  return <View style={styles.barBackground} pointerEvents="none" />;
 }
 
 const styles = StyleSheet.create({
-  barBackground: { ...StyleSheet.absoluteFill },
-  barSurface: { ...StyleSheet.absoluteFill, backgroundColor: colors.backgroundDeep, opacity: 0.97 },
-  barAccent: { position: 'absolute', top: 0, left: 0, right: 0, height: 1.5, opacity: 0.72 },
+  barBackground: { ...StyleSheet.absoluteFill, backgroundColor: colors.background },
   iconWrap: {
     width: 46,
     height: 32,
@@ -119,7 +102,7 @@ const styles = StyleSheet.create({
     height: 30,
     borderRadius: radius.pill,
     backgroundColor: colors.accentSoft,
-    ...glows.lime,
-    elevation: 5,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });

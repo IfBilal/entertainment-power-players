@@ -6,6 +6,7 @@ import { IconTile } from './IconTile';
 import { colors, radius, spacing, type GradientToken, type IoniconName } from '../theme';
 
 type CategoryCardProps = {
+  slug: string;
   name: string;
   icon: IoniconName;
   count?: number;
@@ -24,7 +25,7 @@ const AnimatedPressable = Animated.createAnimatedComponent(Pressable);
  * The mockups changed this from a 2-up grid tile to a full-width row, which
  * also gives long category names room to breathe.
  */
-export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillColor, glyphColor }: CategoryCardProps) {
+export function CategoryCard({ slug, name, icon, count, onPress, tone = 'brand', fillColor, glyphColor }: CategoryCardProps) {
   const scale = useRef(new Animated.Value(1)).current;
 
   function pressIn() {
@@ -43,7 +44,7 @@ export function CategoryCard({ name, icon, count, onPress, tone = 'brand', fillC
       accessibilityRole="button"
       accessibilityLabel={name}
     >
-      <IconTile icon={icon} tone={tone} size="md" circle fillColor={fillColor} glyphColor={glyphColor} />
+      <IconTile icon={icon} categorySlug={slug} tone={tone} size="md" circle fillColor={fillColor} glyphColor={glyphColor} />
       <View style={styles.text}>
         <AppText variant="bodyStrong" numberOfLines={1}>
           {name}

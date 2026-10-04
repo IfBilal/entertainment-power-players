@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef } from 'react';
 import { AppState, Platform, View } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import * as SplashScreen from 'expo-splash-screen';
-import { NavigationContainer, DarkTheme } from '@react-navigation/native';
+import { NavigationContainer, DefaultTheme } from '@react-navigation/native';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import { RootNavigator } from './src/navigation/RootNavigator';
@@ -28,6 +28,11 @@ import { colors, useAppFonts } from './src/theme';
 import { AuthDeepLinkHandler } from './src/features/onboarding/AuthDeepLinkHandler';
 import { flushPendingAuthNavigation, rootNavigationRef } from './src/navigation/rootNavigation';
 import { fetchPremiumAccess } from './src/services/supabase/billing';
+import { activityQueryKey } from './src/services/supabase/activity';
+import { goalsQueryKey } from './src/services/supabase/goals';
+import { challengeProgressQueryKey } from './src/services/supabase/challenges';
+import { week3QueryKeys } from './src/types/week3';
+import { computeWeekKey } from './src/utils/weekKey';
 
 SplashScreen.preventAutoHideAsync().catch(() => undefined);
 
@@ -65,17 +70,16 @@ function PremiumForegroundSync() {
   return null;
 }
 
-// Built on DarkTheme, not DefaultTheme: the light base leaves white flashes
-// between screen transitions and a white card colour behind modals.
+// Match the native splash and every transition to the supervisor's white UI.
 const navigationTheme = {
-  ...DarkTheme,
+  ...DefaultTheme,
   colors: {
-    ...DarkTheme.colors,
+    ...DefaultTheme.colors,
     background: colors.background,
     card: colors.background,
     text: colors.textPrimary,
     border: colors.border,
-    primary: colors.accentLime,
+    primary: colors.accent,
   },
 };
 
@@ -88,18 +92,20 @@ function previewScreen() {
   const name = new URLSearchParams(globalThis.location?.search ?? '').get('preview');
   if (!name) return null;
   useAppStore.setState({ isPro: true });
+  useAuthStore.setState({ status: 'signedIn', userId: 'preview-user', selectedTrackSlugs: ['fashion', 'sports'], hydrated: true });
 
   const noop = { navigate: () => {}, goBack: () => {}, replace: () => {} };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const props: any = { navigation: noop, route: { params: {} } };
 
   // Mock only the isolated dev previews; app data remains Supabase-backed.
+  queryClient.setDefaultOptions({ queries: { staleTime: Infinity, retry: false } });
   queryClient.setQueryData(['categories'], [
     { slug: 'fashion', name: 'Fashion', icon: 'shirt-outline', order: 1 },
     { slug: 'film-tv', name: 'Film + TV', icon: 'film-outline', order: 2 },
     { slug: 'gaming', name: 'Gaming', icon: 'game-controller-outline', order: 3 },
     { slug: 'music', name: 'Music', icon: 'musical-notes-outline', order: 4 },
-    { slug: 'sports', name: 'Sports', icon: 'football-outline', order: 5 },
+    { slug: 'sports', name: 'Sports', icon: 'basketball-outline', order: 5 },
   ]);
   queryClient.setQueryData(['categoryCounts'], { fashion: 1842, 'film-tv': 2488, gaming: 1208, music: 1547, sports: 1106 });
   const sampleContacts = [
@@ -111,6 +117,23 @@ function previewScreen() {
   ];
   queryClient.setQueryData(['contacts', 'fashion'], sampleContacts);
   queryClient.setQueryData(['contact', 'alex'], sampleContacts[0]);
+  queryClient.setQueryData(week3QueryKeys.tracks, [
+    { slug: 'fashion', name: 'Fashion', order: 1, active: true },
+    { slug: 'film-tv', name: 'Film + TV', order: 2, active: true },
+    { slug: 'gaming', name: 'Gaming', order: 3, active: true },
+    { slug: 'music', name: 'Music', order: 4, active: true },
+    { slug: 'sports', name: 'Sports', order: 5, active: true },
+  ]);
+  queryClient.setQueryData(['challenges', 'active'], [
+    { id: 'preview-challenge-1', trackSlug: 'fashion', order: 1, title: 'Make a new connection', description: 'Connect with someone in your industry.', type: 'single', target: null, active: true },
+    { id: 'preview-challenge-2', trackSlug: 'sports', order: 1, title: 'Attend an industry event', description: 'Meet other professionals.', type: 'single', target: null, active: true },
+  ]);
+  queryClient.setQueryData(challengeProgressQueryKey('preview-user'), {});
+  const previewWeek = computeWeekKey(new Date());
+  queryClient.setQueryData(goalsQueryKey('preview-user'), { [previewWeek]: { contacts: 5, events: 2, followUps: 3 } });
+  queryClient.setQueryData(activityQueryKey('preview-user'), [
+    { id: 'preview-activity-1', userId: 'preview-user', type: 'contact', title: 'Alex Rivera', contactId: 'alex', challengeId: null, date: new Date().toISOString(), weekKey: previewWeek, notes: null },
+  ]);
 
   switch (name) {
     case 'Tabs':
@@ -199,8 +222,8 @@ export default function App() {
     <View style={{ flex: 1, backgroundColor: colors.background }} onLayout={onLayoutRootView}>
       <SafeAreaProvider>
         <QueryClientProvider client={queryClient}>
-          <AuthCacheGuard />
-          <PremiumForegroundSync />
+          {preview ? null : <AuthCacheGuard />}
+          {preview ? null : <PremiumForegroundSync />}
           <NavigationContainer
             ref={rootNavigationRef}
             onReady={flushPendingAuthNavigation}
@@ -208,9 +231,7 @@ export default function App() {
           >
             <AuthDeepLinkHandler />
             {preview ?? <RootNavigator />}
-            {/* Light glyphs: the app is dark-only, and "dark" would paint the
-                clock and battery near-black against a near-black bar. */}
-            <StatusBar style="light" />
+            <StatusBar style="dark" />
           </NavigationContainer>
         </QueryClientProvider>
       </SafeAreaProvider>

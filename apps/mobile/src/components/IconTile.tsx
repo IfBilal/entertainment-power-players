@@ -1,12 +1,14 @@
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import { CategoryGlyph } from './CategoryGlyph';
 import { colors, gradients, radius, type GradientToken, type IoniconName } from '../theme';
 
 type IconTileSize = 'sm' | 'md' | 'lg';
 
 type IconTileProps = {
   icon: IoniconName;
+  categorySlug?: string;
   /** Which brand gradient fills the tile. */
   tone?: GradientToken;
   size?: IconTileSize;
@@ -31,7 +33,7 @@ const dimensions: Record<IconTileSize, { box: number; glyph: number; radius: num
  * The coloured rounded-square icon holders used for categories, challenge
  * tracks and the log-activity rows in the mockups.
  */
-export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, glyphColor, style }: IconTileProps) {
+export function IconTile({ icon, categorySlug, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, glyphColor, style }: IconTileProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: circle ? d.box / 2 : d.radius };
   const gradient = gradients[tone];
@@ -39,7 +41,7 @@ export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, circ
   if (soft) {
     return (
       <View style={[styles.tile, box, styles.softTile, style]}>
-        <Ionicons name={icon} size={d.glyph} color={gradient.colors[0]} />
+        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={gradient.colors[0]} />}
       </View>
     );
   }
@@ -47,7 +49,7 @@ export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, circ
   if (circle) {
     return (
       <View style={[styles.tile, box, styles.circle, { backgroundColor: fillColor ?? colors.accentOrangeSoft }, style]}>
-        <Ionicons name={icon} size={d.glyph} color={glyphColor ?? gradient.colors[gradient.colors.length - 1]} />
+        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={glyphColor ?? colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={glyphColor ?? gradient.colors[gradient.colors.length - 1]} />}
       </View>
     );
   }
@@ -59,7 +61,7 @@ export function IconTile({ icon, tone = 'brand', size = 'md', soft = false, circ
       end={gradient.end}
       style={[styles.tile, box, style]}
     >
-      <Ionicons name={icon} size={d.glyph} color={colors.textInverse} />
+      {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.textInverse} /> : <Ionicons name={icon} size={d.glyph} color={colors.textInverse} />}
     </LinearGradient>
   );
 }

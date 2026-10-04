@@ -1,9 +1,8 @@
 import { useRef } from 'react';
 import { Animated, Pressable, StyleSheet, View, type PressableProps } from 'react-native';
-import { LinearGradient } from 'expo-linear-gradient';
 import * as Haptics from 'expo-haptics';
 import { AppText } from './AppText';
-import { colors, gradients, radius, spacing } from '../theme';
+import { colors, radius, spacing } from '../theme';
 
 type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'destructive';
 type ButtonSize = 'md' | 'lg';
@@ -69,25 +68,11 @@ export function Button({
       ]}
       {...rest}
     >
-      {variant === 'primary' ? (
-        <LinearGradient
-          colors={[...gradients.brand.colors]}
-          locations={[...gradients.brand.locations]}
-          start={gradients.brand.start}
-          end={gradients.brand.end}
-          style={[styles.surface, sizeStyle]}
-        >
-          <AppText variant="button" color={labelColor(variant)}>
-            {label}
-          </AppText>
-        </LinearGradient>
-      ) : (
-        <View style={[styles.surface, sizeStyle, variantStyles[variant]]}>
-          <AppText variant="button" color={labelColor(variant)}>
-            {label}
-          </AppText>
-        </View>
-      )}
+      <View style={[styles.surface, sizeStyle, variantStyles[variant]]}>
+        <AppText variant="button" color={labelColor(variant)}>
+          {label}
+        </AppText>
+      </View>
     </AnimatedPressable>
   );
 }
@@ -95,7 +80,6 @@ export function Button({
 function labelColor(variant: ButtonVariant) {
   switch (variant) {
     case 'primary':
-      // Dark ink on the bright gradient — white would vanish on the lime end.
       return colors.textInverse;
     case 'destructive':
       return colors.danger;
@@ -120,14 +104,12 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     borderRadius: radius.pill,
   },
-  // Heights measured off the mockups: the primary CTA is 50pt tall and the
-  // secondary/social buttons 46pt.
   base: {
-    height: 46,
+    minHeight: 48,
     paddingHorizontal: spacing.lg,
   },
   lg: {
-    height: 50,
+    minHeight: 54,
     paddingHorizontal: spacing.xl,
   },
   disabled: {
@@ -136,7 +118,7 @@ const styles = StyleSheet.create({
 });
 
 const variantStyles = StyleSheet.create({
-  primary: {},
+  primary: { backgroundColor: colors.accent },
   secondary: {
     backgroundColor: colors.surfaceRaised,
     borderWidth: 1,

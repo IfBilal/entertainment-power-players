@@ -99,8 +99,8 @@ export function ResetPasswordScreen({ navigation }: Props) {
 
 const styles = StyleSheet.create({
   back: { alignSelf: 'flex-start', marginTop: spacing.sm, marginLeft: -spacing.xs },
-  heading: { marginTop: spacing.xxl },
-  subtitle: { marginTop: spacing.sm, marginBottom: spacing.xl, maxWidth: 320 },
+  heading: { marginTop: spacing.xxl, textAlign: 'center' },
+  subtitle: { marginTop: spacing.sm, marginBottom: spacing.xl, maxWidth: 320, alignSelf: 'center', textAlign: 'center' },
   form: { gap: spacing.md },
   cta: { marginTop: spacing.xl },
 });

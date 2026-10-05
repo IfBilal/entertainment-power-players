@@ -57,7 +57,7 @@ export function GoalsEditorScreen({ navigation }: Props) {
 
   return (
     <Screen>
-      <AppText variant="title">Weekly goals</AppText>
+      <AppText variant="title" style={styles.heading}>Weekly goals</AppText>
       <AppText variant="body" color={colors.textSecondary} style={styles.subtitle}>
         One number per activity type — carries forward to next week unless you change it.
       </AppText>
@@ -65,7 +65,7 @@ export function GoalsEditorScreen({ navigation }: Props) {
         <FormField label="CONTACTS" value={contacts} onChangeText={setContacts} keyboardType="number-pad" editable={!goalsQuery.isPending && !goalsQuery.isError} />
         <FormField label="EVENTS" value={events} onChangeText={setEvents} keyboardType="number-pad" editable={!goalsQuery.isPending && !goalsQuery.isError} />
         <FormField label="FOLLOW-UPS" value={followUps} onChangeText={setFollowUps} keyboardType="number-pad" editable={!goalsQuery.isPending && !goalsQuery.isError} />
-        <Button label={saving ? 'Saving…' : 'Save goals'} onPress={save} disabled={!userId || goalsQuery.isPending || goalsQuery.isError || saving} />
+        <Button label={saving ? 'Saving…' : 'Save goals'} size="lg" fullWidth onPress={save} disabled={!userId || goalsQuery.isPending || goalsQuery.isError || saving} />
         {goalsQuery.isError ? (
           <Pressable onPress={() => goalsQuery.refetch()} accessibilityRole="button" accessibilityLabel="Retry loading goals">
             <AppText variant="caption" color={colors.danger}>Couldn't load goals. Tap to retry.</AppText>
@@ -78,6 +78,7 @@ export function GoalsEditorScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
-  subtitle: { marginTop: spacing.xs },
+  heading: { textAlign: 'center' },
+  subtitle: { marginTop: spacing.xs, textAlign: 'center' },
   form: { marginTop: spacing.lg, gap: spacing.md },
 });

@@ -13,6 +13,7 @@ export function LoginScreen({ navigation }: Props) {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [appleNotice, setAppleNotice] = useState(false);
 
   async function handleGoogleLogin() {
     setError(null);
@@ -25,6 +26,10 @@ export function LoginScreen({ navigation }: Props) {
     } finally {
       setSubmitting(false);
     }
+  }
+
+  function handleAppleLogin() {
+    setAppleNotice(true);
   }
 
   async function handleLogin() {
@@ -115,7 +120,7 @@ export function LoginScreen({ navigation }: Props) {
           <SocialButton
             provider="apple"
             label="Continue with Apple"
-            onPress={() => navigation.navigate('SignUp')}
+            onPress={handleAppleLogin}
           />
           <SocialButton
             provider="google"
@@ -123,6 +128,7 @@ export function LoginScreen({ navigation }: Props) {
             onPress={handleGoogleLogin}
             disabled={submitting}
           />
+          {appleNotice ? <AppText variant="caption" color={colors.textSecondary} style={styles.appleNotice}>Apple sign-in isn’t available yet. Use Google or email.</AppText> : null}
         </View>
 
         <Pressable
@@ -145,6 +151,7 @@ export function LoginScreen({ navigation }: Props) {
 // Vertical rhythm mirrors the measured mockup: logo top ~55pt, headline ~158pt,
 // CTA ~419pt, socials ~592/653pt on a 390x844 screen.
 const styles = StyleSheet.create({
+  appleNotice: { textAlign: 'center' },
   content: {
     flexGrow: 1,
     paddingBottom: spacing.lg,

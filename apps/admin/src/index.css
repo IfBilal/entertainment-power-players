@@ -229,32 +229,40 @@ label { display: block; font-size: 0.78rem; font-weight: 600; letter-spacing: 0.
 }
 .row-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-/* The admin panel had no mobile layout at all: a 240px fixed sidebar next to
-   flex:1 content just crushed the content pane on phone widths. Below 768px
-   the sidebar becomes a horizontally-scrollable top bar instead. */
+/* Keep every admin destination discoverable on narrow screens. A single
+   horizontal strip hid all links behind the long brand name on phones. */
 @media (max-width: 768px) {
   .shell { flex-direction: column; min-height: auto; }
   .sidebar {
     width: 100%;
-    flex-direction: row;
-    align-items: center;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     padding: 0.75rem 1rem;
-    gap: 0.3rem;
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    white-space: nowrap;
+    gap: 0.25rem;
   }
-  .sidebar .brand { margin-bottom: 0; flex-shrink: 0; padding-inline: 0.3rem; }
-  .sidebar a { flex-shrink: 0; }
+  .sidebar .brand {
+    grid-column: 1 / -1;
+    margin-bottom: 0.25rem;
+    padding-inline: 0.3rem;
+    font-size: 0.95rem;
+    overflow-wrap: anywhere;
+  }
+  .sidebar a {
+    min-width: 0;
+    justify-content: center;
+    text-align: center;
+    font-size: 0.78rem;
+    padding: 0.6rem 0.25rem;
+  }
+  .sidebar a svg { display: none; }
   .sidebar .spacer { display: none; }
   .sidebar .account {
+    grid-column: 1 / -1;
     border-top: none;
     padding-top: 0;
     margin-top: 0;
-    margin-left: auto;
     flex-direction: row;
-    align-items: center;
-    flex-shrink: 0;
+    justify-content: flex-end;
   }
   .sidebar .account p { display: none; }
   .content { padding: 1.25rem 1rem; }

@@ -104,11 +104,14 @@ const styles = StyleSheet.create({
   },
   heading: {
     marginTop: spacing.xxl,
+    textAlign: 'center',
   },
   subtitle: {
     marginTop: spacing.sm,
     marginBottom: spacing.xl,
     maxWidth: 310,
+    alignSelf: 'center',
+    textAlign: 'center',
   },
   ctaWrap: {
     marginTop: spacing.lg,

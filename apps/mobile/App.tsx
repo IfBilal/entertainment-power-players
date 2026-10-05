@@ -23,6 +23,13 @@ import { ContactListScreen } from './src/features/directory/ContactListScreen';
 import { TrackDetailScreen } from './src/features/challenges/TrackDetailScreen';
 import { ChallengeDetailScreen } from './src/features/challenges/ChallengeDetailScreen';
 import { EditProfileScreen, NotificationsScreen, SubscriptionScreen } from './src/features/profile/ProfileSettingsScreens';
+import { LoginScreen } from './src/features/onboarding/LoginScreen';
+import { SignUpScreen } from './src/features/onboarding/SignUpScreen';
+import { ForgotPasswordScreen } from './src/features/onboarding/ForgotPasswordScreen';
+import { ResetPasswordScreen } from './src/features/onboarding/ResetPasswordScreen';
+import { LogEntryScreen } from './src/features/tracker/LogEntryScreen';
+import { GoalsEditorScreen } from './src/features/tracker/GoalsEditorScreen';
+import { TrackerHistoryScreen } from './src/features/tracker/TrackerHistoryScreen';
 import { useAppStore } from './src/store/useAppStore';
 import { useAuthStore } from './src/store/useAuthStore';
 import { colors, useAppFonts } from './src/theme';
@@ -162,6 +169,14 @@ function previewScreen() {
       return <SplashScreen2 {...props} />;
     case 'IntroSlides':
       return <IntroSlidesScreen {...props} />;
+    case 'Login':
+      return <LoginScreen {...props} />;
+    case 'SignUp':
+      return <SignUpScreen {...props} />;
+    case 'ForgotPassword':
+      return <ForgotPasswordScreen {...props} />;
+    case 'ResetPassword':
+      return <ResetPasswordScreen {...props} />;
     case 'Home':
       return <HomeScreen {...props} />;
     case 'CategoryGrid':
@@ -191,6 +206,13 @@ function previewScreen() {
       return <TrackerDashboardScreen {...props} />;
     case 'LogActivity':
       return <LogActivityScreen {...props} />;
+    case 'LogEntry':
+      props.route.params = { type: previewParams.get('type') === 'event' ? 'event' : previewParams.get('type') === 'followUp' ? 'followUp' : 'contact' };
+      return <LogEntryScreen {...props} />;
+    case 'GoalsEditor':
+      return <GoalsEditorScreen {...props} />;
+    case 'TrackerHistory':
+      return <TrackerHistoryScreen {...props} />;
     case 'Challenges':
       return <TrackListScreen {...props} />;
     case 'TrackDetail':

@@ -78,7 +78,7 @@ export function LogEntryScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <ScrollView contentContainerStyle={styles.form} keyboardShouldPersistTaps="handled">
-        <AppText variant="title">Log {typeLabels[type]}</AppText>
+        <AppText variant="title" style={styles.heading}>Log {typeLabels[type]}</AppText>
         {(type === 'contact' || type === 'followUp') && isPro ? <View style={styles.modeRow}>
           <Pressable accessibilityRole="tab" accessibilityState={{ selected: mode === 'manual' }} onPress={() => { setMode('manual'); setContactId(null); setTitle(''); }} style={[styles.modeButton, mode === 'manual' && styles.modeActive]}><AppText variant="captionStrong">Manual name</AppText></Pressable>
           <Pressable accessibilityRole="tab" accessibilityState={{ selected: mode === 'directory' }} onPress={() => { setMode('directory'); setTitle(''); }} style={[styles.modeButton, mode === 'directory' && styles.modeActive]}><AppText variant="captionStrong">Directory contact</AppText></Pressable>
@@ -113,7 +113,7 @@ export function LogEntryScreen({ route, navigation }: Props) {
           onChangeText={setNotes}
           multiline
         />
-        <Button label={saving ? 'Saving…' : 'Save'} onPress={save} disabled={!title.trim() || !userId || saving || (mode === 'directory' && !contactId)} />
+        <Button label={saving ? 'Saving…' : 'Save'} size="lg" fullWidth onPress={save} disabled={!title.trim() || !userId || saving || (mode === 'directory' && !contactId)} />
         {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save this activity. Please try again.</AppText> : null}
       </ScrollView>
     </Screen>
@@ -121,6 +121,7 @@ export function LogEntryScreen({ route, navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  heading: { textAlign: 'center' },
   form: { paddingTop: spacing.lg, paddingBottom: spacing.xl, gap: spacing.md },
   modeRow: { flexDirection: 'row', gap: spacing.sm },
   modeButton: { flex: 1, alignItems: 'center', padding: spacing.sm, borderRadius: 12, borderWidth: 1, borderColor: colors.border },

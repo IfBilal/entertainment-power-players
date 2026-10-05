@@ -8,22 +8,28 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { activityQueryKey, deleteActivity } from '../../services/supabase/activity';
 import type { ActivityEntry } from '../../services/mock/tracker';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 
 const typeLabels = { contact: 'Contact', event: 'Event', followUp: 'Follow-up', challenge: 'Challenge' } as const;
 
 function HistoryRow({ entry, last, deleting, onDelete }: { entry: ActivityEntry; last: boolean; deleting: boolean; onDelete: () => void }) {
   const offset = useRef(new Animated.Value(0)).current;
   const [revealed, setRevealed] = useState(false);
+  const reduceMotion = useReducedMotion();
+  const settle = (show: boolean) => {
+    if (reduceMotion) offset.setValue(show ? -92 : 0);
+    else Animated.spring(offset, { toValue: show ? -92 : 0, useNativeDriver: true }).start();
+  };
   const swipe = useMemo(() => PanResponder.create({
     onMoveShouldSetPanResponder: (_, gesture) => entry.type !== 'challenge' && Math.abs(gesture.dx) > 15 && Math.abs(gesture.dx) > Math.abs(gesture.dy) * 1.3,
     onPanResponderMove: (_, gesture) => offset.setValue(Math.max(-92, Math.min(0, gesture.dx + (revealed ? -92 : 0)))),
     onPanResponderRelease: (_, gesture) => {
       const show = gesture.dx < -45 || (revealed && gesture.dx < 35);
       setRevealed(show);
-      Animated.spring(offset, { toValue: show ? -92 : 0, useNativeDriver: true }).start();
+      settle(show);
     },
-    onPanResponderTerminate: () => Animated.spring(offset, { toValue: revealed ? -92 : 0, useNativeDriver: true }).start(),
-  }), [entry.type, offset, revealed]);
+    onPanResponderTerminate: () => settle(revealed),
+  }), [entry.type, offset, revealed, reduceMotion]);
 
   return <View style={styles.swipeContainer}>
     {entry.type !== 'challenge' ? <Pressable accessibilityRole="button" accessibilityLabel={`Delete ${entry.title}`} onPress={onDelete} disabled={deleting} style={styles.deleteAction}>
@@ -40,7 +46,7 @@ function HistoryRow({ entry, last, deleting, onDelete }: { entry: ActivityEntry;
         <AppText variant="caption" color={colors.textSecondary}>{typeLabels[entry.type]}</AppText>
         {entry.notes ? <AppText variant="caption" color={colors.textSecondary}>{entry.notes}</AppText> : null}
       </View>
-      {entry.type !== 'challenge' ? <Pressable accessibilityRole="button" accessibilityLabel={`Reveal delete for ${entry.title}`} onPress={() => { setRevealed(true); Animated.spring(offset, { toValue: -92, useNativeDriver: true }).start(); }} style={styles.revealButton}>
+      {entry.type !== 'challenge' ? <Pressable accessibilityRole="button" accessibilityLabel={`Reveal delete for ${entry.title}`} onPress={() => { setRevealed(true); settle(true); }} style={styles.revealButton}>
         <Ionicons name="chevron-back-outline" size={18} color={colors.textTertiary} />
       </Pressable> : null}
     </Animated.View>
@@ -112,13 +118,14 @@ export function TrackerHistoryScreen() {
 }
 
 const styles = StyleSheet.create({
-  heading: { marginBottom: spacing.sm },
+  heading: { marginBottom: spacing.sm, textAlign: 'center' },
   group: { marginBottom: spacing.lg },
   swipeContainer: { overflow: 'hidden', minHeight: 65 },
   deleteAction: { position: 'absolute', right: 0, top: 0, bottom: 0, width: 92, backgroundColor: colors.danger, alignItems: 'center', justifyContent: 'center' },
   row: {
     flexDirection: 'row',
     alignItems: 'flex-start',
+    minHeight: 65,
     backgroundColor: colors.background,
   },
   revealButton: { padding: spacing.md },

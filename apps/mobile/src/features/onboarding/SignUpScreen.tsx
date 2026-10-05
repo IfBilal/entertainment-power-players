@@ -16,6 +16,7 @@ export function SignUpScreen({ navigation }: Props) {
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
+  const [appleNotice, setAppleNotice] = useState(false);
 
   async function handleEmailSignUp() {
     setError(null);
@@ -58,7 +59,7 @@ export function SignUpScreen({ navigation }: Props) {
     // but Apple sign-in needs an Apple Developer account the project does
     // not have yet (docs/week2-implementation-plan.md decision #1). Saying so
     // beats a button that silently does nothing.
-    setError('Apple sign-in isn’t set up yet — use Google or email for now.');
+    setAppleNotice(true);
   }
 
   return (
@@ -144,6 +145,7 @@ export function SignUpScreen({ navigation }: Props) {
             onPress={handleGoogleSignUp}
             disabled={submitting}
           />
+          {appleNotice ? <AppText variant="caption" color={colors.textSecondary} style={styles.appleNotice}>Apple sign-in isn’t available yet. Use Google or email.</AppText> : null}
         </View>
 
         <Pressable
@@ -164,6 +166,7 @@ export function SignUpScreen({ navigation }: Props) {
 }
 
 const styles = StyleSheet.create({
+  appleNotice: { textAlign: 'center' },
   content: {
     flexGrow: 1,
     paddingBottom: spacing.lg,
@@ -176,9 +179,12 @@ const styles = StyleSheet.create({
   },
   heading: {
     marginBottom: spacing.xs,
+    textAlign: 'center',
   },
   subtitle: {
     maxWidth: 300,
+    alignSelf: 'center',
+    textAlign: 'center',
   },
   /** Hairline under the intro block, as the mockup has. */
   rule: {

@@ -3,7 +3,6 @@ import { Animated, Easing, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Path, Stop } from 'react-native-svg';
-import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, CategoryGlyph, IconTile, Screen } from '../../components';
 import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
@@ -15,7 +14,7 @@ type Slide = {
   title: string;
   body: string;
   hero?: boolean;
-  tiles?: Array<{ icon: IoniconName; tone: GradientToken }>;
+  tiles?: Array<{ slug: string; tone: GradientToken }>;
   stat?: boolean;
 };
 
@@ -64,11 +63,11 @@ const slides: Slide[] = [
     title: 'Take on Challenges.',
     body: 'Complete industry-backed challenges and build your career, one step at a time.',
     tiles: [
-      { icon: 'film-outline', tone: 'ember' },
-      { icon: 'musical-notes-outline', tone: 'green' },
-      { icon: 'game-controller-outline', tone: 'ember' },
-      { icon: 'basketball-outline', tone: 'green' },
-      { icon: 'glasses-outline', tone: 'brand' },
+      { slug: 'film-tv', tone: 'ember' },
+      { slug: 'music', tone: 'green' },
+      { slug: 'gaming', tone: 'ember' },
+      { slug: 'sports', tone: 'green' },
+      { slug: 'fashion', tone: 'brand' },
     ],
   },
 ];
@@ -136,14 +135,14 @@ function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
         const hue = warm ? colors.accentOrange : colors.accentLime;
         return (
           <View
-            key={t.icon}
+            key={t.slug}
             style={[
               styles.cascadeCard,
               { borderColor: `${hue}55` },
             ]}
           >
             <LinearGradient colors={[`${hue}16`, colors.surface]} style={StyleSheet.absoluteFill} />
-            <Ionicons name={t.icon} size={38} color={hue} />
+            <CategoryGlyph slug={t.slug} size={38} color={hue} />
           </View>
         );
       })}

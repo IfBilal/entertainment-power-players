@@ -1,45 +1,56 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '../lib/supabase';
-import { CATEGORY_ICON_OPTIONS } from '../lib/categoryIcons';
+import { canonicalCategoryIcon } from '../lib/categoryIcons';
 import { CategoryIconGlyph } from '../lib/iconGlyphs';
 
 type Category = {
   slug: string;
   name: string;
-  icon: string;
   order: number;
 };
 
-export function CategoriesPage() {
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(true);
+const previewCategories: Category[] = [
+  { slug: 'fashion', name: 'Fashion', order: 1 },
+  { slug: 'film-tv', name: 'Film/TV', order: 2 },
+  { slug: 'gaming', name: 'Gaming', order: 3 },
+  { slug: 'music', name: 'Music', order: 4 },
+  { slug: 'sports', name: 'Sports', order: 5 },
+];
+
+export function CategoriesPage({ preview = false }: { preview?: boolean }) {
+  const [categories, setCategories] = useState<Category[]>(preview ? previewCategories : []);
+  const [loading, setLoading] = useState(!preview);
   const [savingSlug, setSavingSlug] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [savedSlug, setSavedSlug] = useState<string | null>(null);
 
   async function load() {
     setLoading(true);
-    const { data, error: loadError } = await supabase.from('categories').select('slug, name, icon, "order"').order('order');
+    const { data, error: loadError } = await supabase.from('categories').select('slug, name, "order"').order('order');
     if (loadError) setError(loadError.message);
     else setCategories(data as Category[]);
     setLoading(false);
   }
 
   useEffect(() => {
-    load();
-  }, []);
+    if (!preview) void load();
+  }, [preview]);
 
   function updateLocal(slug: string, patch: Partial<Category>) {
     setCategories((prev) => prev.map((c) => (c.slug === slug ? { ...c, ...patch } : c)));
   }
 
   async function save(category: Category) {
+    if (preview) {
+      setSavedSlug(category.slug);
+      return;
+    }
     setSavingSlug(category.slug);
     setError(null);
     setSavedSlug(null);
     const { error: saveError } = await supabase
       .from('categories')
-      .update({ name: category.name, icon: category.icon, order: category.order })
+      .update({ name: category.name, order: category.order })
       .eq('slug', category.slug);
     if (saveError) setError(saveError.message);
     else setSavedSlug(category.slug);
@@ -51,11 +62,12 @@ export function CategoriesPage() {
       <div>
         <h1>Categories</h1>
         <p className="muted small">
-          Name, order and icon. Changes appear in the app immediately — no app update needed.
+          Edit names and order. Category icons are fixed to the supervisor-approved set and stay consistent across the app and admin.
         </p>
       </div>
 
       {error ? <p className="error small">{error}</p> : null}
+      {preview ? <p className="muted small">Development preview only — changes are not saved.</p> : null}
       {loading ? <p className="muted small">Loading…</p> : null}
 
       {categories.map((category) => (
@@ -63,7 +75,7 @@ export function CategoriesPage() {
           <div className="row between">
             <div className="row" style={{ gap: '0.7rem' }}>
               <span className="pill-icon">
-                <CategoryIconGlyph icon={category.icon} size={17} />
+                <CategoryIconGlyph icon={canonicalCategoryIcon(category.slug)} size={17} />
               </span>
               <h2 style={{ margin: 0 }}>{category.name}</h2>
             </div>
@@ -90,23 +102,7 @@ export function CategoriesPage() {
             </div>
           </div>
 
-          <div>
-            <label>Icon</label>
-            <div className="icon-grid">
-              {CATEGORY_ICON_OPTIONS.map((icon) => (
-                <button
-                  key={icon}
-                  type="button"
-                  className={`icon-swatch${category.icon === icon ? ' selected' : ''}`}
-                  onClick={() => updateLocal(category.slug, { icon })}
-                  title={icon}
-                  aria-pressed={category.icon === icon}
-                >
-                  <CategoryIconGlyph icon={icon} size={20} />
-                </button>
-              ))}
-            </div>
-          </div>
+          {canonicalCategoryIcon(category.slug) === 'shapes-outline' ? <p className="error small">This category slug has no approved icon. Review it before publishing.</p> : null}
 
           <div className="row">
             <button onClick={() => save(category)} disabled={savingSlug === category.slug}>

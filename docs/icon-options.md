@@ -1,15 +1,13 @@
-# Category icon options (Week 1)
+# Category icon specification (supervisor brief, 3 October)
 
-Prepared per the handbook (§1: "no category icon hardcoded"; §5: "icon selection from the bundled icon set"). These are Ionicons (bundled with Expo via `@expo/vector-icons`, no extra asset pipeline needed) so the admin panel can offer a picker without shipping custom art. Defined in `apps/mobile/src/theme/icons.ts`.
+The supervisor's later direction supersedes the older Week 1 option grid. Category icons are fixed by stable slug; an admin cannot substitute apparel, trophy, football, portraits, or unrelated glyphs. The existing database `icon` column is legacy metadata and does not control the visible glyph in the app or admin UI.
 
-| Category | Default | Alternates | Rationale |
-|---|---|---|---|
-| Fashion | `glasses-outline` (sunglasses) | `shirt-outline`, `diamond-outline` | Sunglasses is the handbook's own example (§4.8) |
-| Film/TV | `film-outline` | `videocam-outline`, `tv-outline` | Film reel reads instantly as the category |
-| Gaming | `game-controller-outline` | `headset-outline`, `planet-outline` | Controller is the handbook's own example (§4.8) |
-| Music | `musical-notes-outline` | `mic-outline`, `headset-outline` | Universally recognizable |
-| Sports | `trophy-outline` | `american-football-outline`, `basketball-outline` | Trophy is sport-agnostic; ball icons are code-specific alternates |
+| Stable slug | Visible label | Approved pictogram |
+|---|---|---|
+| `fashion` | Fashion | Sunglasses |
+| `film-tv` | Film/TV | Film strip/camera |
+| `gaming` | Gaming | Game controller |
+| `music` | Music | Musical notes |
+| `sports` | Sports | Basketball |
 
-All icons are line/outline style to match the "clean, bright, minimalist" direction (§4.8) and render at a single accent colour (`colors.accent`) or neutral grey depending on selected/unselected state.
-
-**Signed off** — defaults above approved as-is.
+The mobile resolver is `CategoryGlyph`; admin uses `canonicalCategoryIcon(slug)` and matching local SVG paths. Unknown slugs display a neutral shapes icon and receive an admin warning. No new bitmap or third-party icon asset is required. This mapping preserves stable slugs and avoids changing live category rows during the UI migration. A later data-cleanup migration may normalize legacy `icon` values once all consumers have been audited, but the UI must not rely on it.

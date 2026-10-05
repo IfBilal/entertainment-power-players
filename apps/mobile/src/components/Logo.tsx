@@ -25,7 +25,7 @@ export function Logo({ variant = 'full', width = 160, style }: LogoProps) {
       source={variant === 'full' ? logoFull : logoMark}
       style={[{ width, height: width / ratios[variant] }, style]}
       contentFit="contain"
-      accessibilityLabel="Entertainment Power Players"
+      accessibilityLabel="Entertainment Power Players®"
     />
   );
 }

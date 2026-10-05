@@ -3,7 +3,7 @@ import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, IconTile, Screen } from '../../components';
-import { colors, radius, spacing, trackIcons } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 import { useTracks } from '../../hooks/useContent';
 import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -71,7 +71,7 @@ export function TrackPickerScreen(_props: Props) {
               accessibilityState={{ checked: isSelected }}
               accessibilityLabel={item.name}
             >
-              <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} size="lg" circle fillColor={index % 2 === 0 ? colors.accentOrangeSoft : colors.accentSoft} glyphColor={hue} />
+              <IconTile icon="shapes-outline" categorySlug={item.slug} size="lg" circle fillColor={index % 2 === 0 ? colors.accentOrangeSoft : colors.accentSoft} glyphColor={hue} />
               <AppText variant="bodyStrong" style={styles.cardLabel}>
                 {item.name}
               </AppText>

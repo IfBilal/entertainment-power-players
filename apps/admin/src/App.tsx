@@ -28,6 +28,10 @@ export default function App() {
     );
   }
 
+  if (import.meta.env.DEV && new URLSearchParams(window.location.search).get('preview') === 'categories') {
+    return <BrowserRouter><div className="shell"><nav className="sidebar"><div className="brand"><img className="brand-mark" src={logoMark} alt="EPP" />Entertainment Power Players® Admin</div><a href="#">Dashboard</a><a href="#">Contacts</a><a className="active" href="#">Categories</a><a href="#">Quotes</a><a href="#">Tracks</a></nav><main className="content"><CategoriesPage preview /></main></div></BrowserRouter>;
+  }
+
   if (!isSupabaseConfigured) {
     return (
       <div className="centered">

@@ -31,6 +31,7 @@ it('shows a recoverable error when a contact method cannot open', async () => {
     fireEvent.press(await screen.findByLabelText('Directory'));
     fireEvent.press(await screen.findByLabelText('Fashion category, 1 contact'));
     expect(await screen.findByLabelText('Fashion category')).toBeTruthy();
+    expect(await screen.findByText('Jane Doe')).toBeTruthy();
     expect(screen.getByLabelText('Jump to J').props.accessibilityState?.disabled).toBeFalsy();
     expect(screen.getByLabelText('Jump to Z').props.accessibilityState?.disabled).toBe(true);
     fireEvent.press(await screen.findByText('Jane Doe'));

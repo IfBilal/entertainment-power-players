@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Card, EmptyState, IconTile, Screen } from '../../components';
-import { colors, spacing, trackIcons, type GradientToken } from '../../theme';
+import { colors, spacing, type GradientToken } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
@@ -63,7 +63,7 @@ export function TrackListScreen({ navigation }: Props) {
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })} accessibilityRole="button" accessibilityLabel={"Open " + item.name + " track"}>
               <Card style={styles.row} elevation="none">
                 <View style={styles.rowTop}>
-                  <IconTile icon={trackIcons[item.slug] ?? 'star-outline'} categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="lg" circle fillColor={palette.fill} glyphColor={palette.glyph} />
+                  <IconTile icon="shapes-outline" categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="lg" circle fillColor={palette.fill} glyphColor={palette.glyph} />
                   <View style={styles.text}><AppText variant="subtitle">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{!isPro ? 'Premium track' : challengesQuery.isPending ? 'Loading progress…' : done + '/' + total + ' completed'}</AppText></View>
                   <AppText variant="title" color={palette.glyph}>›</AppText>
                 </View>

@@ -140,7 +140,7 @@ const styles = StyleSheet.create({
   activeTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, backgroundColor: colors.accentSoft },
   historyTab: { paddingHorizontal: spacing.md, paddingVertical: spacing.sm, borderRadius: 16, borderWidth: 1, borderColor: colors.border },
   date: { marginTop: spacing.md, marginBottom: spacing.sm, textAlign: 'center' },
-  editGoals: { alignSelf: 'flex-end', paddingVertical: spacing.xs, marginBottom: spacing.sm },
+  editGoals: { alignSelf: 'center', paddingVertical: spacing.xs, marginBottom: spacing.sm },
   progressWrap: { alignItems: 'center', marginVertical: spacing.lg },
   ringHalo: { padding: 12, borderRadius: 112, backgroundColor: colors.accentFaint },
   progressCopy: {

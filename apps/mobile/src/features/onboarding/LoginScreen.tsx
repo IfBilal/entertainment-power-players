@@ -51,7 +51,7 @@ export function LoginScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen aurora="warm">
+    <Screen>
       <ScrollView
         contentContainerStyle={styles.content}
         keyboardShouldPersistTaps="handled"

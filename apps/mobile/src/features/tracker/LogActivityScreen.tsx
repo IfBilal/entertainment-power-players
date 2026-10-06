@@ -17,8 +17,8 @@ export function LogActivityScreen({ navigation }: Props) {
   return (
     <Screen>
       <Pressable onPress={() => navigation.goBack()} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>
-      <AppText variant="display">Log Activity</AppText>
-      <AppText variant="subtitle" color={colors.textSecondary} style={styles.prompt}>What would you like to log?</AppText>
+      <AppText variant="display" style={styles.heading}>Log Activity</AppText>
+      <AppText variant="subtitle" color={colors.textSecondary} style={[styles.heading, styles.prompt]}>What would you like to log?</AppText>
       <View style={styles.options}>
         {options.map((option) => (
           <Pressable key={option.type} onPress={() => navigation.navigate('LogEntry', { type: option.type })} style={styles.option}>
@@ -34,6 +34,7 @@ export function LogActivityScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   back: { marginBottom: spacing.md, marginLeft: -spacing.sm },
   prompt: { marginTop: spacing.sm },
+  heading: { textAlign: 'center' },
   options: { gap: spacing.md, marginTop: spacing.lg },
   option: { flexDirection: 'row', alignItems: 'center', gap: spacing.md, padding: spacing.md, borderRadius: 18, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   copy: { flex: 1, gap: 4 },

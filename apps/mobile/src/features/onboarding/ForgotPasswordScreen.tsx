@@ -30,7 +30,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
 
   if (sent) {
     return (
-      <Screen aurora="streaks">
+      <Screen>
         <AppText variant="display" style={styles.heading}>
           Check your email
         </AppText>
@@ -43,7 +43,7 @@ export function ForgotPasswordScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen aurora="streaks">
+    <Screen>
       <Pressable
         onPress={() => navigation.goBack()}
         hitSlop={12}
@@ -120,7 +120,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     gap: spacing.sm,
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
     marginTop: spacing.lg,
     paddingVertical: spacing.sm,
   },

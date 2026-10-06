@@ -5,7 +5,7 @@ import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Avatar, Card, ProgressBar, ProgressRing, Screen } from '../../components';
-import { colors, radius, spacing, type IoniconName } from '../../theme';
+import { colors, metricAccents, radius, spacing, type IoniconName } from '../../theme';
 import { countsForWeek, type WeeklyGoals } from '../../services/mock/tracker';
 import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { useUserGoals } from '../../hooks/useUserGoals';
@@ -24,11 +24,10 @@ type Metric = {
   colour: string;
 };
 
-// Brand-family metric colours, distinct while remaining readable on white.
 const metrics: Metric[] = [
-  { key: 'contacts', label: 'Contacts', icon: 'radio-button-on', tone: 'barAmber', colour: '#FDB90B' },
-  { key: 'events', label: 'Events', icon: 'ellipse', tone: 'barLime', colour: '#72D222' },
-  { key: 'followUps', label: 'Follow-ups', icon: 'ellipse', tone: 'barOrange', colour: '#FA6100' },
+  { key: 'contacts', label: 'Contacts', icon: 'radio-button-on', tone: 'barAmber', colour: metricAccents.contacts },
+  { key: 'events', label: 'Events', icon: 'ellipse', tone: 'barLime', colour: metricAccents.events },
+  { key: 'followUps', label: 'Follow-ups', icon: 'ellipse', tone: 'barOrange', colour: metricAccents.followUps },
 ];
 
 const quickAccess: Array<{ label: string; icon: IoniconName; tab: keyof MainTabParamList }> = [
@@ -71,7 +70,7 @@ export function HomeScreen({ navigation }: Props) {
   const firstName = (displayName ?? '').trim().split(/\s+/)[0] || 'there';
 
   return (
-    <Screen padded={false} aurora={false}>
+    <Screen padded={false}>
       <ScrollView
         contentContainerStyle={styles.content}
         showsVerticalScrollIndicator={false}

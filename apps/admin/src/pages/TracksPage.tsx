@@ -115,7 +115,7 @@ export function TracksPage() {
                 value={track.name}
                 onChange={(e) => updateLocal(track.slug, { name: e.target.value })}
                 onBlur={() => save(track)}
-                style={{ fontFamily: 'var(--font-serif)', fontWeight: 600, fontSize: '1.05rem', border: 'none', padding: '0.2rem 0', width: 220 }}
+                style={{ fontFamily: 'var(--font-sans)', fontWeight: 600, fontSize: '1.05rem', border: 'none', padding: '0.2rem 0', width: 220 }}
               />
               <p className="muted small" style={{ margin: 0 }}>{track.slug}</p>
             </div>

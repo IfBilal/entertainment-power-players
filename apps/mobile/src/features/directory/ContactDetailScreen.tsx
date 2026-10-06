@@ -186,7 +186,7 @@ const styles = StyleSheet.create({
   location: { flexDirection: 'row', gap: spacing.xs, alignItems: 'center', marginTop: spacing.sm },
   tags: { flexDirection: 'row', justifyContent: 'center', gap: spacing.sm, marginTop: spacing.md },
   fields: { flexDirection: 'row', marginTop: spacing.lg, gap: spacing.sm },
-  contactAction: { flex: 1, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingVertical: 12, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.pill },
+  contactAction: { flex: 1, minWidth: 0, minHeight: 48, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 4, paddingHorizontal: spacing.xs, paddingVertical: 12, borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.pill },
   notes: { marginTop: spacing.lg, backgroundColor: colors.surfaceSubtle },
   sectionTitle: { marginBottom: spacing.sm },
   notesText: { marginTop: spacing.xs },

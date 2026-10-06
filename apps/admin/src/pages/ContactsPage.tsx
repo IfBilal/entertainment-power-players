@@ -255,7 +255,7 @@ export function ContactsPage({ preview = false }: { preview?: boolean }) {
       </div>
 
       {formOpen ? (
-        <div className="centered" style={{ position: 'fixed', inset: 0, background: 'rgba(34,27,20,0.45)', zIndex: 10 }}>
+        <div className="centered" style={{ position: 'fixed', inset: 0, background: 'var(--overlay)', zIndex: 10 }}>
           <form className="card stack" style={{ maxWidth: 560, width: '92%' }} onSubmit={handleSave}>
             <h2>{editing ? 'Edit contact' : 'Add contact'}</h2>
 

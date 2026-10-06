@@ -44,7 +44,7 @@ export function TrackPickerScreen(_props: Props) {
   }
 
   return (
-    <Screen aurora={false}>
+    <Screen>
       <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>FIND YOUR FOCUS</AppText>
       <AppText variant="display" style={styles.heading}>
         Choose Your Tracks

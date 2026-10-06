@@ -112,7 +112,7 @@ function previewScreen() {
   queryClient.setDefaultOptions({ queries: { staleTime: Infinity, retry: false } });
   queryClient.setQueryData(['categories'], [
     { slug: 'fashion', name: 'Fashion', icon: 'shirt-outline', order: 1 },
-    { slug: 'film-tv', name: 'Film + TV', icon: 'film-outline', order: 2 },
+    { slug: 'film-tv', name: 'Film/TV', icon: 'film-outline', order: 2 },
     { slug: 'gaming', name: 'Gaming', icon: 'game-controller-outline', order: 3 },
     { slug: 'music', name: 'Music', icon: 'musical-notes-outline', order: 4 },
     { slug: 'sports', name: 'Sports', icon: 'basketball-outline', order: 5 },

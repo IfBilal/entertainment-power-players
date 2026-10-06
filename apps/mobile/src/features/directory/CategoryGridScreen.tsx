@@ -3,7 +3,7 @@ import { useMemo, useState } from 'react';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useQuery } from '@tanstack/react-query';
 import { AppText, CategoryCard, ErrorState, Screen, Skeleton } from '../../components';
-import { colors, spacing, type IoniconName } from '../../theme';
+import { categoryPalette, colors, neutralCategoryPalette, spacing, type IoniconName } from '../../theme';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { fetchCategories, fetchCategoryCounts } from '../../services/supabase/directory';
 import type { DirectoryStackParamList } from '../../navigation/types';
@@ -22,8 +22,6 @@ export function CategoryGridScreen({ navigation }: Props) {
   }, [categories, search]);
   const counts = countsQuery.data ?? {};
   const total = Object.values(counts).reduce((sum, n) => sum + n, 0);
-  const fills: Record<string, string> = { fashion: '#FFF2E8', 'film-tv': '#EAF5EE', gaming: '#EEF6E9', music: '#FFF6E6', sports: '#E8F4F4' };
-  const glyphs: Record<string, string> = { fashion: '#A94812', 'film-tv': '#216B36', gaming: '#337326', music: '#8F5B00', sports: '#196A73' };
 
   return (
     <Screen padded={false}>
@@ -75,7 +73,7 @@ export function CategoryGridScreen({ navigation }: Props) {
           )
         }
         renderItem={({ item, index }) => (
-          <CategoryCard slug={item.slug} name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={fills[item.slug]} glyphColor={glyphs[item.slug]} entranceIndex={index}
+          <CategoryCard slug={item.slug} name={item.name} icon={item.icon as IoniconName} count={counts[item.slug]} fillColor={(categoryPalette[item.slug] ?? neutralCategoryPalette).fill} glyphColor={(categoryPalette[item.slug] ?? neutralCategoryPalette).glyph} entranceIndex={index}
             onPress={() => navigation.navigate('ContactList', { categorySlug: item.slug })} />
         )}
       />

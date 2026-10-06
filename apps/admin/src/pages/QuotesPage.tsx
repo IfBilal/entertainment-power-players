@@ -140,7 +140,7 @@ export function QuotesPage() {
       </div>
 
       {formOpen ? (
-        <div className="centered" style={{ position: 'fixed', inset: 0, background: 'rgba(34,27,20,0.45)', zIndex: 10 }}>
+        <div className="centered" style={{ position: 'fixed', inset: 0, background: 'var(--overlay)', zIndex: 10 }}>
           <form className="card split-form" onSubmit={handleSave}>
             <div className="stack" style={{ minWidth: 320, flex: 1 }}>
               <h2>{editing ? 'Edit quote' : 'Add quote'}</h2>

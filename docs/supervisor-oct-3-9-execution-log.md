@@ -79,3 +79,27 @@ Later 4 October visual-depth pass: kept the white canvas, Inter typography, cent
 5 October deployment update: after commit `ac0eb6c` was pushed to `main`, the Vercel alias still served old dark CSS; automatic Git-linked deployment did not occur. A fresh-cache Vercel CLI recovered the authenticated session and deployed the local admin build manually to production. Deployment `dpl_4XW4EXYDNYArA2VaF25yHXTu9Z3d` is READY, and the public alias now serves the new light CSS/JS hashes. Signed-out login was captured at 390×844 from production in `/tmp/epp-phase2-admin-deployed/`. Live EPP category rows were re-read via Supabase MCP without mutation. Phase 2 remains open for authenticated deployed CRUD and native clean-install/keyboard/safe-area/accessibility/device flows; no device/emulator or iOS toolchain is attached, and no APK was built.
 
 Two regression tests now pin the honest Apple placeholder on both login and signup, including that login does not navigate to signup. Mobile typecheck and the full 38 suites/96 tests pass after this addition.
+
+### Phase 2 completion pass (5 October 2026, local, not pushed or deployed)
+
+Code changes in this pass:
+- Removed the dark `Aurora` layer: component, `aurora` props on `Screen` and all callers, and the dead `auroras`, `glows` and `photoScrim` tokens.
+- Moved category pictogram colours and the Home metric colours out of feature screens into `apps/mobile/src/theme/accents.ts`.
+- Corrected stale comments that described the old dark UI (`theme/fonts.ts`, `SocialButton`).
+- `Button` is centred by default. Disabled buttons use a neutral surface with secondary-text colour instead of `opacity: 0.4`, which put white text on a faded green at about 2:1 contrast.
+- Centred the intro slide counter, the forgot-password "Back to login" link, the tracker "Edit weekly goals" link and the Log Activity heading. Equalised the contact Call/Email/Website pills.
+- Admin: switched from DM Sans to Inter to match mobile, removed the serif variable name and the decorative dot texture, and replaced the brown modal backdrops with a single `--overlay` token.
+- Development preview fixture uses the canonical `Film/TV` label.
+
+Automated evidence on the final code:
+- Mobile: typecheck passes. Jest runs 39 suites / 102 tests, all passing. New file `src/__tests__/lightThemeContract.test.ts` (6 tests) checks white surfaces, WCAG AA contrast of text and accents on white, the five approved category palettes, no dark literal backgrounds, no aurora or JPEG renders, and a single `®` after every visible full brand name.
+- Admin: typecheck passes. Vitest runs 23 tests, all passing (21 previously plus `brandContract.test.ts`). The production build passed after the CSS changes, before the final test file was added.
+
+Visual evidence (private, outside Git): compact 360×800 and tall 390×844 frames rendered with a DevTools-driven headless Chrome at true viewport size. Earlier headless captures were clamped to a 500 px window, which gave false overflow, so they were discarded. Frames live in `/tmp/claude-1000-phase2/` (mobile `current/`, admin `admin/`), with a complete final pass in `final/`. Admin frames at 1280×800 and 390×844 are for the categories and contacts previews only.
+
+Not done in this pass, and still open:
+- Production admin deploy was refused by the auto-mode permission check, so the deployed site still serves the pre-pass build (`dpl_4XW4EXYDNYArA2VaF25yHXTu9Z3d`). Deploying the current admin build needs an explicit go-ahead.
+- Authenticated admin CRUD, including category Save, needs an admin login. Other admin pages (home, import, quotes, tracks, challenges) need the same login for their captures.
+- No Android device or emulator and no iOS toolchain are attached. Clean install, keyboard, safe-area, large font, system dark, reduced motion and native URL handlers cannot be marked passed from browser frames.
+- Track names in the seed data still read "Film + TV" while the category reads "Film/TV". This is content in the database and was not changed.
+- Admin section and list headers left-align within a centred column, which the plan allows for lists.

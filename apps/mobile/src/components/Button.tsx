@@ -65,13 +65,12 @@ export function Button({
       style={[
         styles.shell,
         fullWidth && styles.fullWidth,
-        disabled && styles.disabled,
         { transform: [{ scale }] },
       ]}
       {...rest}
     >
-      <View style={[styles.surface, sizeStyle, variantStyles[variant]]}>
-        <AppText variant="button" color={labelColor(variant)}>
+      <View style={[styles.surface, sizeStyle, disabled ? styles.disabledSurface : variantStyles[variant]]}>
+        <AppText variant="button" color={disabled ? colors.textSecondary : labelColor(variant)}>
           {label}
         </AppText>
       </View>
@@ -96,7 +95,7 @@ const styles = StyleSheet.create({
   shell: {
     borderRadius: radius.pill,
     overflow: 'hidden',
-    alignSelf: 'flex-start',
+    alignSelf: 'center',
   },
   fullWidth: {
     alignSelf: 'stretch',
@@ -114,8 +113,11 @@ const styles = StyleSheet.create({
     minHeight: 54,
     paddingHorizontal: spacing.xl,
   },
-  disabled: {
-    opacity: 0.4,
+  // Neutral, not faded: a washed-out brand colour fails contrast with white text.
+  disabledSurface: {
+    backgroundColor: colors.surfaceStrong,
+    borderWidth: 1,
+    borderColor: colors.border,
   },
 });
 

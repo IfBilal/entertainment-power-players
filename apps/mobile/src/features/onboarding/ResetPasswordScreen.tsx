@@ -39,7 +39,7 @@ export function ResetPasswordScreen({ navigation }: Props) {
   }
 
   return (
-    <Screen aurora="streaks">
+    <Screen>
       <Pressable
         onPress={() => navigation.goBack()}
         hitSlop={12}

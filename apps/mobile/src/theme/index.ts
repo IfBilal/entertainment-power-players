@@ -1,5 +1,5 @@
 export { colors } from './colors';
-export { gradients, auroras, glows } from './gradients';
+export { gradients } from './gradients';
 export { spacing, radius } from './spacing';
 export { typography } from './typography';
 export { shadows } from './shadows';
@@ -7,9 +7,10 @@ export { motion, easing } from './motion';
 export { tabIcons } from './icons';
 export { fontFamilies, useAppFonts } from './fonts';
 export type { ColorToken } from './colors';
-export type { GradientToken, AuroraToken, GlowToken } from './gradients';
+export type { GradientToken } from './gradients';
 export type { SpacingToken, RadiusToken } from './spacing';
 export type { TypographyToken } from './typography';
 export type { ShadowToken } from './shadows';
 export type { MotionToken } from './motion';
 export type { IoniconName } from './icons';
+export { categoryPalette, neutralCategoryPalette, metricAccents } from './accents';

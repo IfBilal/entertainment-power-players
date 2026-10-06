@@ -2,22 +2,17 @@ import { useEffect, useRef } from 'react';
 import { Animated, Easing, StyleSheet, View, type ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useIsFocused } from '@react-navigation/native';
-import { Aurora } from './Aurora';
-import { colors, spacing, type AuroraToken } from '../theme';
+import { colors, spacing } from '../theme';
 import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type ScreenProps = ViewProps & {
   padded?: boolean;
   animateIn?: boolean;
-  /** Corner light-leaks behind the content. `false` for screens that supply
-   *  their own backdrop (onboarding photography, the share card). */
-  aurora?: AuroraToken | 'streaks' | false;
 };
 
 export function Screen({
   padded = true,
   animateIn = true,
-  aurora = 'standard',
   style,
   children,
   ...rest
@@ -50,7 +45,6 @@ export function Screen({
 
   return (
     <View style={styles.root}>
-      {aurora !== false ? <Aurora variant={aurora} /> : null}
       <SafeAreaView style={styles.safeArea} edges={['top', 'bottom']}>
         <Animated.View
           style={[

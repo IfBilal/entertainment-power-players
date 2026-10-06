@@ -1,6 +1,5 @@
 export { AppText } from './AppText';
 export { Screen } from './Screen';
-export { Aurora } from './Aurora';
 export { Avatar, initials } from './Avatar';
 export { CategoryGlyph } from './CategoryGlyph';
 export { IconTile } from './IconTile';

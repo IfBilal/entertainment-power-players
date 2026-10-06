@@ -15,7 +15,7 @@ const providers = {
   google: { icon: 'logo-google', color: '#EA4335' },
 } as const;
 
-/** Dark pill with a hairline border, brand glyph then label centred as a
+/** Light pill with a hairline border, brand glyph then label centred as a
  *  group — the Apple/Google rows shared by Login and Sign Up. */
 export function SocialButton({ provider, label, onPress, disabled }: SocialButtonProps) {
   const { icon, color } = providers[provider];

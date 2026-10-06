@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Card, EmptyState, IconTile, Screen } from '../../components';
-import { colors, spacing, type GradientToken } from '../../theme';
+import { categoryPalette, colors, spacing, type GradientToken } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
@@ -21,13 +21,6 @@ export function TrackListScreen({ navigation }: Props) {
   const isPro = useAppStore((state) => state.isPro);
   const [tab, setTab] = useState<'mine' | 'all'>('mine');
   const tones: GradientToken[] = ['barOrange', 'green', 'brand', 'barLime', 'ember', 'barAmber'];
-  const palettes: Record<string, { fill: string; glyph: string }> = {
-    fashion: { fill: '#FFF2E8', glyph: '#A94812' },
-    'film-tv': { fill: '#EAF5EE', glyph: '#216B36' },
-    gaming: { fill: '#EEF6E9', glyph: '#337326' },
-    music: { fill: '#FFF6E6', glyph: '#8F5B00' },
-    sports: { fill: '#E8F4F4', glyph: '#196A73' },
-  };
 
   const sorted = (tab === 'mine' ? tracks.filter((track) => selectedSlugs.includes(track.slug)) : [...tracks]).sort((a, b) => {
     const aSelected = selectedSlugs.includes(a.slug);
@@ -58,7 +51,7 @@ export function TrackListScreen({ navigation }: Props) {
           const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === item.slug);
           const total = challenges.length;
           const done = challenges.filter((challenge) => progress[challenge.id]?.status === 'complete').length;
-          const palette = palettes[item.slug] ?? { fill: colors.accentSoft, glyph: colors.accent };
+          const palette = categoryPalette[item.slug] ?? { fill: colors.accentSoft, glyph: colors.accent };
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })} accessibilityRole="button" accessibilityLabel={"Open " + item.name + " track"}>
               <Card style={styles.row} elevation="none">

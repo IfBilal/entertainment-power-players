@@ -7,7 +7,7 @@ import { AppText, Avatar, Button, FormField, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
-import { requestEmailChange } from '../../services/supabase/auth';
+import { assertEmailAvailable, requestEmailChange } from '../../services/supabase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
 import { defaultNotificationPrefs, fetchNotificationPrefs, updateNotificationPrefs, updateProfile, type NotificationPrefs } from '../../services/supabase/profile';
 import { fetchSubscriptionStatus } from '../../services/supabase/billing';
@@ -66,6 +66,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
     }
     setSendingEmailLink(true);
     try {
+      await assertEmailAvailable(email);
       await requestEmailChange(email);
       setEmailLinkSent(true);
     } catch (err) {

@@ -51,6 +51,36 @@ export async function sendPasswordResetEmail(email: string) {
   if (error) throw error;
 }
 
+/** Thrown when the new address already belongs to another account. */
+export class EmailInUseError extends Error {
+  constructor() {
+    super('This email is already in use by another account. Try a different email.');
+    this.name = 'EmailInUseError';
+  }
+}
+
+/** Thrown when the member has used up their email checks for the hour. */
+export class EmailCheckRateLimitedError extends Error {
+  constructor() {
+    super('Too many email checks. Please wait an hour and try again.');
+    this.name = 'EmailCheckRateLimitedError';
+  }
+}
+
+/**
+ * Asks the server whether `email` is free. Throws EmailInUseError when another
+ * account already uses it, so the caller never sends a verification email to
+ * an address that cannot be confirmed.
+ */
+export async function assertEmailAvailable(email: string) {
+  const { data, error } = await supabase.rpc('email_is_available', { candidate: email.trim() });
+  if (error) {
+    if (error.message.includes('rate_limited')) throw new EmailCheckRateLimitedError();
+    throw new Error(error.message);
+  }
+  if (data !== true) throw new EmailInUseError();
+}
+
 export async function requestEmailChange(email: string) {
   const { data, error } = await supabase.auth.updateUser(
     { email: email.trim() },

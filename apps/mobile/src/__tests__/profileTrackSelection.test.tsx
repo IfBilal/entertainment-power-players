@@ -45,7 +45,7 @@ describe('profile track selection', () => {
     await renderWithProviders(<RootNavigator />);
     fireEvent.press(await screen.findByText('Profile'));
     fireEvent.press(await screen.findByText('Track Selection'));
-    fireEvent.press(await screen.findByText('Film + TV'));
+    fireEvent.press(await screen.findByText('Film/TV'));
 
     expect(updateSelectedTracks).toHaveBeenCalledWith('test-user', ['fashion', 'film-tv']);
     expect(useAuthStore.getState().selectedTrackSlugs).toEqual(['fashion', 'film-tv']);

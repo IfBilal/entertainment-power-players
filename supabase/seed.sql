@@ -25,7 +25,7 @@ on conflict (id) do update set min_version = excluded.min_version, paywall_copy 
 insert into tracks (slug, name, "order", active) values
   ('creators-producers', 'Creators + Producers', 1, true),
   ('fashion', 'Fashion', 2, true),
-  ('film-tv', 'Film + TV', 3, true),
+  ('film-tv', 'Film/TV', 3, true),
   ('gaming', 'Gaming', 4, true),
   ('music', 'Music', 5, true),
   ('sports', 'Sports', 6, true)

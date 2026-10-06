@@ -131,7 +131,7 @@ function previewScreen() {
     : sampleContacts[0]);
   queryClient.setQueryData(week3QueryKeys.tracks, [
     { slug: 'fashion', name: 'Fashion', order: 1, active: true },
-    { slug: 'film-tv', name: 'Film + TV', order: 2, active: true },
+    { slug: 'film-tv', name: 'Film/TV', order: 2, active: true },
     { slug: 'gaming', name: 'Gaming', order: 3, active: true },
     { slug: 'music', name: 'Music', order: 4, active: true },
     { slug: 'sports', name: 'Sports', order: 5, active: true },

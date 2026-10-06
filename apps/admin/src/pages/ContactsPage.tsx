@@ -58,7 +58,7 @@ export function ContactsPage({ preview = false }: { preview?: boolean }) {
 
   useEffect(() => {
     if (preview) {
-      setCategories([{ slug: 'fashion', name: 'Fashion' }, { slug: 'film-tv', name: 'Film + TV' }]);
+      setCategories([{ slug: 'fashion', name: 'Fashion' }, { slug: 'film-tv', name: 'Film/TV' }]);
       setContacts([
         { id: '1', name: 'Alex Rivera', category_slug: 'fashion', role: 'Stylist', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },
         { id: '2', name: 'Amara Singh', category_slug: 'fashion', role: 'Casting Director', company: null, email: null, phone: null, website: null, city: null, notes: null, active: true },

@@ -40,7 +40,7 @@
     },
     {
       "slug": "film-tv",
-      "name": "Film + TV",
+      "name": "Film/TV",
       "order": 3,
       "active": true,
       "challenges": [

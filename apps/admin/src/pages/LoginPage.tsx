@@ -1,45 +1,6 @@
 import { useState, type FormEvent } from 'react';
 import { supabase } from '../lib/supabase';
-
-/**
- * Abstract "connections" brand motif for the visual panel -- marching-ants
- * lines + pulsing nodes give the panel real, gentle movement instead of a
- * flat gradient, without looking like a developer architecture diagram.
- */
-function ConnectionMotif() {
-  const nodes: Array<[number, number, number, number]> = [
-    [60, 80, 4, 0],
-    [180, 160, 5, 0.8],
-    [320, 110, 4, 1.6],
-    [140, 300, 5, 0.4],
-    [280, 360, 4, 1.2],
-    [330, 460, 4, 2],
-    [40, 420, 4, 1.8],
-  ];
-  const lines: Array<[number, number, number, number]> = [
-    [60, 80, 180, 160],
-    [180, 160, 320, 110],
-    [180, 160, 140, 300],
-    [140, 300, 280, 360],
-    [280, 360, 330, 460],
-    [140, 300, 40, 420],
-  ];
-
-  return (
-    <svg className="auth-orbit-svg" viewBox="0 0 400 520" preserveAspectRatio="xMidYMid slice" aria-hidden="true">
-      <g className="motif-lines">
-        {lines.map(([x1, y1, x2, y2], i) => (
-          <line key={i} x1={x1} y1={y1} x2={x2} y2={y2} />
-        ))}
-      </g>
-      <g className="motif-nodes">
-        {nodes.map(([cx, cy, r, delay], i) => (
-          <circle key={i} cx={cx} cy={cy} r={r} style={{ animationDelay: `${delay}s` }} />
-        ))}
-      </g>
-    </svg>
-  );
-}
+import logoMark from '../assets/brand-logo-mark.png';
 
 export function LoginPage() {
   const [email, setEmail] = useState('');
@@ -60,21 +21,12 @@ export function LoginPage() {
 
   return (
     <div className="auth-shell">
-      <div className="auth-visual">
-        <ConnectionMotif />
-        <div className="visual-brand">
-          <span className="mark">P</span>
-          Entertainment Power Players®
-        </div>
-        <div className="visual-copy">
-          <div className="eyebrow">Admin access</div>
-          <h2>Where entertainment careers get built.</h2>
-          <p>Manage the directory, tracks, and inspiration your members see every day.</p>
-        </div>
-        <p className="visual-foot">Entertainment Power Players® &middot; Internal tool</p>
-      </div>
-
       <div className="auth-panel">
+        <div className="auth-brand">
+          <img src={logoMark} alt="" className="auth-logo" />
+          <span className="auth-wordmark-text">ENTERTAINMENT POWER PLAYERS®</span>
+        </div>
+
         <form className="auth-card stack" onSubmit={handleSubmit}>
           <div>
             <h1 style={{ fontSize: '1.35rem' }}>Log in</h1>

@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, Switch, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { AppText, Button, FormField, Screen } from '../../components';
+import { AppText, Avatar, Button, FormField, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
@@ -55,9 +55,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   }
 
   const avatarName = name.trim() || displayName || 'Your profile';
-  const avatarInitials = avatarName === 'Your profile'
-    ? '?'
-    : avatarName.split(/\s+/).filter(Boolean).map((part) => part[0]).slice(0, 2).join('').toUpperCase();
+  const avatarSource = avatarName === 'Your profile' ? '' : avatarName;
 
   async function sendEmailChangeLink() {
     setEmailError(null);
@@ -82,9 +80,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
       <Back onPress={() => navigation.goBack()} />
       <AppText variant="title">Edit Profile</AppText>
       <View style={styles.editAvatar}>
-        <View style={styles.avatar}>
-          <AppText variant="title" color={colors.textInverse}>{avatarInitials}</AppText>
-        </View>
+        <Avatar name={avatarSource} size="lg" />
       </View>
       <View style={styles.form}>
         <FormField label="Full name" value={name} onChangeText={setName} />

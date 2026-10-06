@@ -1,33 +1,56 @@
 # Phase 2 light-theme route and state QA matrix
 
-Updated 5 October 2026. This is execution evidence for [the supervisor plan](supervisor-oct-3-9-implementation-plan.md), not a claim that every route has passed. Bilal accepted Phase 1 visuals in Expo Go. Browser `?preview=` captures use synthetic development-only data; they do not prove native layout, Supabase writes, store purchases, or admin authorization.
+Updated 6 October 2026. This is execution evidence for [the supervisor plan](supervisor-oct-3-9-implementation-plan.md). Browser `?preview=` captures use synthetic development-only data, so they show layout and state, not native behaviour, Supabase writes or store purchases.
 
-Legend: **reviewed** = code plus available browser frame reviewed; **tested** = an automated behavior test exists and passed; **open** = no sufficient route/state evidence yet. Private captures are outside Git under `/tmp/`.
+Legend: **visual** = frame reviewed at 360×800 and 390×844; **locked** = gated state frame reviewed; **tested** = automated behaviour test passed; **device open** = needs a physical phone or emulator, not yet run.
 
-| Area / route | Visual/state evidence | Functional evidence / open checks |
+Frames: the full route pass is in `/tmp/claude-1000-phase2/final/` and the locked-state frames are in `/tmp/claude-1000-phase2/locked/`. These are private captures outside Git.
+
+| Area / route | Visual evidence | Functional evidence / device open |
 |---|---|---|
-| Splash | Reviewed at 360×800 and 390×844; Bilal approved Expo Go appearance | Fast-auth race test passes; fresh native icon/startup and offline path remain separate QA |
-| Intro slides 1–3 | Reviewed at 360×800; slide 2 width regression and slide 3 icon symmetry corrected | Bilal approved the repaired appearance; next/back/get-started route smoke still needed |
-| Login / signup / forgot / reset / callback | Login, signup, forgot, and reset reviewed at 360×800 and 390×844 in `/tmp/epp-phase2-followons/`, `/tmp/epp-phase2-recheck/` and `/tmp/epp-phase2-followons-large/`; form headings centered. Apple placeholder now gives an honest inline notice rather than navigating to signup. Callback has no standalone screen. | Auth routing/deep-link tests and the two new Apple-placeholder regression tests pass; real email/Google and keyboard/safe-area matrix open |
-| Track picker | Reviewed at 360×800 with five fixed category glyphs; selected state via code | Track-save path unchanged; first-signup live save/reopen confirmation open |
-| Home / five tabs | Home and navigation reviewed at 360×800; category/icon audit ongoing | Tab-navigation tests pass; portrait-only layout configured; large text/system-dark pass open |
-| Directory grid/list | Reviewed at compact/tall sizes, including locked/empty list states | Search/filter/A–Z/contact navigation tests pass; loading/error/native scrolling spot check open |
-| Contact detail | Reviewed at compact/tall, locked and long-content states | Methods/error/favorite/tracker tests pass; native URL handlers and premium state spot check open |
-| Tracker / log selector / forms / goals / history | Log selector, contact log form, goals editor and history reviewed at 360×800 and 390×844 in `/tmp/epp-phase2-followons/`, `/tmp/epp-phase2-recheck/` and `/tmp/epp-phase2-followons-large/`. The untouched history row no longer exposes its red delete action; forms now use centered headings and full-width CTAs. | Activity, goals, history and week tests pass; native keyboard, swipe delete, week rollover spot check open |
-| Challenges / track / detail | Reviewed at compact/tall, locked/empty states | Progress/note persistence and navigation tests pass; live admin edit/deactivation and target-change spot check open |
-| Inspiration / Saved / share | Quote feed and hero reviewed at 360×800 with synthetic preview quotes | Save/share tests pass; share image/light export on physical phone open |
-| Paywall / Profile subscription | Paywall reviewed at 360×800; monthly/annual cards visible | Navigation/billing bridge tests pass; live store flow belongs to Phase 6, not this visual pass |
-| Profile / edit / notifications / settings | Profile, edit, subscription and notifications reviewed at 360×800; synthetic profile previews cannot establish live preference loading. | Name, selected-track and preference tests pass; keyboard, validation, logout and account actions open |
-| Admin login / contacts | Light login and contacts previews available from earlier pass | Admin auth and CRUD on deployed site open |
-| Admin categories | Reviewed at 1280×800 and 390×844 in `/tmp/epp-phase2-admin/`, then rechecked at 390×844 in `/tmp/epp-phase2-admin-recheck/`; fixed five-icon mapping tested. Narrow admin navigation is now visible without horizontal scrolling. | Preview is read-only/synthetic; authenticated live Save and deployed-site check open |
-| Admin home / import / quotes / tracks / challenges | Light CSS applied; route-by-route captures open | Admin suite/build pass; authenticated CRUD and table responsiveness open |
+| Splash | Visual, white canvas, `®` on wordmark | Fast-auth race test passed; native icon and cold start are device open |
+| Intro slides 1–3 | Visual; counter now centred; sunglasses and basketball shown | Next/back/get-started route smoke: device open |
+| Login / sign-up / forgot / reset | Visual; disabled buttons neutral and readable; back link centred | Apple placeholder tests passed; real email/Google sign-in and deep link return: device open |
+| Track picker | Visual; symmetrical five-card grid | First-sign-up save and reopen: device open |
+| Home | Visual; ring and bars centred | Tab navigation tests passed; large text and system dark: device open |
+| Directory (categories) | Visual; "Film/TV" label; sunglasses/basketball glyphs | Search, filter, A–Z tests passed; scroll and loading on device: device open |
+| Directory (contact list) | Visual; A–Z rail, filter, glyph medallion | Locked state visual: paywall replaces list |
+| Contact detail | Visual; Call/Email/Website pills equal width at 360 px | Method, favourite and tracker tests passed; native URL handlers: device open |
+| Tracker dashboard | Visual; "Edit weekly goals" centred | Activity and goals tests passed; week rollover on device: device open |
+| Log activity / log entry | Visual; heading centred; disabled Save readable | Form tests passed; keyboard on device: device open |
+| Goals editor | Visual; centred heading and CTA | Goals persistence tests passed |
+| Tracker history | Visual; centred heading; section labels left inside centred column | History tests passed; swipe delete on device: device open |
+| Challenges / track list | Visual; locked "Premium track" state reviewed | Progress tests passed; live admin edit on device: device open |
+| Track detail / challenge detail | Visual; progress ring centred; primary action clear | Stable-ID progress tests passed |
+| Inspiration | Visual; featured quote centred; share and save buttons | Save and share tests passed; share image on physical phone: device open |
+| Paywall | Visual; preview labelled "Test plan" | Billing bridge tests passed; store purchase belongs to Phase 6 |
+| Subscription | Visual; preview states shown | Live entitlement: Phase 6 |
+| Profile | Visual; initials avatar, centred title | Name and track tests passed |
+| Edit profile | Visual; neutral person placeholder when no name (was a stray "?") | Validation, save and logout: device open |
+| Notifications | Visual; toggles readable | Preference persistence test passed; live load: device open |
+| Locked states | Visual for category, contact list, challenges and track detail: each shows the centred unlock prompt or "Premium track" | Entitlement is enforced by server rules; device check open |
+| Empty and error states | Preview error lines reviewed (no backend in preview) | Live empty/error on device: device open |
 
-## Current source and asset audit
+## Admin
 
-- Mobile roots/native config request white/light appearance; `Screen` uses white and the aurora is suppressed under the supervisor brief. Visible people photos are not rendered: profile avatars show initials and the old concert image is no longer referenced by runtime code. The historical `assets/onboarding-concert.png` is still stored but not bundled by a render path.
-- `CategoryGlyph` is the mobile slug-based source of truth. Admin now calls `canonicalCategoryIcon(slug)`, so Fashion renders sunglasses and Sports a basketball even though the live EPP category rows still store legacy `diamond-outline`/`trophy-outline` values. The admin selector no longer permits reintroducing old choices. Unknown slugs show neutral shapes plus a warning. No production category row was mutated for this UI mapping.
-- Visible full-brand strings and the mobile `Logo` accessibility label include `®`; `logo-full.png` artwork contains a single registered mark. Dark standalone app-icon artwork still deserves a separate native/brand check; it is not being silently counted as passed.
-- The light admin build was deployed to [production](https://entertainment-power-players-admin.vercel.app) as Vercel deployment `dpl_4XW4EXYDNYArA2VaF25yHXTu9Z3d` (READY). The public alias serves the same `index-CejnyL85.css` and `index-mK0h45t-.js` assets as the local build. A signed-out deployed login capture at 390×844 is `/tmp/epp-phase2-admin-deployed/Login-390x844.png`. Authenticated deployed CRUD, including category Save, remains unverified without a usable admin browser session.
-- Before manual deployment, the public endpoint served old dark CSS (`index-C9pcPuI6.css`). The CLI session was recovered with a clean package cache; `vercel whoami` succeeded and `vercel deploy --prod --yes` produced the READY deployment above. Git push alone did not trigger a refresh, so do not assume automatic Vercel deployments are connected.
-- No Android device or emulator is attached to this workspace (`adb devices` is empty), and no iOS toolchain is present. Native keyboard, safe-area, large-font, OS-dark, reduced-motion and clean-install checks cannot be marked passed by browser screenshots alone. Shared buttons and tracker swipe-delete now honor reduced motion in code, but physical verification remains open.
-- A read-only query against the EPP Supabase project confirms the five live category slugs and their legacy `icon` metadata. The app and admin intentionally render the supervisor-approved glyph by stable slug; no production category rows were mutated for this visual phase.
+| Page | Evidence |
+|---|---|
+| Login | Redesigned to one centred column with logo and `®` lockup; deployed as `dpl_7wi32oihmAv6Njg1j5ATmHUcTDNS`; live CSS confirmed (no DM Sans, no brown overlay) |
+| Home | Light theme; verified after sign-in on the deployed site |
+| Contacts | Create, edit, deactivate and restore verified on the deployed site (test record `QA-TEST Contact 582406`, left Active for later cleanup) |
+| Bulk CSV import | Reported working in an earlier session by the owner |
+| Categories | Owner-confirmed working; edits existing categories only, no add or delete |
+| Quotes, tracks, track challenges | Owner-confirmed working |
+
+## Source audit
+
+- Aurora layer and its tokens removed. Mobile root and native config are white.
+- Category glyphs are chosen by stable slug: sunglasses for Fashion, basketball for Sports. Live database icon values (`diamond-outline`, `trophy-outline`) are kept until a reviewed migration; decision in `docs/icon-options.md`.
+- Brand text: every visible full-brand string carries one `®`, enforced by `lightThemeContract.test.ts` (mobile) and `brandContract.test.ts` (admin).
+- No people images are rendered. Profile avatars show initials, or a neutral person glyph with no name.
+- Automated checks on the final code: mobile typecheck clean, 39 suites / 102 tests passing; admin typecheck clean, 23 tests passing, production build passing.
+
+## Still open
+
+- Device checks (clean install, keyboard and safe area, large font, system dark, reduced motion, native links, first-sign-up track save, share image on a phone): need a physical Android phone or emulator and an iOS device for the iOS-specific items.
+- Production-only cleanup: the stray `markhor-proj` Vercel project created by a root-level deploy is still live, and the `QA-TEST` contact should be removed before delivery.

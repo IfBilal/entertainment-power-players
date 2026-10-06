@@ -1,5 +1,6 @@
-import { StyleSheet, type ViewStyle } from 'react-native';
+import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
 import { colors } from '../theme';
 
@@ -29,6 +30,15 @@ const dimensions: Record<AvatarSize, { box: number; text: number }> = {
 export function Avatar({ name, size = 'md', style }: AvatarProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: d.box / 2 };
+
+  // No name yet (e.g. a blank profile): show a neutral person glyph, not a stray "?".
+  if (!name.trim()) {
+    return (
+      <View style={[styles.fallback, box, styles.empty, style]}>
+        <Ionicons name="person-outline" size={d.text * 1.6} color={colors.textSecondary} />
+      </View>
+    );
+  }
 
   const pair = gradientFor(name);
 
@@ -81,6 +91,7 @@ function gradientFor(name: string): [string, string] {
 }
 
 const styles = StyleSheet.create({
+  empty: { backgroundColor: colors.surfaceStrong, borderWidth: 1, borderColor: colors.border },
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',

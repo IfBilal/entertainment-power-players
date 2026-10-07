@@ -105,10 +105,20 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
     expect(screen.getByText('Annual')).toBeTruthy();
     fireEvent.press(screen.getByLabelText('Monthly plan'));
     await waitFor(() => expect(screen.getByLabelText('Monthly plan').props.accessibilityState.selected).toBe(true));
-    fireEvent.press(screen.getByText('Activate Premium (test)'));
+    fireEvent.press(screen.getByText('Continue'));
 
-    await waitFor(() => expect(activatePreviewPlan).toHaveBeenCalledWith('monthly'));
+    // Test checkout walks the same shape as a real purchase: review, confirm,
+    // a processing wait, then success -- not a single tap.
+    expect(await screen.findByText('Review your order')).toBeTruthy();
+    expect(screen.getByText('Test card · no charge')).toBeTruthy();
+    fireEvent.press(screen.getByText('Confirm & Pay (Test)'));
+
+    expect(await screen.findByText('Processing your test payment…')).toBeTruthy();
+    await waitFor(() => expect(activatePreviewPlan).toHaveBeenCalledWith('monthly'), { timeout: 3000 });
     await waitFor(() => expect(useAppStore.getState().isPro).toBe(true));
+    expect(await screen.findByText("You're Premium!")).toBeTruthy();
+
+    fireEvent.press(screen.getByText('Continue'));
     expect(await screen.findByText('Jane Doe')).toBeTruthy();
   });
 

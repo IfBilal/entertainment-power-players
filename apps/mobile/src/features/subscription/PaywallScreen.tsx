@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
@@ -34,10 +34,21 @@ async function waitForServerAccess(): Promise<boolean> {
 /**
  * The store defines pricing; Supabase's server entitlement defines gated access.
  */
+/**
+ * Test-mode checkout only (previewPurchasesEnabled): walks the same shape as
+ * a real purchase -- review the order, confirm, a processing wait, then a
+ * success screen -- without drawing a fake Apple Pay/Google Pay sheet, which
+ * would misrepresent whose UI it is. The real store path below skips this
+ * entirely and hands off to the platform's own purchase sheet, which is
+ * already the real thing.
+ */
+type CheckoutStage = 'plans' | 'review' | 'processing' | 'success';
+
 export function PaywallScreen({ navigation, route }: Props) {
   const [plan, setPlan] = useState<PlanKind>(route.params?.plan ?? 'annual');
   const [activating, setActivating] = useState(false);
   const [confirming, setConfirming] = useState(false);
+  const [checkoutStage, setCheckoutStage] = useState<CheckoutStage>('plans');
   const userId = useAuthStore((state) => state.userId);
   const setIsPro = useAppStore((state) => state.setIsPro);
   const plansQuery = useQuery({
@@ -68,25 +79,32 @@ export function PaywallScreen({ navigation, route }: Props) {
     }
   }
 
+  async function confirmTestPurchase() {
+    setCheckoutStage('processing');
+    try {
+      // The delay is cosmetic -- it's what makes this read as a purchase
+      // happening rather than a settings toggle flipping. The entitlement
+      // call right after it is the real, server-verified grant.
+      await new Promise((resolve) => setTimeout(resolve, 900));
+      await activatePreviewPlan(plan);
+      if (await fetchPremiumAccess()) {
+        setIsPro(true);
+        setCheckoutStage('success');
+      } else {
+        throw new Error('Server has not confirmed test access yet.');
+      }
+    } catch (error) {
+      setCheckoutStage('review');
+      Alert.alert(
+        'Could not activate test Premium',
+        error instanceof Error ? error.message : 'Please try again.',
+      );
+    }
+  }
+
   async function subscribe() {
     if (previewPurchasesEnabled) {
-      setActivating(true);
-      try {
-        await activatePreviewPlan(plan);
-        if (await fetchPremiumAccess()) {
-          setIsPro(true);
-          navigation.goBack();
-        } else {
-          throw new Error('Server has not confirmed test access yet.');
-        }
-      } catch (error) {
-        Alert.alert(
-          'Could not activate test Premium',
-          error instanceof Error ? error.message : 'Please try again.',
-        );
-      } finally {
-        setActivating(false);
-      }
+      setCheckoutStage('review');
       return;
     }
 
@@ -113,6 +131,64 @@ export function PaywallScreen({ navigation, route }: Props) {
     } finally {
       setActivating(false);
     }
+  }
+
+  const planLabel = plan === 'annual' ? 'Annual' : 'Monthly';
+  const planPeriod = plan === 'annual' ? '/ year' : '/ month';
+
+  if (previewPurchasesEnabled && checkoutStage === 'review') {
+    return (
+      <Screen padded={false}>
+        <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
+          <Pressable accessibilityRole="button" accessibilityLabel="Back to plans" onPress={() => setCheckoutStage('plans')} style={styles.close}><Ionicons name="chevron-back" size={24} color={colors.textSecondary} /></Pressable>
+          <AppText variant="display" style={styles.headline}>Review your order</AppText>
+
+          <View style={styles.orderCard}>
+            <View style={styles.orderRow}><AppText variant="body" color={colors.textSecondary}>Plan</AppText><AppText variant="bodyStrong">{planLabel}</AppText></View>
+            <View style={styles.orderRow}><AppText variant="body" color={colors.textSecondary}>Price</AppText><AppText variant="bodyStrong">Test plan {planPeriod}</AppText></View>
+            <View style={[styles.orderRow, styles.orderDivider]}>
+              <AppText variant="body" color={colors.textSecondary}>Payment method</AppText>
+              <AppText variant="bodyStrong">Test card · no charge</AppText>
+            </View>
+          </View>
+
+          <AppText variant="caption" color={colors.accentLime} style={styles.testNotice}>
+            This is the demo preview build: confirming activates Premium through the server, like a real purchase would, but no payment method is charged.
+          </AppText>
+
+          <Button label="Confirm & Pay (Test)" size="lg" onPress={() => { void confirmTestPurchase(); }} />
+          <View style={styles.footerLinks}>
+            <Button label="Back" variant="ghost" onPress={() => setCheckoutStage('plans')} />
+          </View>
+        </ScrollView>
+      </Screen>
+    );
+  }
+
+  if (previewPurchasesEnabled && checkoutStage === 'processing') {
+    return (
+      <Screen>
+        <View style={styles.centeredStage}>
+          <ActivityIndicator size="large" color={colors.accent} />
+          <AppText variant="subtitle" style={styles.processingText}>Processing your test payment…</AppText>
+        </View>
+      </Screen>
+    );
+  }
+
+  if (previewPurchasesEnabled && checkoutStage === 'success') {
+    return (
+      <Screen>
+        <View style={styles.centeredStage}>
+          <View style={styles.successIcon}><Ionicons name="checkmark" size={40} color={colors.textInverse} /></View>
+          <AppText variant="display" style={styles.processingText}>You&apos;re Premium!</AppText>
+          <AppText variant="body" color={colors.textSecondary} style={styles.successBody}>
+            {planLabel} test plan activated. No payment was taken.
+          </AppText>
+          <Button label="Continue" size="lg" onPress={() => navigation.goBack()} />
+        </View>
+      </Screen>
+    );
   }
 
   return (
@@ -150,11 +226,11 @@ export function PaywallScreen({ navigation, route }: Props) {
 
         {previewPurchasesEnabled ? (
           <AppText variant="caption" color={colors.accentLime} style={styles.testNotice}>
-            Testing mode: activating a plan grants Premium without charging you.
+            Demo preview build: you&apos;ll review your order next, like a real purchase, but nothing is charged.
           </AppText>
         ) : null}
         <Button
-          label={confirming ? 'Confirming access…' : activating ? 'Processing…' : previewPurchasesEnabled ? 'Activate Premium (test)' : 'Subscribe'}
+          label={confirming ? 'Confirming access…' : activating ? 'Processing…' : previewPurchasesEnabled ? 'Continue' : 'Subscribe'}
           size="lg"
           onPress={subscribe}
           disabled={activating || confirming || (!previewPurchasesEnabled && (!plans.monthly || !plans.annual))}
@@ -181,4 +257,11 @@ const styles = StyleSheet.create({
   planSelected: { borderColor: colors.accentLime, backgroundColor: 'rgba(111, 209, 59, 0.14)' },
   footerLinks: { alignItems: 'center', marginTop: spacing.xs },
   testNotice: { textAlign: 'center', marginBottom: spacing.sm },
+  orderCard: { borderWidth: 1, borderColor: colors.borderStrong, borderRadius: radius.lg, backgroundColor: colors.surface, padding: spacing.md, marginTop: spacing.lg, marginBottom: spacing.lg, gap: spacing.sm },
+  orderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' },
+  orderDivider: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.xs },
+  centeredStage: { flex: 1, alignItems: 'center', justifyContent: 'center', paddingHorizontal: spacing.lg, gap: spacing.md },
+  processingText: { textAlign: 'center' },
+  successIcon: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentLime, alignItems: 'center', justifyContent: 'center' },
+  successBody: { textAlign: 'center', marginBottom: spacing.md },
 });

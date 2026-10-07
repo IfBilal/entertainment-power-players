@@ -30,6 +30,10 @@ export type ChallengesStackParamList = {
   TrackList: undefined;
   TrackDetail: { trackSlug: string };
   ChallengeDetail: { trackSlug: string; challengeId: string };
+  QuestionCategories: undefined;
+  QuestionGroups: { categorySlug: string };
+  QuestionList: { categorySlug: string; group: string };
+  QuestionDetail: { questionId: string };
 };
 
 export type InspirationStackParamList = {

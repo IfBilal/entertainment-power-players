@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { AppText, Card, EmptyState, IconTile, Screen } from '../../components';
+import { AppText, Card, EmptyState, IconTile, Screen, SettingsRow } from '../../components';
 import { categoryPalette, colors, spacing, type GradientToken } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -37,6 +37,9 @@ export function TrackListScreen({ navigation }: Props) {
       <View style={styles.tabs}>
         <Pressable style={[styles.tab, tab === 'mine' && styles.activeTab]} onPress={() => setTab('mine')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'mine' }}><AppText variant="bodyStrong" color={tab === 'mine' ? colors.textInverse : colors.textSecondary}>My Tracks</AppText></Pressable>
         <Pressable style={[styles.tab, tab === 'all' && styles.activeTab]} onPress={() => setTab('all')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'all' }}><AppText variant="bodyStrong" color={tab === 'all' ? colors.textInverse : colors.textSecondary}>All Tracks</AppText></Pressable>
+      </View>
+      <View style={styles.questionsEntry}>
+        <SettingsRow icon="help-circle-outline" title="Questions" subtitle="Test your industry knowledge" onPress={() => navigation.navigate('QuestionCategories')} />
       </View>
       {progressQuery.isError ? <Pressable onPress={() => progressQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Tap to retry.</AppText></Pressable> : null}
       {tracksQuery.isError ? <Pressable onPress={() => tracksQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load tracks. Tap to retry.</AppText></Pressable> : null}
@@ -75,6 +78,7 @@ const styles = StyleSheet.create({
   heading: { textAlign: 'center' },
   subtitle: { textAlign: 'center', marginTop: spacing.xs, marginBottom: spacing.lg },
   tabs: { flexDirection: 'row', alignSelf: 'center', gap: spacing.xs, backgroundColor: colors.surfaceSubtle, borderRadius: 18, padding: spacing.xs, marginBottom: spacing.lg },
+  questionsEntry: { marginBottom: spacing.md, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border },
   tab: { paddingVertical: spacing.sm, paddingHorizontal: spacing.lg, borderRadius: 14 },
   activeTab: { backgroundColor: colors.accent },
   list: { gap: spacing.sm, paddingBottom: spacing.lg },

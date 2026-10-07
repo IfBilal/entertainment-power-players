@@ -7,6 +7,7 @@ import { ContactsPage } from './pages/ContactsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ImportPage } from './pages/ImportPage';
 import { QuotesPage } from './pages/QuotesPage';
+import { QuestionsImportPage } from './pages/QuestionsImportPage';
 import { TracksPage } from './pages/TracksPage';
 import { TrackChallengesPage } from './pages/TrackChallengesPage';
 import logoMark from './assets/brand-logo-mark.png';
@@ -88,6 +89,10 @@ export default function App() {
             <QuotesIcon />
             Quotes
           </NavLink>
+          <NavLink to="/questions" className={({ isActive }) => (isActive ? 'active' : '')}>
+            <QuotesIcon />
+            Questions
+          </NavLink>
           <NavLink to="/tracks" className={({ isActive }) => (isActive ? 'active' : '')}>
             <TracksIcon />
             Tracks
@@ -108,6 +113,7 @@ export default function App() {
             <Route path="/import" element={<ImportPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/quotes" element={<QuotesPage />} />
+            <Route path="/questions" element={<QuestionsImportPage />} />
             <Route path="/tracks" element={<TracksPage />} />
             <Route path="/tracks/:slug" element={<TrackChallengesPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

@@ -5,26 +5,30 @@ import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
 import { AppText, Logo, QuoteCard, Screen, SectionHeader } from '../../components';
 import { colors, spacing } from '../../theme';
-import { quoteOfTheDay, type Quote } from '../../services/mock/quotes';
+import type { QuoteRecord } from '../../types/week3';
+import { useDailyQuote } from '../../hooks/useContent';
 import { useSavedQuotes } from '../../hooks/useSavedQuotes';
+
+type ShareableQuote = { id: string; text: string; author: string };
 
 export function QuoteFeedScreen() {
   const { ids: favoriteIds, toggle: toggleQuote, saveError, query, quotes: quotesQuery } = useSavedQuotes();
+  const dailyQuoteQuery = useDailyQuote();
   const [tab, setTab] = useState<'quotes' | 'saved'>('quotes');
-  const [shareQuote, setShareQuote] = useState<Quote | null>(null);
+  const [shareQuote, setShareQuote] = useState<ShareableQuote | null>(null);
   const [sharing, setSharing] = useState(false);
   const [shareError, setShareError] = useState(false);
   const shareCardRef = useRef<View>(null);
-  const [today, setToday] = useState(() => new Date());
   useEffect(() => {
+    // Catch a local-midnight rollover, or a day change from travel, while the app stays open.
     if (process.env.NODE_ENV === 'test') return;
-    const refresh = () => setToday(new Date());
-    const timer = setInterval(refresh, 30_000);
-    const listener = AppState.addEventListener('change', (state) => { if (state === 'active') refresh(); });
-    return () => { clearInterval(timer); listener.remove(); };
-  }, []);
-  const allQuotes = (quotesQuery.data ?? []) as Quote[];
-  const featured = quoteOfTheDay(allQuotes, today);
+    const listener = AppState.addEventListener('change', (state) => { if (state === 'active') void dailyQuoteQuery.refetch(); });
+    return () => listener.remove();
+  }, [dailyQuoteQuery]);
+  const allQuotes = (quotesQuery.data ?? []) as QuoteRecord[];
+  const featured: ShareableQuote | null = dailyQuoteQuery.data
+    ? { id: dailyQuoteQuery.data.quoteId, text: dailyQuoteQuery.data.text, author: dailyQuoteQuery.data.author }
+    : null;
   const visibleQuotes = tab === 'saved' ? allQuotes.filter((quote) => favoriteIds.has(quote.id)) : allQuotes.filter((quote) => quote.id !== featured?.id);
 
   async function shareImage() {
@@ -54,6 +58,7 @@ export function QuoteFeedScreen() {
       <View style={styles.tabs}><Pressable onPress={() => setTab('quotes')} style={[styles.tab, tab === 'quotes' && styles.tabActive]}><AppText variant="bodyStrong" color={tab === 'quotes' ? colors.textInverse : colors.textSecondary}>Quotes</AppText></Pressable><Pressable onPress={() => setTab('saved')} style={[styles.tab, tab === 'saved' && styles.tabActive]}><AppText variant="bodyStrong" color={tab === 'saved' ? colors.textInverse : colors.textSecondary}>Saved</AppText></Pressable></View>
       {query.isError ? <Pressable onPress={() => query.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load saved quotes. Tap to retry.</AppText></Pressable> : null}
       {quotesQuery.isError ? <Pressable onPress={() => quotesQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load quotes. Tap to retry.</AppText></Pressable> : null}
+      {dailyQuoteQuery.isError ? <Pressable onPress={() => dailyQuoteQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load today's quote. Tap to retry.</AppText></Pressable> : null}
       {saveError ? <AppText variant="caption" color={colors.danger}>Couldn't save quote. Please try again.</AppText> : null}
       {shareError ? <AppText variant="caption" color={colors.danger}>Couldn't share the image. Please try again.</AppText> : null}
       <FlatList

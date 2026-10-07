@@ -47,6 +47,14 @@ export type QuoteRecord = {
   order: number;
 };
 
+/** The member's featured quote for their current local day, from `get_daily_quote`. */
+export type DailyQuoteRecord = {
+  quoteId: string;
+  text: string;
+  author: string;
+  localDate: string;
+};
+
 export type QuoteFavoriteRecord = {
   userId: string;
   quoteId: string;
@@ -70,6 +78,7 @@ export const week3QueryKeys = {
   progress: (userId: string) => ['challengeProgress', userId] as const,
   activity: (userId: string) => ['activity', userId] as const,
   quotes: ['quotes'] as const,
+  dailyQuote: (userId: string) => ['dailyQuote', userId] as const,
   quoteFavorites: (userId: string) => ['quoteFavorites', userId] as const,
   subscription: (userId: string) => ['subscription', userId] as const,
 };

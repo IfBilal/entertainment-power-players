@@ -3,13 +3,26 @@ import { QuoteFeedScreen } from '../features/inspiration/QuoteFeedScreen';
 import { useAuthStore } from '../store/useAuthStore';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { fetchQuoteFavoriteIds, setQuoteFavorite } from '../services/supabase/quoteFavorites';
-import { mockQuotes, quoteOfTheDay } from '../services/mock/quotes';
+import type { QuoteRecord } from '../types/week3';
 import * as Sharing from 'expo-sharing';
 import { captureRef } from 'react-native-view-shot';
+
+const mockQuotes: QuoteRecord[] = [
+  { id: 'quote_featured', text: 'The best projects happen when you surround yourself with curious people.', author: 'Industry Voice', active: true, order: 0 },
+  { id: 'quote_1', text: 'Opportunities don’t happen. You create them.', author: 'Chris Grosser', active: true, order: 1 },
+  { id: 'quote_2', text: 'The way to get started is to quit talking and begin doing.', author: 'Walt Disney', active: true, order: 2 },
+];
+// The server, not a client hash, now decides which quote is featured. Fixing
+// it here keeps these tests about favorites/sharing, not about allocation,
+// which the SQL-level rotation tests own.
+const mockFeaturedQuote = mockQuotes[0];
 
 const mockSavedByUser: Record<string, string[]> = {};
 jest.mock('../services/supabase/content', () => ({
   fetchActiveQuotes: jest.fn(async () => [...mockQuotes]),
+  fetchDailyQuote: jest.fn(async () => ({ quoteId: mockFeaturedQuote.id, text: mockFeaturedQuote.text, author: mockFeaturedQuote.author, localDate: '2026-10-07' })),
+  syncProfileTimezone: jest.fn(async () => undefined),
+  getDeviceTimeZone: jest.fn(() => 'UTC'),
 }));
 jest.mock('../services/supabase/quoteFavorites', () => ({
   quoteFavoritesQueryKey: (userId: string | null) => ['quoteFavorites', userId],
@@ -32,10 +45,7 @@ describe('quote feed favorites', () => {
   it('saves and unsaves quotes from More to Explore and shows them in Saved', async () => {
     await renderWithProviders(<QuoteFeedScreen />);
 
-    // A quote can become featured on any calendar day, so choose an Explore
-    // card rather than assuming quote_1 is always below the daily hero.
-    const featuredId = quoteOfTheDay(mockQuotes, new Date())?.id;
-    const target = mockQuotes.find((quote) => quote.id !== featuredId && quote.id !== 'quote_featured')!;
+    const target = mockQuotes.find((quote) => quote.id !== mockFeaturedQuote.id)!;
     expect(await screen.findByText(target.text)).toBeTruthy();
     await waitFor(() => expect(fetchQuoteFavoriteIds).toHaveBeenCalledWith('test-user'));
     fireEvent.press(screen.getByLabelText(`Save quote by ${target.author}`));
@@ -66,5 +76,21 @@ describe('quote feed favorites', () => {
     fireEvent.press(screen.getByLabelText('Share quote image'));
     await waitFor(() => expect(captureRef).toHaveBeenCalledWith(expect.anything(), expect.objectContaining({ format: 'png', width: 1080, height: 1440 })));
     expect(Sharing.shareAsync).toHaveBeenCalledWith('file:///tmp/quote.png', expect.objectContaining({ mimeType: 'image/png' }));
+  });
+
+  it('shows the server-assigned daily quote as the hero, not a locally computed one', async () => {
+    await renderWithProviders(<QuoteFeedScreen />);
+    expect(await screen.findByText(mockFeaturedQuote.text)).toBeTruthy();
+    // The hero never appears a second time in the Explore list below it.
+    expect(screen.getAllByText(mockFeaturedQuote.text)).toHaveLength(1);
+  });
+
+  it('offers a retry when the daily quote fails to load, and recovers', async () => {
+    const content = jest.requireMock('../services/supabase/content');
+    content.fetchDailyQuote.mockRejectedValueOnce(new Error('network down'));
+    await renderWithProviders(<QuoteFeedScreen />);
+    const retry = await screen.findByText("Couldn't load today's quote. Tap to retry.");
+    fireEvent.press(retry);
+    expect(await screen.findByText(mockFeaturedQuote.text)).toBeTruthy();
   });
 });

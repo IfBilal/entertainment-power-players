@@ -1,5 +1,5 @@
 import { supabase } from './client';
-import type { ChallengeRecord, QuoteRecord, TrackRecord } from '../../types/week3';
+import type { ChallengeRecord, DailyQuoteRecord, QuoteRecord, TrackRecord } from '../../types/week3';
 
 type TrackRow = { slug: string; name: string; order: number; active: boolean };
 type ChallengeRow = {
@@ -51,4 +51,44 @@ export async function fetchActiveQuotes(): Promise<QuoteRecord[]> {
     .order('id');
   if (error) throw error;
   return ((data ?? []) as QuoteRow[]).map((row) => ({ ...row }));
+}
+
+/** The device's IANA timezone, e.g. "America/New_York". Falls back to UTC if unavailable. */
+export function getDeviceTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC';
+  } catch {
+    return 'UTC';
+  }
+}
+
+type DailyQuoteRow = { assigned_quote_id: string; assigned_text: string; assigned_author: string; assigned_local_date: string };
+
+/**
+ * The member's featured quote for their current local day (plan §7.3): the
+ * server picks and persists it, excluding the member's own last 224 local
+ * days, so it never repeats within that window and never changes on refresh
+ * or reinstall. The device timezone travels with every call, which is what
+ * makes day boundaries correct after travel without a separate sync step.
+ */
+export async function fetchDailyQuote(): Promise<DailyQuoteRecord> {
+  const { data, error } = await supabase.rpc('get_daily_quote', { p_timezone: getDeviceTimeZone() });
+  if (error) throw error;
+  const row = (data as DailyQuoteRow[] | null)?.[0];
+  if (!row) throw new Error('No quote was assigned.');
+  return { quoteId: row.assigned_quote_id, text: row.assigned_text, author: row.assigned_author, localDate: row.assigned_local_date };
+}
+
+/**
+ * Best-effort: keeps `profiles.timezone` current so admin tooling and future
+ * server jobs can see where a member last was. The daily quote itself never
+ * depends on this write succeeding -- it always receives the device
+ * timezone directly.
+ */
+export async function syncProfileTimezone(userId: string): Promise<void> {
+  try {
+    await supabase.from('profiles').update({ timezone: getDeviceTimeZone() }).eq('id', userId);
+  } catch {
+    // Non-critical; the next call will try again.
+  }
 }

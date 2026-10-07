@@ -1,7 +1,8 @@
 import { useQuery } from '@tanstack/react-query';
 import { Platform } from 'react-native';
-import { fetchActiveChallenges, fetchActiveQuotes, fetchActiveTracks } from '../services/supabase/content';
+import { fetchActiveChallenges, fetchActiveQuotes, fetchActiveTracks, fetchDailyQuote, syncProfileTimezone } from '../services/supabase/content';
 import { useAppStore } from '../store/useAppStore';
+import { useAuthStore } from '../store/useAuthStore';
 import { week3QueryKeys } from '../types/week3';
 
 // Content is admin-editable at runtime. Polling while visible gives an
@@ -33,6 +34,23 @@ export function useQuotes() {
   return useQuery({
     queryKey: week3QueryKeys.quotes,
     queryFn: fetchActiveQuotes,
+    refetchInterval: isIsolatedPreview ? false : CONTENT_REFRESH_MS,
+    refetchOnMount: isIsolatedPreview ? false : 'always',
+  });
+}
+
+/** The server-assigned featured quote for the signed-in member's current local day. */
+export function useDailyQuote() {
+  const userId = useAuthStore((state) => state.userId);
+  return useQuery({
+    queryKey: userId ? week3QueryKeys.dailyQuote(userId) : ['dailyQuote', 'signed-out'],
+    queryFn: async () => {
+      if (userId) void syncProfileTimezone(userId);
+      return fetchDailyQuote();
+    },
+    enabled: Boolean(userId) && !isIsolatedPreview,
+    // A fresh check costs one cheap select after the day's row exists; this
+    // is what catches a local-midnight rollover while the app stays open.
     refetchInterval: isIsolatedPreview ? false : CONTENT_REFRESH_MS,
     refetchOnMount: isIsolatedPreview ? false : 'always',
   });

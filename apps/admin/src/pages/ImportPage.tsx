@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import {
   KNOWN_COLUMNS,
   chunk,
+  duplicateKey,
   parseCsv,
   suggestMapping,
   validateRows,
@@ -55,10 +56,16 @@ export function ImportPage() {
   const [parsed, setParsed] = useState<ParsedCsv | null>(null);
   const [mapping, setMapping] = useState<ColumnMapping>({});
   const [categorySlugs, setCategorySlugs] = useState<Set<string>>(new Set());
+  const [existingKeys, setExistingKeys] = useState<Set<string>>(new Set());
+  const [skipDuplicates, setSkipDuplicates] = useState(true);
   const [result, setResult] = useState<ImportResult | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [dragOver, setDragOver] = useState(false);
   const [processing, setProcessing] = useState(false);
+  // How many of this session's import rows are already written. A chunk
+  // failure stops here rather than at zero, so "Resume" never re-sends rows
+  // that already succeeded.
+  const [importedOffset, setImportedOffset] = useState(0);
   const fileInput = useRef<HTMLInputElement>(null);
 
   async function handleFile(file: File) {
@@ -79,10 +86,17 @@ export function ImportPage() {
       }
 
       // Load valid categories so unknown ones are caught at validation time,
-      // not by a foreign-key error mid-import.
-      const { data } = await supabase.from('categories').select('slug');
-      setCategorySlugs(new Set((data ?? []).map((c: { slug: string }) => c.slug)));
+      // not by a foreign-key error mid-import. Also load existing contacts'
+      // name+category so the duplicate report can compare against the real
+      // directory, not just the file being uploaded.
+      const [{ data: categories }, { data: existing }] = await Promise.all([
+        supabase.from('categories').select('slug'),
+        supabase.from('contacts').select('name_lower, category_slug'),
+      ]);
+      setCategorySlugs(new Set((categories ?? []).map((c: { slug: string }) => c.slug)));
+      setExistingKeys(new Set((existing ?? []).map((c: { name_lower: string; category_slug: string }) => duplicateKey(c.name_lower, c.category_slug))));
 
+      setImportedOffset(0);
       setParsed(parsedCsv);
       setMapping(suggestMapping(parsedCsv.headers));
       setStage('map');
@@ -104,26 +118,36 @@ export function ImportPage() {
   }
 
   const report: ValidationReport | null =
-    parsed && stage !== 'pick' ? validateRows(parsed, mapping, categorySlugs.size > 0 ? categorySlugs : undefined) : null;
+    parsed && stage !== 'pick'
+      ? validateRows(parsed, mapping, categorySlugs.size > 0 ? categorySlugs : undefined, existingKeys)
+      : null;
+  const duplicateCount = report ? report.valid.filter((c) => c.isDuplicate).length : 0;
+  // What would actually be sent, given the current skip-duplicates choice.
+  // `handleImport` and the button label both read this so they never disagree.
+  const toImport = report ? report.valid.filter((c) => !skipDuplicates || !c.isDuplicate) : [];
 
   async function handleImport() {
     if (!report) return;
     setStage('importing');
     setError(null);
 
-    let imported = 0;
-    // Valid rows import even if others fail (handbook §5), in batches of 500.
-    for (const batch of chunk(report.valid, BATCH_SIZE)) {
+    // Resume from where a previous attempt stopped, so a retry after a
+    // partial failure never re-sends rows that already succeeded.
+    const remaining = toImport.slice(importedOffset).map(({ row: _row, isDuplicate: _isDuplicate, duplicateReason: _duplicateReason, ...insertable }) => insertable);
+    let justImported = 0;
+    for (const batch of chunk(remaining, BATCH_SIZE)) {
       const { error: insertError } = await supabase.from('contacts').insert(batch);
       if (insertError) {
-        setError(`Import stopped after ${imported} rows: ${insertError.message}`);
+        setImportedOffset((offset) => offset + justImported);
+        setError(`Import stopped after ${importedOffset + justImported} of ${toImport.length} rows: ${insertError.message}. Resuming will continue from there, not start over.`);
         setStage('map');
         return;
       }
-      imported += batch.length;
+      justImported += batch.length;
     }
 
-    setResult({ imported, failed: report.skipped });
+    setResult({ imported: importedOffset + justImported, failed: report.skipped });
+    setImportedOffset(0);
     setStage('done');
   }
 
@@ -134,6 +158,8 @@ export function ImportPage() {
     setResult(null);
     setError(null);
     setFileName('');
+    setImportedOffset(0);
+    setSkipDuplicates(true);
     if (fileInput.current) fileInput.current.value = '';
   }
 
@@ -202,7 +228,7 @@ export function ImportPage() {
               <h2>Map columns</h2>
               <button className="ghost small" onClick={reset}>Start over</button>
             </div>
-            <p className="muted small">{fileName} · {parsed.rows.length} rows</p>
+            <p className="muted small">{fileName} · {report ? report.valid.length + report.skipped.length : parsed.rows.length} rows</p>
 
             <table>
               <thead>
@@ -277,7 +303,7 @@ export function ImportPage() {
           <div className="card stack">
             <h2>Validation</h2>
             <p>
-              <strong className="success">{report.valid.length} rows ready</strong>
+              <strong className="success">{toImport.length} row{toImport.length === 1 ? '' : 's'} ready to import</strong>
               {report.skipped.length > 0 ? (
                 <>
                   {' · '}
@@ -307,11 +333,48 @@ export function ImportPage() {
               </div>
             ) : null}
 
+            {duplicateCount > 0 ? (
+              <div className="stack" style={{ gap: '0.5rem' }}>
+                <p>
+                  <strong className="error">{duplicateCount} probable duplicate{duplicateCount === 1 ? '' : 's'}</strong>
+                  {' '}-- same name and category as another row in this file or a contact already in the directory.
+                </p>
+                <label className="row small" style={{ gap: '0.4rem' }}>
+                  <input type="checkbox" checked={skipDuplicates} onChange={(e) => setSkipDuplicates(e.target.checked)} />
+                  Skip probable duplicates (recommended)
+                </label>
+                <div style={{ maxHeight: 180, overflowY: 'auto' }}>
+                  <table>
+                    <thead>
+                      <tr>
+                        <th>Row</th>
+                        <th>Name</th>
+                        <th>Why it's probably a duplicate</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {report.valid.filter((c) => c.isDuplicate).map((c) => (
+                        <tr key={c.row}>
+                          <td>{c.row}</td>
+                          <td>{c.name}</td>
+                          <td className="muted small">{c.duplicateReason}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ) : null}
+
             {error ? <p className="error small">{error}</p> : null}
 
             <div className="row">
-              <button onClick={handleImport} disabled={stage === 'importing' || report.valid.length === 0}>
-                {stage === 'importing' ? 'Importing…' : `Import ${report.valid.length} contacts`}
+              <button onClick={handleImport} disabled={stage === 'importing' || toImport.length === 0 || importedOffset >= toImport.length}>
+                {stage === 'importing'
+                  ? 'Importing…'
+                  : importedOffset > 0
+                    ? `Resume import (${toImport.length - importedOffset} left)`
+                    : `Import ${toImport.length} contact${toImport.length === 1 ? '' : 's'}`}
               </button>
               <button className="secondary" onClick={reset} disabled={stage === 'importing'}>Cancel</button>
             </div>

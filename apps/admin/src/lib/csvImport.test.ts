@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeNameLower, computeSortKey } from './contactFields';
-import { chunk, parseCsv, slugifyCategory, suggestMapping, validateRows } from './csvImport';
+import { chunk, duplicateKey, parseCsv, slugifyCategory, suggestMapping, validateRows } from './csvImport';
 
 const SAMPLE_CSV = `name,category,role,company,email,phone,website,city,notes
 Jane Doe,Fashion,Casting Director,Example Casting,jane@example.com,+1 212 555 0101,https://example.com,New York,Accepts submissions by email only
@@ -37,7 +37,10 @@ describe('parseCsv + suggestMapping', () => {
   it('reads headers and rows from the real sample template', () => {
     const parsed = parseCsv(SAMPLE_CSV);
     expect(parsed.headers).toEqual(['name', 'category', 'role', 'company', 'email', 'phone', 'website', 'city', 'notes']);
-    expect(parsed.rows).toHaveLength(3);
+    // 3 real rows plus the phantom blank the template's trailing newline
+    // produces -- kept so every real row's index still matches its physical
+    // line; validateRows() is what filters blanks out.
+    expect(parsed.rows).toHaveLength(4);
   });
 
   it('auto-maps headers that already match known column names', () => {
@@ -135,5 +138,64 @@ describe('chunk', () => {
 
   it('returns nothing for an empty list', () => {
     expect(chunk([], 500)).toEqual([]);
+  });
+});
+
+describe('validateRows: duplicate detection', () => {
+  it('flags a second row with the same name and category within the file, not the first', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\nJane Doe,Fashion\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid.map((c) => c.isDuplicate)).toEqual([false, true]);
+    expect(report.valid[1].duplicateReason).toBe('Same name and category as row 2 in this file');
+  });
+
+  it('is case- and leading/trailing-whitespace-insensitive for the within-file match', () => {
+    const parsed = parseCsv('name,category\n"  Jane Doe  ",Fashion\nJANE DOE,Fashion\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid[1].isDuplicate).toBe(true);
+  });
+
+  it('does not flag the same name in a different category', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\nJane Doe,Music\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid.every((c) => !c.isDuplicate)).toBe(true);
+  });
+
+  it('flags a row that matches a contact already in the directory', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\n');
+    const existing = new Set([duplicateKey('jane doe', 'fashion')]);
+    const report = validateRows(parsed, suggestMapping(parsed.headers), undefined, existing);
+    expect(report.valid[0].isDuplicate).toBe(true);
+    expect(report.valid[0].duplicateReason).toContain('already in the directory');
+  });
+
+  it('does not reject duplicates outright -- they stay importable if the admin chooses', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\nJane Doe,Fashion\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid).toHaveLength(2);
+    expect(report.skipped).toHaveLength(0);
+  });
+});
+
+describe('parseCsv + validateRows: row numbers stay correct around blank lines', () => {
+  it('reports the real physical line for a row after a blank line, not a shifted one', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\n\nBad Row,NotARealCategory\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers), new Set(['fashion']));
+    // "Bad Row" is on physical line 4 (header=1, Jane=2, blank=3, Bad Row=4).
+    expect(report.skipped).toEqual([{ row: 4, reason: 'Unknown category: "NotARealCategory"' }]);
+  });
+
+  it('does not report the blank line itself as an error', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\n\nJohn Smith,Fashion\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid).toHaveLength(2);
+    expect(report.skipped).toEqual([]);
+  });
+
+  it('ignores the phantom trailing row a final newline produces', () => {
+    const parsed = parseCsv('name,category\nJane Doe,Fashion\n');
+    const report = validateRows(parsed, suggestMapping(parsed.headers));
+    expect(report.valid).toHaveLength(1);
+    expect(report.skipped).toEqual([]);
   });
 });

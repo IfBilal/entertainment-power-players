@@ -25,7 +25,17 @@ export type ContactDraft = {
   city: string | null;
   notes: string | null;
   active: true;
+  /** 1-based CSV row this came from, for the duplicate report and for resuming a partial import. */
+  row: number;
+  /** Same name + category as a row already in the directory, or an earlier row in this file. */
+  isDuplicate: boolean;
+  duplicateReason: string | null;
 };
+
+/** `name_lower|category_slug` -- the normalized key duplicate matching is done on. */
+export function duplicateKey(nameLower: string, categorySlug: string): string {
+  return `${nameLower}|${categorySlug}`;
+}
 
 export type RowError = { row: number; reason: string };
 
@@ -52,9 +62,13 @@ export function slugifyCategory(category: string): string {
 }
 
 export function parseCsv(csvText: string): ParsedCsv {
+  // skipEmptyLines would otherwise drop a blank line from `data` entirely,
+  // which shifts every later row's array index away from its real line
+  // number -- an admin "fixing row 14" would be looking at the wrong line.
+  // validateRows() filters blank rows itself, after row numbers are fixed.
   const parsed = Papa.parse<Record<string, string>>(csvText, {
     header: true,
-    skipEmptyLines: true,
+    skipEmptyLines: false,
     transformHeader: (h) => h.trim(),
   });
   return {
@@ -88,10 +102,13 @@ export function validateRows(
   parsed: ParsedCsv,
   mapping: ColumnMapping,
   validCategorySlugs?: Set<string>,
+  /** `name_lower|category_slug` keys already present in the directory (active or not). */
+  existingContactKeys?: Set<string>,
 ): ValidationReport {
   const unmappedColumns = parsed.headers.filter((h) => !mapping[h]);
   const valid: ContactDraft[] = [];
   const skipped: RowError[] = [];
+  const seenInFile = new Map<string, number>(); // key -> first row number it appeared on
 
   const columnFor = (target: KnownColumn): string | undefined =>
     parsed.headers.find((h) => mapping[h] === target);
@@ -102,6 +119,12 @@ export function validateRows(
 
   parsed.rows.forEach((raw, index) => {
     const row = index + 2; // +1 for zero-index, +1 for the header row
+    // A genuinely blank physical line (including the phantom trailing row a
+    // final newline produces) -- skip it without reporting an error, same as
+    // the old skipEmptyLines:true behavior, now with correct row numbers for
+    // every real row around it.
+    if (Object.values(raw).every((v) => !v || !v.trim())) return;
+
     const read = (col: string | undefined) => (col ? (raw[col] ?? '').trim() : '');
 
     const name = read(nameCol);
@@ -128,9 +151,24 @@ export function validateRows(
       return;
     }
 
+    const nameLower = computeNameLower(name);
+    const key = duplicateKey(nameLower, categorySlug);
+    let isDuplicate = false;
+    let duplicateReason: string | null = null;
+    const firstRow = seenInFile.get(key);
+    if (firstRow !== undefined) {
+      isDuplicate = true;
+      duplicateReason = `Same name and category as row ${firstRow} in this file`;
+    } else if (existingContactKeys?.has(key)) {
+      isDuplicate = true;
+      duplicateReason = 'Same name and category as a contact already in the directory';
+    } else {
+      seenInFile.set(key, row);
+    }
+
     valid.push({
       name,
-      name_lower: computeNameLower(name),
+      name_lower: nameLower,
       sort_key: computeSortKey(name),
       category_slug: categorySlug,
       role: read(roleCol),
@@ -141,6 +179,9 @@ export function validateRows(
       city: read(columnFor('city')) || null,
       notes: read(columnFor('notes')) || null,
       active: true,
+      row,
+      isDuplicate,
+      duplicateReason,
     });
   });
 

@@ -8,6 +8,7 @@ import { CategoriesPage } from './pages/CategoriesPage';
 import { ImportPage } from './pages/ImportPage';
 import { QuotesPage } from './pages/QuotesPage';
 import { QuestionsImportPage } from './pages/QuestionsImportPage';
+import { QuotesImportPage } from './pages/QuotesImportPage';
 import { TracksPage } from './pages/TracksPage';
 import { TrackChallengesPage } from './pages/TrackChallengesPage';
 import logoMark from './assets/brand-logo-mark.png';
@@ -114,6 +115,7 @@ export default function App() {
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/quotes" element={<QuotesPage />} />
             <Route path="/questions" element={<QuestionsImportPage />} />
+            <Route path="/quotes-import" element={<QuotesImportPage />} />
             <Route path="/tracks" element={<TracksPage />} />
             <Route path="/tracks/:slug" element={<TrackChallengesPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />

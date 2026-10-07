@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react';
+import { Link } from 'react-router-dom';
 import { supabase } from '../lib/supabase';
 
 type Quote = {
@@ -84,7 +85,10 @@ export function QuotesPage() {
           <h1>Inspiration</h1>
           <p className="muted small">Manage the quotes shown to members.</p>
         </div>
-        <button onClick={openCreate}>+ Add quote</button>
+        <div className="row" style={{ gap: '0.5rem' }}>
+          <Link className="button-link" to="/quotes-import">Import CSV</Link>
+          <button onClick={openCreate}>+ Add quote</button>
+        </div>
       </div>
 
       <div className="card stack">

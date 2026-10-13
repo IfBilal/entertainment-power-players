@@ -50,11 +50,13 @@ describe('light theme contract', () => {
     }
   });
 
-  it('limits the five category palettes to the approved slugs and light fills', () => {
-    expect(Object.keys(categoryPalette).sort()).toEqual(['fashion', 'film-tv', 'gaming', 'music', 'sports']);
+  it('limits the six category palettes to the approved slugs and keeps each bold-fill badge readable', () => {
+    expect(Object.keys(categoryPalette).sort()).toEqual(['creators-producers', 'fashion', 'film-tv', 'gaming', 'music', 'sports']);
     for (const [slug, { fill, glyph }] of Object.entries(categoryPalette)) {
-      expect({ slug, fillLuminance: luminance(fill) > 0.8 }).toEqual({ slug, fillLuminance: true });
-      expect({ slug, glyphContrast: contrastOnWhite(glyph) >= 4.5 }).toEqual({ slug, glyphContrast: true });
+      // Badges are solid, saturated emblems now (not pale chips), so the glyph
+      // must contrast against its own fill colour, not against white.
+      const ratio = (Math.max(luminance(fill), luminance(glyph)) + 0.05) / (Math.min(luminance(fill), luminance(glyph)) + 0.05);
+      expect({ slug, badgeContrast: ratio >= 4.5 }).toEqual({ slug, badgeContrast: true });
     }
   });
 

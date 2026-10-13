@@ -1,19 +1,24 @@
 import { StyleSheet, View } from 'react-native';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors, radius, spacing, type IoniconName } from '../theme';
+import { colors, radius, spacing, type IoniconName, type MaterialCommunityIconName } from '../theme';
 
 type EmptyStateProps = {
-  icon: IoniconName;
+  icon: IoniconName | MaterialCommunityIconName;
+  /** Defaults to Ionicons; set 'mci' to render `icon` from MaterialCommunityIcons instead. */
+  iconFamily?: 'ionicons' | 'mci';
   title: string;
   description?: string;
 };
 
-export function EmptyState({ icon, title, description }: EmptyStateProps) {
+export function EmptyState({ icon, iconFamily = 'ionicons', title, description }: EmptyStateProps) {
   return (
     <View style={styles.container}>
       <View style={styles.iconWrap}>
-        <Ionicons name={icon} size={26} color={colors.accent} />
+        {iconFamily === 'mci'
+          ? <MaterialCommunityIcons name={icon as MaterialCommunityIconName} size={26} color={colors.accent} />
+          : <Ionicons name={icon as IoniconName} size={26} color={colors.accent} />}
       </View>
       <AppText variant="subtitle" style={styles.title}>
         {title}

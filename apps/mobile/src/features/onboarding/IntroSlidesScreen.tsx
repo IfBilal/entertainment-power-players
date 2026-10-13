@@ -1,10 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Animated, Easing, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
-import { LinearGradient } from 'expo-linear-gradient';
 import Svg, { Circle, Defs, LinearGradient as SvgGradient, Path, Stop } from 'react-native-svg';
 import { AppText, Button, CategoryGlyph, IconTile, Screen } from '../../components';
-import { colors, gradients, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
+import { categoryPalette, colors, radius, spacing, type GradientToken, type IoniconName } from '../../theme';
 import type { OnboardingStackParamList } from '../../navigation/types';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
@@ -14,7 +13,7 @@ type Slide = {
   title: string;
   body: string;
   hero?: boolean;
-  tiles?: Array<{ slug: string; tone: GradientToken }>;
+  tiles?: Array<{ slug: string }>;
   stat?: boolean;
 };
 
@@ -63,11 +62,11 @@ const slides: Slide[] = [
     title: 'Take on Challenges.',
     body: 'Complete industry-backed challenges and build your career, one step at a time.',
     tiles: [
-      { slug: 'film-tv', tone: 'ember' },
-      { slug: 'music', tone: 'green' },
-      { slug: 'gaming', tone: 'ember' },
-      { slug: 'sports', tone: 'green' },
-      { slug: 'fashion', tone: 'brand' },
+      { slug: 'film-tv' },
+      { slug: 'music' },
+      { slug: 'gaming' },
+      { slug: 'sports' },
+      { slug: 'fashion' },
     ],
   },
 ];
@@ -76,7 +75,10 @@ const slides: Slide[] = [
 function CategoryHero() {
   const slugs = ['fashion', 'film-tv', 'gaming', 'music', 'sports'];
   return <View style={styles.categoryHero} accessibilityLabel="Fashion, Film and TV, Gaming, Music, and Sports">
-    {slugs.map((slug) => <View key={slug} style={styles.categoryHeroIcon}><CategoryGlyph slug={slug} size={28} color={colors.accent} /></View>)}
+    {slugs.map((slug) => {
+      const palette = categoryPalette[slug];
+      return <View key={slug} style={[styles.categoryHeroIcon, { backgroundColor: palette.fill }]}><CategoryGlyph slug={slug} size={28} color={palette.glyph} /></View>;
+    })}
   </View>;
 }
 
@@ -131,18 +133,10 @@ function TileScatter({ tiles }: { tiles: NonNullable<Slide['tiles']> }) {
   return (
     <View style={styles.scatter}>
       {tiles.map((t) => {
-        const warm = t.tone === 'ember';
-        const hue = warm ? colors.accentOrange : colors.accentLime;
+        const palette = categoryPalette[t.slug];
         return (
-          <View
-            key={t.slug}
-            style={[
-              styles.cascadeCard,
-              { borderColor: `${hue}55` },
-            ]}
-          >
-            <LinearGradient colors={[`${hue}16`, colors.surface]} style={StyleSheet.absoluteFill} />
-            <CategoryGlyph slug={t.slug} size={38} color={hue} />
+          <View key={t.slug} style={[styles.cascadeCard, { backgroundColor: palette.fill }]}>
+            <CategoryGlyph slug={t.slug} size={38} color={palette.glyph} />
           </View>
         );
       })}
@@ -276,7 +270,6 @@ const styles = StyleSheet.create({
     width: 96,
     height: 96,
     borderRadius: radius.lg,
-    borderWidth: 1,
     overflow: 'hidden',
     alignItems: 'center',
     justifyContent: 'center',

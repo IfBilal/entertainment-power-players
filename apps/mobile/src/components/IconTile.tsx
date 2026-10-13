@@ -1,13 +1,17 @@
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { CategoryGlyph } from './CategoryGlyph';
-import { colors, gradients, radius, type GradientToken, type IoniconName } from '../theme';
+import { colors, gradients, radius, type GradientToken, type IoniconName, type MaterialCommunityIconName } from '../theme';
 
 type IconTileSize = 'sm' | 'md' | 'lg';
 
 type IconTileProps = {
-  icon: IoniconName;
+  icon: IoniconName | MaterialCommunityIconName;
+  /** Defaults to Ionicons; set 'mci' to render `icon` from MaterialCommunityIcons instead,
+   *  for a more specific artifact than Ionicons' outline set offers. */
+  iconFamily?: 'ionicons' | 'mci';
   categorySlug?: string;
   /** Which brand gradient fills the tile. */
   tone?: GradientToken;
@@ -30,25 +34,29 @@ const dimensions: Record<IconTileSize, { box: number; glyph: number; radius: num
 };
 
 /** Category medallions and small action icon holders on the white UI. */
-export function IconTile({ icon, categorySlug, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, glyphColor, style }: IconTileProps) {
+export function IconTile({ icon, iconFamily = 'ionicons', categorySlug, tone = 'brand', size = 'md', soft = false, circle = false, fillColor, glyphColor, style }: IconTileProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: circle ? d.box / 2 : d.radius };
   const gradient = gradients[tone];
 
+  function Glyph({ color }: { color: string }) {
+    return iconFamily === 'mci'
+      ? <MaterialCommunityIcons name={icon as MaterialCommunityIconName} size={d.glyph} color={color} />
+      : <Ionicons name={icon as IoniconName} size={d.glyph} color={color} />;
+  }
+
   if (soft) {
     return (
       <View style={[styles.tile, box, styles.softTile, style]}>
-        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={gradient.colors[0]} />}
+        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.accent} /> : <Glyph color={gradient.colors[0]} />}
       </View>
     );
   }
 
   if (circle) {
     return (
-      <View style={[styles.tile, box, styles.circle, { backgroundColor: fillColor ?? colors.accentOrangeSoft }, style]}>
-        <View style={[styles.innerCircle, { width: d.box * 0.76, height: d.box * 0.76, borderRadius: d.box * 0.38, borderColor: `${glyphColor ?? colors.accent}35` }]}>
-          {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={glyphColor ?? colors.accent} /> : <Ionicons name={icon} size={d.glyph} color={glyphColor ?? gradient.colors[gradient.colors.length - 1]} />}
-        </View>
+      <View style={[styles.tile, box, { backgroundColor: fillColor ?? colors.accent }, style]}>
+        {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={glyphColor ?? colors.textInverse} /> : <Glyph color={glyphColor ?? colors.textInverse} />}
       </View>
     );
   }
@@ -60,7 +68,7 @@ export function IconTile({ icon, categorySlug, tone = 'brand', size = 'md', soft
       end={gradient.end}
       style={[styles.tile, box, style]}
     >
-      {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.textInverse} /> : <Ionicons name={icon} size={d.glyph} color={colors.textInverse} />}
+      {categorySlug ? <CategoryGlyph slug={categorySlug} size={d.glyph} color={colors.textInverse} /> : <Glyph color={colors.textInverse} />}
     </LinearGradient>
   );
 }
@@ -75,6 +83,4 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     borderColor: colors.border,
   },
-  circle: { borderWidth: 1, borderColor: colors.border },
-  innerCircle: { borderWidth: 1, alignItems: 'center', justifyContent: 'center', backgroundColor: 'rgba(255,255,255,0.48)' },
 });

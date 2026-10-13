@@ -58,7 +58,7 @@ export function QuestionCategoriesScreen({ navigation }: Props) {
           ) : categoriesQuery.isPending || questionsQuery.isPending ? (
             <View style={styles.skeletons}>{[0, 1, 2].map((i) => <Skeleton key={i} height={72} radius={16} />)}</View>
           ) : (
-            <EmptyState icon="help-circle-outline" title="No questions yet" description="Check back soon -- new questions are on the way." />
+            <EmptyState icon="lightbulb-question-outline" iconFamily="mci" title="The quiz is still loading up" description="New industry questions are on the way -- check back soon." />
           )
         }
         renderItem={({ item }) => {
@@ -79,7 +79,7 @@ export function QuestionCategoriesScreen({ navigation }: Props) {
                 <AppText variant="subtitle">{item.name}</AppText>
                 <AppText variant="caption" color={colors.textSecondary}>{count > 0 ? `${count} question${count === 1 ? '' : 's'}` : 'Coming soon'}</AppText>
               </View>
-              {count > 0 ? <AppText variant="title" color={palette.glyph}>{'›'}</AppText> : null}
+              {count > 0 ? <AppText variant="title" color={palette.fill}>{'›'}</AppText> : null}
             </Pressable>
           );
         }}

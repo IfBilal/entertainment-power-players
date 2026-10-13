@@ -2,15 +2,15 @@ import { Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, IconTile, Screen } from '../../components';
-import { colors, spacing, type GradientToken, type IoniconName } from '../../theme';
+import { colors, spacing, type GradientToken, type MaterialCommunityIconName } from '../../theme';
 import type { TrackerStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<TrackerStackParamList, 'LogActivity'>;
 
-const options: Array<{ type: 'contact' | 'event' | 'followUp'; title: string; description: string; icon: IoniconName; tone: GradientToken }> = [
-  { type: 'contact', title: 'Contact', description: "Add a new contact you've met", icon: 'people-outline', tone: 'barOrange' },
-  { type: 'event', title: 'Event', description: 'Log an event you attended', icon: 'calendar-outline', tone: 'barAmber' },
-  { type: 'followUp', title: 'Follow-up', description: 'Schedule or record a follow up', icon: 'clipboard-outline', tone: 'barLime' },
+const options: Array<{ type: 'contact' | 'event' | 'followUp'; title: string; description: string; icon: MaterialCommunityIconName; tone: GradientToken }> = [
+  { type: 'contact', title: 'Contact', description: "Add a new contact you've met", icon: 'card-account-phone-outline', tone: 'barOrange' },
+  { type: 'event', title: 'Event', description: 'Log an event you attended', icon: 'calendar-check-outline', tone: 'barAmber' },
+  { type: 'followUp', title: 'Follow-up', description: 'Schedule or record a follow up', icon: 'handshake-outline', tone: 'barLime' },
 ];
 
 export function LogActivityScreen({ navigation }: Props) {
@@ -22,7 +22,7 @@ export function LogActivityScreen({ navigation }: Props) {
       <View style={styles.options}>
         {options.map((option) => (
           <Pressable key={option.type} onPress={() => navigation.navigate('LogEntry', { type: option.type })} style={styles.option}>
-            <IconTile icon={option.icon} tone={option.tone} size="lg" />
+            <IconTile icon={option.icon} iconFamily="mci" tone={option.tone} size="lg" />
             <View style={styles.copy}><AppText variant="subtitle">{option.title}</AppText><AppText variant="body" color={colors.textSecondary}>{option.description}</AppText></View>
           </Pressable>
         ))}

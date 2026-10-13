@@ -70,7 +70,7 @@ export function CategoryCard({ slug, name, icon, count, onPress, tone = 'brand',
           {count === undefined ? '—' : `${count.toLocaleString()} contact${count === 1 ? '' : 's'}`}
         </AppText>
       </View>
-      <View style={styles.arrow}><Ionicons name="arrow-forward" size={18} color={glyphColor ?? colors.accent} /></View>
+      <View style={styles.arrow}><Ionicons name="arrow-forward" size={18} color={fillColor ?? colors.accent} /></View>
     </AnimatedPressable>
   );
 }

@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { Animated, AppState, Easing, Pressable, ScrollView, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, BarChart, Button, Card, Divider, MomentumRow, ProgressRing, Screen, StatCard } from '../../components';
 import { colors, spacing } from '../../theme';
@@ -64,10 +64,10 @@ export function TrackerDashboardScreen({ navigation }: Props) {
     return () => { clearInterval(timer); listener.remove(); };
   }, [queryClient, userId]);
 
-  const rows: Array<{ key: 'contacts' | 'events' | 'followUps'; label: string; icon: 'people-outline' | 'calendar-outline' | 'return-up-forward-outline'; tint: string; wash: string }> = [
-    { key: 'contacts', label: 'Contacts', icon: 'people-outline', tint: colors.accent, wash: colors.accentSoft },
-    { key: 'events', label: 'Events', icon: 'calendar-outline', tint: colors.accentOrange, wash: colors.accentOrangeSoft },
-    { key: 'followUps', label: 'Follow-ups', icon: 'return-up-forward-outline', tint: colors.warning, wash: colors.warningSoft },
+  const rows: Array<{ key: 'contacts' | 'events' | 'followUps'; label: string; icon: 'card-account-phone-outline' | 'calendar-check-outline' | 'handshake-outline'; tint: string; wash: string }> = [
+    { key: 'contacts', label: 'Contacts', icon: 'card-account-phone-outline', tint: colors.accent, wash: colors.accentSoft },
+    { key: 'events', label: 'Events', icon: 'calendar-check-outline', tint: colors.accentOrange, wash: colors.accentOrangeSoft },
+    { key: 'followUps', label: 'Follow-ups', icon: 'handshake-outline', tint: colors.warning, wash: colors.warningSoft },
   ];
 
   return (
@@ -108,7 +108,7 @@ export function TrackerDashboardScreen({ navigation }: Props) {
           {rows.map((row) => (
             <Card key={row.key} style={styles.metricCard} elevation="none">
               <View style={styles.metricTop}>
-                <View style={[styles.metricIcon, { backgroundColor: row.wash }]}><Ionicons name={row.icon} size={19} color={row.tint} /></View>
+                <View style={[styles.metricIcon, { backgroundColor: row.wash }]}><MaterialCommunityIcons name={row.icon} size={19} color={row.tint} /></View>
                 <AppText variant="bodyStrong" style={styles.metricLabel}>{row.label}</AppText>
                 <AppText variant="subtitle" color={row.tint}>{counts[row.key]}<AppText variant="captionStrong" color={colors.textSecondary}>/{goals[row.key]}</AppText></AppText>
               </View>

@@ -148,6 +148,6 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
     content.fetchActiveQuestions.mockResolvedValueOnce([]);
     await renderWithProviders(<ChallengesNavigator />);
     fireEvent.press(await screen.findByText('Questions'));
-    expect(await screen.findByText('No questions yet')).toBeTruthy();
+    expect(await screen.findByText('The quiz is still loading up')).toBeTruthy();
   });
 });

@@ -12,5 +12,5 @@ export type { SpacingToken, RadiusToken } from './spacing';
 export type { TypographyToken } from './typography';
 export type { ShadowToken } from './shadows';
 export type { MotionToken } from './motion';
-export type { IoniconName } from './icons';
+export type { IoniconName, MaterialCommunityIconName } from './icons';
 export { categoryPalette, neutralCategoryPalette, metricAccents } from './accents';

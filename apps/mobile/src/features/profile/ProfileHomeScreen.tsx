@@ -93,7 +93,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
         </Pressable>
 
         <View style={styles.section}>
-          <SettingsRow icon="flag-outline" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
+          <SettingsRow icon="compass-outline" iconFamily="mci" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
           {tracksOpen ? (
             <View style={styles.trackList}>
               {tracksQuery.isPending ? <AppText variant="caption" color={colors.textSecondary}>Loading tracks…</AppText> : null}
@@ -115,7 +115,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
         </View>
 
         <View style={styles.section}>
-          <SettingsRow icon="sparkles-outline" title="Subscription" onPress={() => navigation.navigate('Subscription')} />
+          <SettingsRow icon="crown-outline" iconFamily="mci" title="Subscription" onPress={() => navigation.navigate('Subscription')} />
           <SettingsRow icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
         </View>
 

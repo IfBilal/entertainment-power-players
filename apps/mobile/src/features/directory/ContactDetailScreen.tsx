@@ -59,7 +59,7 @@ export function ContactDetailScreen({ route, navigation }: Props) {
   if (!contact) {
     return (
       <Screen>
-        <EmptyState icon="person-outline" title="Contact not found" />
+        <EmptyState icon="person-outline" title="We couldn't find this contact" description="They may have been removed from the directory." />
       </Screen>
     );
   }

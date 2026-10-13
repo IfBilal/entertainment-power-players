@@ -1,7 +1,7 @@
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { DirectoryNavigator } from '../features/directory/DirectoryNavigator';
 import { TrackerNavigator } from '../features/tracker/TrackerNavigator';
@@ -40,7 +40,7 @@ function TabIcon({ route, color, size, focused }: { route: string; color: string
         style={[styles.iconHighlight, { opacity: focus, transform: [{ scale: highlightScale }] }]}
       />
       <Animated.View style={{ transform: [{ scale: iconScale }] }}>
-        <Ionicons name={tabIcons[route]} size={size + 1} color={color} />
+        <MaterialCommunityIcons name={tabIcons[route]} size={size + 1} color={color} />
       </Animated.View>
     </View>
   );

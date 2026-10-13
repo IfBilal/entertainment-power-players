@@ -54,7 +54,7 @@ export function QuestionGroupsScreen({ route, navigation }: Props) {
           ) : questionsQuery.isPending ? (
             <View style={styles.skeletons}>{[0, 1].map((i) => <Skeleton key={i} height={64} radius={14} />)}</View>
           ) : (
-            <EmptyState icon="help-circle-outline" title="No questions yet" description="Check back soon for this category." />
+            <EmptyState icon="lightbulb-question-outline" iconFamily="mci" title="Nothing here -- yet" description="Questions for this category are on the way. Check back soon." />
           )
         }
         renderItem={({ item }) => (

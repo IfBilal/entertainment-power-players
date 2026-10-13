@@ -1,20 +1,22 @@
 import { colors } from './colors';
 
 /**
- * Category pictogram colours. Each category gets a pale fill and a deeper
- * glyph colour, both readable on the white canvas. Keyed by stable slug so a
- * database rename of the display name never changes the colour.
+ * Category badge colours. Each category gets a bold, solid fill with a white
+ * glyph on top -- a characterized emblem, not a soft pastel icon chip -- so
+ * the six industries read as distinct badges at a glance. Keyed by stable
+ * slug so a database rename of the display name never changes the colour.
  */
 export const categoryPalette: Record<string, { fill: string; glyph: string }> = {
-  fashion: { fill: '#FFF2E8', glyph: '#A94812' },
-  'film-tv': { fill: '#EAF5EE', glyph: '#216B36' },
-  gaming: { fill: '#EEF6E9', glyph: '#337326' },
-  music: { fill: '#FFF6E6', glyph: '#8F5B00' },
-  sports: { fill: '#E8F4F4', glyph: '#196A73' },
+  fashion: { fill: '#A94812', glyph: colors.textInverse },
+  'film-tv': { fill: '#216B36', glyph: colors.textInverse },
+  gaming: { fill: '#337326', glyph: colors.textInverse },
+  music: { fill: '#8F5B00', glyph: colors.textInverse },
+  sports: { fill: '#196A73', glyph: colors.textInverse },
+  'creators-producers': { fill: '#5B3A8F', glyph: colors.textInverse },
 };
 
-/** Fallback for a slug outside the five supervisor-approved categories. */
-export const neutralCategoryPalette = { fill: colors.surfaceStrong, glyph: colors.textSecondary };
+/** Fallback for a slug outside the six supervisor-approved categories. */
+export const neutralCategoryPalette = { fill: colors.textTertiary, glyph: colors.textInverse };
 
 /** Weekly metric colours on the tracker dashboard, one per log type. */
 export const metricAccents = {

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react';
 import { FlatList, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, CategoryGlyph, ChallengeRow, EmptyState, PaywallCard, ProgressRing, Screen } from '../../components';
-import { colors, spacing } from '../../theme';
+import { categoryPalette, colors, neutralCategoryPalette, spacing } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import type { ChallengeRecord } from '../../types/week3';
 import { useAppStore } from '../../store/useAppStore';
@@ -61,12 +61,13 @@ export function TrackDetailScreen({ route, navigation }: Props) {
     );
   }
 
+  const palette = categoryPalette[track.slug] ?? neutralCategoryPalette;
   const locked = isScreenLocked('challengeTrackDetail', isPro);
   if (locked) {
     return (
       <Screen>
-        <View style={styles.identity} accessibilityLabel={`${track.name} category`}>
-          <CategoryGlyph slug={track.slug} size={34} color={colors.accent} />
+        <View style={[styles.identity, { backgroundColor: palette.fill }]} accessibilityLabel={`${track.name} category`}>
+          <CategoryGlyph slug={track.slug} size={34} color={palette.glyph} />
         </View>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
         <AppText variant="body" color={colors.textSecondary} style={styles.lockedCopy}>See the challenges and track your progress with Premium.</AppText>
@@ -86,8 +87,8 @@ export function TrackDetailScreen({ route, navigation }: Props) {
   return (
     <Screen>
       <View style={styles.header}>
-        <View style={styles.identity} accessibilityLabel={`${track.name} category`}>
-          <CategoryGlyph slug={track.slug} size={34} color={colors.accent} />
+        <View style={[styles.identity, { backgroundColor: palette.fill }]} accessibilityLabel={`${track.name} category`}>
+          <CategoryGlyph slug={track.slug} size={34} color={palette.glyph} />
         </View>
         <AppText variant="title" style={styles.heading}>{track.name}</AppText>
         <View style={styles.ringHalo}><ProgressRing progress={total > 0 ? done / total : 0} size={132} strokeWidth={11} label={`${done}/${total}`} /></View>
@@ -109,7 +110,7 @@ export function TrackDetailScreen({ route, navigation }: Props) {
         keyExtractor={(c) => c.id}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={<EmptyState icon="checkmark-done-outline" title="No challenges yet" />}
+        ListEmptyComponent={<EmptyState icon="rocket-launch-outline" iconFamily="mci" title="This track is just getting started" description="Challenges for this track are on the way." />}
         renderItem={({ item }) => <ConnectedChallengeRow challenge={item} onOpen={() => navigation.navigate('ChallengeDetail', { trackSlug: track.slug, challengeId: item.id })} />}
       />
     </Screen>

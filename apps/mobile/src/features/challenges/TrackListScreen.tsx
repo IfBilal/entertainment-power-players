@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Card, EmptyState, IconTile, Screen, SettingsRow } from '../../components';
-import { categoryPalette, colors, spacing, type GradientToken } from '../../theme';
+import { categoryPalette, colors, neutralCategoryPalette, spacing, type GradientToken } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
@@ -49,21 +49,21 @@ export function TrackListScreen({ navigation }: Props) {
         keyExtractor={(t) => t.slug}
         contentContainerStyle={styles.list}
         showsVerticalScrollIndicator={false}
-        ListEmptyComponent={tracksQuery.isPending ? <AppText variant="caption">Loading tracks…</AppText> : <EmptyState icon="shapes-outline" title="No tracks selected" description="Choose tracks in Profile, or view All Tracks." />}
+        ListEmptyComponent={tracksQuery.isPending ? <AppText variant="caption">Loading tracks…</AppText> : <EmptyState icon="compass-outline" iconFamily="mci" title="Pick your lane" description="Choose the tracks you want to grow in from Profile, or browse All Tracks." />}
         renderItem={({ item }) => {
           const challenges = (challengesQuery.data ?? []).filter((challenge) => challenge.trackSlug === item.slug);
           const total = challenges.length;
           const done = challenges.filter((challenge) => progress[challenge.id]?.status === 'complete').length;
-          const palette = categoryPalette[item.slug] ?? { fill: colors.accentSoft, glyph: colors.accent };
+          const palette = categoryPalette[item.slug] ?? neutralCategoryPalette;
           return (
             <Pressable onPress={() => navigation.navigate('TrackDetail', { trackSlug: item.slug })} accessibilityRole="button" accessibilityLabel={"Open " + item.name + " track"}>
               <Card style={styles.row} elevation="none">
                 <View style={styles.rowTop}>
                   <IconTile icon="shapes-outline" categorySlug={item.slug} tone={tones[Math.abs(item.order) % tones.length]} size="lg" circle fillColor={palette.fill} glyphColor={palette.glyph} />
                   <View style={styles.text}><AppText variant="subtitle">{item.name}</AppText><AppText variant="caption" color={colors.textSecondary}>{!isPro ? 'Premium track' : challengesQuery.isPending ? 'Loading progress…' : done + '/' + total + ' completed'}</AppText></View>
-                  <AppText variant="title" color={palette.glyph}>›</AppText>
+                  <AppText variant="title" color={palette.fill}>›</AppText>
                 </View>
-                {isPro && total > 0 ? <View accessibilityRole="progressbar" accessibilityLabel={item.name + ': ' + done + ' of ' + total + ' challenges complete'} accessibilityValue={{ min: 0, max: total, now: done }} style={styles.progressTrack}><View style={[styles.progressFill, { width: `${Math.min(100, done / total * 100)}%` as const, backgroundColor: palette.glyph }]} /></View> : null}
+                {isPro && total > 0 ? <View accessibilityRole="progressbar" accessibilityLabel={item.name + ': ' + done + ' of ' + total + ' challenges complete'} accessibilityValue={{ min: 0, max: total, now: done }} style={styles.progressTrack}><View style={[styles.progressFill, { width: `${Math.min(100, done / total * 100)}%` as const, backgroundColor: palette.fill }]} /></View> : null}
               </Card>
             </Pressable>
           );

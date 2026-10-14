@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react';
-import { Linking, Pressable, StyleSheet, Switch, View } from 'react-native';
+import { Linking, Pressable, ScrollView, StyleSheet, Switch, View } from 'react-native';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AppText, Avatar, Button, FormField, Screen } from '../../components';
-import { colors, spacing } from '../../theme';
+import { avatarIconIds, colors, radius, spacing } from '../../theme';
 import type { ProfileStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { assertEmailAvailable, requestEmailChange } from '../../services/supabase/auth';
@@ -18,7 +19,10 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   const displayName = useAuthStore((state) => state.displayName);
   const userId = useAuthStore((state) => state.userId);
   const setDisplayName = useAuthStore((state) => state.setDisplayName);
+  const storedAvatarIcon = useAuthStore((state) => state.avatarIcon);
+  const setAvatarIcon = useAuthStore((state) => state.setAvatarIcon);
   const [name, setName] = useState(displayName ?? '');
+  const [avatarIcon, setAvatarIconChoice] = useState<string | null>(storedAvatarIcon);
   const currentEmail = useAuthStore((state) => state.emailAddress);
   const [savingProfile, setSavingProfile] = useState(false);
   const [profileError, setProfileError] = useState<string | null>(null);
@@ -35,6 +39,10 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
     if (displayName) setName(displayName);
   }, [displayName]);
 
+  useEffect(() => {
+    setAvatarIconChoice(storedAvatarIcon);
+  }, [storedAvatarIcon]);
+
   async function saveProfile() {
     const nextName = name.trim();
     if (!userId || !nextName) {
@@ -44,8 +52,9 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
     setProfileError(null);
     setSavingProfile(true);
     try {
-      await updateProfile(userId, { displayName: nextName });
+      await updateProfile(userId, { displayName: nextName, avatarIcon });
       setDisplayName(nextName);
+      setAvatarIcon(avatarIcon);
       navigation.goBack();
     } catch (err) {
       setProfileError(err instanceof Error ? err.message : 'Could not save your profile. Try again.');
@@ -77,36 +86,68 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   }
 
   return (
-    <Screen>
-      <Back onPress={() => navigation.goBack()} />
-      <AppText variant="title">Edit Profile</AppText>
-      <View style={styles.editAvatar}>
-        <Avatar name={avatarSource} size="lg" />
-      </View>
-      <View style={styles.form}>
-        <FormField label="Full name" value={name} onChangeText={setName} />
-        <FormField
-          label="Email address"
-          value={email}
-          onChangeText={(value) => { setEmail(value); setEmailLinkSent(false); }}
-          autoCapitalize="none"
-          autoComplete="email"
-          keyboardType="email-address"
-          error={emailError ?? undefined}
-        />
-        {emailLinkSent ? (
-          <AppText variant="caption" color={colors.accentLime}>
-            Confirmation link sent. Open it on this device; if Supabase asks you to confirm both addresses, open both email links.
-          </AppText>
-        ) : null}
-        <Button
-          label={sendingEmailLink ? 'Sending confirmation…' : 'Change email address'}
-          onPress={sendEmailChangeLink}
-          disabled={sendingEmailLink || !email.trim()}
-        />
-        {profileError ? <AppText variant="caption" color={colors.danger}>{profileError}</AppText> : null}
-        <Button label={savingProfile ? 'Saving…' : 'Save Changes'} onPress={saveProfile} disabled={savingProfile} />
-      </View>
+    <Screen padded={false}>
+      <ScrollView contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <Back onPress={() => navigation.goBack()} />
+        <AppText variant="title">Edit Profile</AppText>
+        <View style={styles.editAvatar}>
+          <Avatar name={avatarSource} iconId={avatarIcon} size="lg" />
+        </View>
+
+        <AppText variant="bodyStrong" style={styles.iconPickerLabel}>Choose your icon</AppText>
+        <AppText variant="caption" color={colors.textSecondary} style={styles.iconPickerHint}>
+          Pick a character for your profile, or clear it to use your initials.
+        </AppText>
+        <View style={styles.iconGrid}>
+          {avatarIconIds.map((id) => {
+            const isSelected = avatarIcon === id;
+            return (
+              <Pressable
+                key={id}
+                onPress={() => setAvatarIconChoice(isSelected ? null : id)}
+                accessibilityRole="checkbox"
+                accessibilityState={{ checked: isSelected }}
+                accessibilityLabel={id.replace(/-/g, ' ')}
+                style={[styles.iconCard, isSelected && styles.iconCardSelected]}
+              >
+                <View style={styles.iconCardFill}>
+                  <MaterialCommunityIcons name={id} size={26} color={colors.textInverse} />
+                </View>
+                {isSelected ? (
+                  <View style={styles.iconSelectedMark}>
+                    <Ionicons name="checkmark" size={11} color={colors.textInverse} />
+                  </View>
+                ) : null}
+              </Pressable>
+            );
+          })}
+        </View>
+
+        <View style={styles.form}>
+          <FormField label="Full name" value={name} onChangeText={setName} />
+          <FormField
+            label="Email address"
+            value={email}
+            onChangeText={(value) => { setEmail(value); setEmailLinkSent(false); }}
+            autoCapitalize="none"
+            autoComplete="email"
+            keyboardType="email-address"
+            error={emailError ?? undefined}
+          />
+          {emailLinkSent ? (
+            <AppText variant="caption" color={colors.accentLime}>
+              Confirmation link sent. Open it on this device; if Supabase asks you to confirm both addresses, open both email links.
+            </AppText>
+          ) : null}
+          <Button
+            label={sendingEmailLink ? 'Sending confirmation…' : 'Change email address'}
+            onPress={sendEmailChangeLink}
+            disabled={sendingEmailLink || !email.trim()}
+          />
+          {profileError ? <AppText variant="caption" color={colors.danger}>{profileError}</AppText> : null}
+          <Button label={savingProfile ? 'Saving…' : 'Save Changes'} onPress={saveProfile} disabled={savingProfile} />
+        </View>
+      </ScrollView>
     </Screen>
   );
 }
@@ -201,4 +242,4 @@ export function NotificationsScreen({ navigation }: NativeStackScreenProps<Profi
 }
 
 function Setting({ label, value, disabled, onValueChange }: { label: string; value: boolean; disabled: boolean; onValueChange: (value: boolean) => void }) { return <View style={styles.setting}><AppText variant="bodyStrong">{label}</AppText><Switch value={value} disabled={disabled} onValueChange={onValueChange} trackColor={{ true: colors.accent, false: colors.borderStrong }} thumbColor={colors.textPrimary} /></View>; }
-const styles = StyleSheet.create({ back: { marginBottom: spacing.md, marginLeft: -spacing.sm }, form: { gap: spacing.md, marginTop: spacing.lg }, intro: { marginTop: spacing.sm }, settings: { marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border }, setting: { paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }, editAvatar: { alignItems: 'center', marginTop: spacing.lg }, avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentAmber, alignItems: 'center', justifyContent: 'center' }, previewNote: { marginTop: spacing.md }, planCard: { gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: spacing.md, borderRadius: 16, marginTop: spacing.md }, planOptions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }, planOption: { flex: 1, minHeight: 116, justifyContent: 'center', gap: 5, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: spacing.sm }, planOptionSelected: { borderColor: colors.accentLime, backgroundColor: colors.accentFaint }, featuresTitle: { marginTop: spacing.lg, marginBottom: spacing.sm }, featureList: { gap: spacing.sm }, feature: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, emailLabel: { paddingTop: spacing.md, paddingBottom: spacing.sm } });
+const styles = StyleSheet.create({ back: { marginBottom: spacing.md, marginLeft: -spacing.sm }, form: { gap: spacing.md, marginTop: spacing.lg }, intro: { marginTop: spacing.sm }, settings: { marginTop: spacing.lg, borderTopWidth: 1, borderTopColor: colors.border }, setting: { paddingVertical: spacing.md, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderBottomWidth: 1, borderBottomColor: colors.border }, editAvatar: { alignItems: 'center', marginTop: spacing.lg }, avatar: { width: 72, height: 72, borderRadius: 36, backgroundColor: colors.accentAmber, alignItems: 'center', justifyContent: 'center' }, previewNote: { marginTop: spacing.md }, planCard: { gap: spacing.sm, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, padding: spacing.md, borderRadius: 16, marginTop: spacing.md }, planOptions: { flexDirection: 'row', gap: spacing.sm, marginBottom: spacing.md }, planOption: { flex: 1, minHeight: 116, justifyContent: 'center', gap: 5, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, borderRadius: 16, padding: spacing.sm }, planOptionSelected: { borderColor: colors.accentLime, backgroundColor: colors.accentFaint }, featuresTitle: { marginTop: spacing.lg, marginBottom: spacing.sm }, featureList: { gap: spacing.sm }, feature: { flexDirection: 'row', alignItems: 'center', gap: spacing.sm }, emailLabel: { paddingTop: spacing.md, paddingBottom: spacing.sm }, scrollContent: { paddingHorizontal: spacing.md, paddingBottom: spacing.xl }, iconPickerLabel: { marginTop: spacing.lg }, iconPickerHint: { marginTop: spacing.xs, marginBottom: spacing.md }, iconGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: spacing.sm, marginBottom: spacing.md }, iconCard: { width: 52, height: 52, borderRadius: radius.md, borderWidth: 2, borderColor: 'transparent', alignItems: 'center', justifyContent: 'center' }, iconCardSelected: { borderColor: colors.accent }, iconCardFill: { width: 44, height: 44, borderRadius: radius.pill, backgroundColor: colors.accentDeep, alignItems: 'center', justifyContent: 'center' }, iconSelectedMark: { position: 'absolute', top: -2, right: -2, width: 18, height: 18, borderRadius: 9, backgroundColor: colors.accent, alignItems: 'center', justifyContent: 'center', borderWidth: 2, borderColor: colors.surface } });

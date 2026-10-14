@@ -1,8 +1,9 @@
 import { StyleSheet, View, type ViewStyle } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import Ionicons from '@expo/vector-icons/Ionicons';
+import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AppText } from './AppText';
-import { colors } from '../theme';
+import { colors, isAvatarIconId } from '../theme';
 
 type AvatarSize = 'sm' | 'md' | 'lg' | 'xl';
 
@@ -10,6 +11,9 @@ type AvatarProps = {
   name: string;
   /** Stored photos are intentionally not rendered under the no-people brief. */
   imageUrl?: string | null;
+  /** The signed-in user's own chosen profile icon (e.g. "panda"), never set
+   *  for a real contact's row -- those always fall back to initials. */
+  iconId?: string | null;
   size?: AvatarSize;
   style?: ViewStyle;
 };
@@ -27,9 +31,17 @@ const dimensions: Record<AvatarSize, { box: number; text: number }> = {
  * faces for them would be misleading. The hue pair is derived from the name so
  * a given person keeps the same colours everywhere in the app.
  */
-export function Avatar({ name, size = 'md', style }: AvatarProps) {
+export function Avatar({ name, iconId, size = 'md', style }: AvatarProps) {
   const d = dimensions[size];
   const box: ViewStyle = { width: d.box, height: d.box, borderRadius: d.box / 2 };
+
+  if (isAvatarIconId(iconId)) {
+    return (
+      <View style={[styles.fallback, box, styles.iconFill, style]}>
+        <MaterialCommunityIcons name={iconId} size={d.text * 1.7} color={colors.textInverse} />
+      </View>
+    );
+  }
 
   // No name yet (e.g. a blank profile): show a neutral person glyph, not a stray "?".
   if (!name.trim()) {
@@ -92,6 +104,7 @@ function gradientFor(name: string): [string, string] {
 
 const styles = StyleSheet.create({
   empty: { backgroundColor: colors.surfaceStrong, borderWidth: 1, borderColor: colors.border },
+  iconFill: { backgroundColor: colors.accentDeep },
   fallback: {
     alignItems: 'center',
     justifyContent: 'center',

@@ -27,10 +27,13 @@ type AuthState = {
   /** From the profile row; used to greet the user by name on Home. */
   displayName: string | null;
   photoUrl: string | null;
+  /** The user's chosen profile icon id (e.g. "panda"), or null for initials. */
+  avatarIcon: string | null;
   hydrated: boolean;
   hydrate: () => () => void;
   setSelectedTrackSlugs: (slugs: string[]) => void;
   setDisplayName: (name: string) => void;
+  setAvatarIcon: (iconId: string | null) => void;
   reset: () => void;
 };
 
@@ -53,6 +56,7 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
       selectedTrackSlugs: profile?.selectedTracks ?? [],
       displayName: profile?.displayName?.trim() || displayNameFromMetadata(metadata),
       photoUrl: profile?.photoUrl ?? (typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null),
+      avatarIcon: profile?.avatarIcon ?? null,
     });
   } catch {
     // Profile row is created by a DB trigger on signup; a transient fetch
@@ -64,6 +68,7 @@ async function loadProfileInto(set: (partial: Partial<AuthState>) => void, sessi
       selectedTrackSlugs: [],
       displayName: displayNameFromMetadata(metadata),
       photoUrl: typeof metadata?.avatar_url === 'string' ? metadata.avatar_url : typeof metadata?.picture === 'string' ? metadata.picture : null,
+      avatarIcon: null,
     });
   }
 }
@@ -77,6 +82,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   selectedTrackSlugs: null,
   displayName: null,
   photoUrl: null,
+  avatarIcon: null,
   hydrated: false,
 
   hydrate: () => {
@@ -98,7 +104,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       settled = true;
       console.warn('[auth] getSession timed out after', HYDRATE_TIMEOUT_MS, 'ms, falling back to signedOut');
       useAppStore.getState().setIsPro(false);
-      set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+      set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null, avatarIcon: null });
     }, HYDRATE_TIMEOUT_MS);
 
     supabase.auth
@@ -114,7 +120,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
           loadProfileInto(set, session);
         } else {
           useAppStore.getState().setIsPro(false);
-          set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+          set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null, avatarIcon: null });
         }
       })
       .catch((error) => {
@@ -127,7 +133,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         // signedOut so they at least reach Onboarding/Login and can retry.
         console.warn('[auth] getSession failed, falling back to signedOut:', error);
         useAppStore.getState().setIsPro(false);
-        set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+        set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null, avatarIcon: null });
       });
 
     const { data: subscription } = supabase.auth.onAuthStateChange((_event, session) => {
@@ -137,7 +143,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         loadProfileInto(set, session);
       } else {
         useAppStore.getState().setIsPro(false);
-        set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+        set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null, avatarIcon: null });
       }
     });
 
@@ -146,9 +152,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   setSelectedTrackSlugs: (slugs) => set({ selectedTrackSlugs: slugs }),
   setDisplayName: (name) => set({ displayName: name }),
+  setAvatarIcon: (iconId) => set({ avatarIcon: iconId }),
 
   reset: () => {
     useAppStore.getState().setIsPro(false);
-    set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null });
+    set({ status: 'signedOut', userId: null, emailAddress: null, selectedTrackSlugs: null, displayName: null, photoUrl: null, avatarIcon: null });
   },
 }));

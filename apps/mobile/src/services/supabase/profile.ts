@@ -4,6 +4,7 @@ export type Profile = {
   id: string;
   displayName: string | null;
   photoUrl: string | null;
+  avatarIcon: string | null;
   selectedTracks: string[];
 };
 
@@ -36,7 +37,7 @@ export async function updateNotificationPrefs(userId: string, prefs: Notificatio
 export async function fetchProfile(userId: string): Promise<Profile | null> {
   const { data, error } = await supabase
     .from('profiles')
-    .select('id, display_name, photo_url, selected_tracks')
+    .select('id, display_name, photo_url, avatar_icon, selected_tracks')
     .eq('id', userId)
     .maybeSingle();
 
@@ -47,6 +48,7 @@ export async function fetchProfile(userId: string): Promise<Profile | null> {
     id: data.id,
     displayName: data.display_name,
     photoUrl: data.photo_url,
+    avatarIcon: data.avatar_icon,
     selectedTracks: data.selected_tracks ?? [],
   };
 }
@@ -56,12 +58,13 @@ export async function updateSelectedTracks(userId: string, trackSlugs: string[])
   if (error) throw error;
 }
 
-export async function updateProfile(userId: string, fields: { displayName?: string; photoUrl?: string }) {
+export async function updateProfile(userId: string, fields: { displayName?: string; photoUrl?: string; avatarIcon?: string | null }) {
   const { error } = await supabase
     .from('profiles')
     .update({
       ...(fields.displayName !== undefined ? { display_name: fields.displayName } : {}),
       ...(fields.photoUrl !== undefined ? { photo_url: fields.photoUrl } : {}),
+      ...(fields.avatarIcon !== undefined ? { avatar_icon: fields.avatarIcon } : {}),
     })
     .eq('id', userId);
   if (error) throw error;

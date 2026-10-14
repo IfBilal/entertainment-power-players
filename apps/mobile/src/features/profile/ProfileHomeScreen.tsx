@@ -18,6 +18,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
   const selectedTrackSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
   const setSelectedTrackSlugs = useAuthStore((s) => s.setSelectedTrackSlugs);
   const displayName = useAuthStore((s) => s.displayName);
+  const avatarIcon = useAuthStore((s) => s.avatarIcon);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [tracksOpen, setTracksOpen] = useState(false);
@@ -88,7 +89,7 @@ export function ProfileHomeScreen({ navigation }: Props) {
         <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>YOUR SPACE</AppText>
         <AppText variant="display" style={styles.heading}>Profile</AppText>
         <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
-          <View style={styles.avatarHalo}><Avatar name={displayName || 'Your profile'} size="lg" /></View>
+          <View style={styles.avatarHalo}><Avatar name={displayName || 'Your profile'} iconId={avatarIcon} size="lg" /></View>
           <View style={styles.identityText}><AppText variant="title" style={styles.identityName}>{displayName || 'Your profile'}</AppText><View style={styles.memberBadge}><AppText variant="captionStrong" color={isPro ? colors.accent : colors.textSecondary}>{isPro ? 'PRO MEMBER' : 'FREE MEMBER'}</AppText></View></View>
         </Pressable>
 

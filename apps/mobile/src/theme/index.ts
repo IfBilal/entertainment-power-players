@@ -14,3 +14,4 @@ export type { ShadowToken } from './shadows';
 export type { MotionToken } from './motion';
 export type { IoniconName, MaterialCommunityIconName } from './icons';
 export { categoryPalette, neutralCategoryPalette, metricAccents } from './accents';
+export { avatarIconIds, isAvatarIconId } from './avatarIcons';

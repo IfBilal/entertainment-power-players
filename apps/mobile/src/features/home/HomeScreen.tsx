@@ -61,6 +61,7 @@ export function HomeScreen({ navigation }: Props) {
   const { entries } = useTrackerEntries();
   const goalsQuery = useUserGoals();
   const displayName = useAuthStore((s) => s.displayName);
+  const avatarIcon = useAuthStore((s) => s.avatarIcon);
 
   const now = useMemo(() => new Date(), []);
   const weekKey = computeWeekKey(now);
@@ -77,7 +78,7 @@ export function HomeScreen({ navigation }: Props) {
       >
         <View style={styles.header}>
           <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>GOOD TO SEE YOU</AppText>
-          <View style={styles.avatarHalo}><Avatar name={displayName ?? firstName} size="lg" /></View>
+          <View style={styles.avatarHalo}><Avatar name={displayName ?? firstName} iconId={avatarIcon} size="lg" /></View>
           <AppText variant="display" style={styles.greeting}>{greeting(now)}</AppText>
           <AppText variant="subtitle" color={colors.accent} style={styles.firstName}>{firstName}</AppText>
         </View>

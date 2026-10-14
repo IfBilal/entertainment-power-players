@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Alert, Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Avatar, Divider, Screen, SettingsRow, Tag } from '../../components';
 import { colors, spacing } from '../../theme';
@@ -8,7 +8,13 @@ import { deleteAccount, signOut } from '../../services/supabase/auth';
 import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useStaggeredEntrance } from '../../hooks/useStaggeredEntrance';
 import type { ProfileStackParamList } from '../../navigation/types';
+
+function FadeInSection({ index, style, children }: { index: number; style?: object; children: React.ReactNode }) {
+  const entrance = useStaggeredEntrance(index, { distance: 16 });
+  return <Animated.View style={[style, { opacity: entrance.opacity, transform: entrance.transform }]}>{children}</Animated.View>;
+}
 
 type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
 
@@ -88,12 +94,14 @@ export function ProfileHomeScreen({ navigation }: Props) {
       <ScrollView contentContainerStyle={styles.content} showsVerticalScrollIndicator={false}>
         <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>YOUR SPACE</AppText>
         <AppText variant="display" style={styles.heading}>Profile</AppText>
-        <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
-          <View style={styles.avatarHalo}><Avatar name={displayName || 'Your profile'} iconId={avatarIcon} size="lg" /></View>
-          <View style={styles.identityText}><AppText variant="title" style={styles.identityName}>{displayName || 'Your profile'}</AppText><View style={styles.memberBadge}><AppText variant="captionStrong" color={isPro ? colors.accent : colors.textSecondary}>{isPro ? 'PRO MEMBER' : 'FREE MEMBER'}</AppText></View></View>
-        </Pressable>
+        <FadeInSection index={0}>
+          <Pressable style={styles.identity} onPress={() => navigation.navigate('EditProfile')} accessibilityRole="button" accessibilityLabel="Edit profile">
+            <View style={styles.avatarHalo}><Avatar name={displayName || 'Your profile'} iconId={avatarIcon} size="lg" /></View>
+            <View style={styles.identityText}><AppText variant="title" style={styles.identityName}>{displayName || 'Your profile'}</AppText><View style={styles.memberBadge}><AppText variant="captionStrong" color={isPro ? colors.accent : colors.textSecondary}>{isPro ? 'PRO MEMBER' : 'FREE MEMBER'}</AppText></View></View>
+          </Pressable>
+        </FadeInSection>
 
-        <View style={styles.section}>
+        <FadeInSection index={1} style={styles.section}>
           <SettingsRow icon="compass-outline" iconFamily="mci" title="Track Selection" onPress={() => setTracksOpen((v) => !v)} />
           {tracksOpen ? (
             <View style={styles.trackList}>
@@ -113,12 +121,12 @@ export function ProfileHomeScreen({ navigation }: Props) {
               })}
             </View>
           ) : null}
-        </View>
+        </FadeInSection>
 
-        <View style={styles.section}>
+        <FadeInSection index={2} style={styles.section}>
           <SettingsRow icon="crown-outline" iconFamily="mci" title="Subscription" onPress={() => navigation.navigate('Subscription')} />
           <SettingsRow icon="notifications-outline" title="Notifications" onPress={() => navigation.navigate('Notifications')} />
-        </View>
+        </FadeInSection>
 
         {error ? (
           <AppText variant="caption" color={colors.danger} style={styles.error}>
@@ -126,13 +134,13 @@ export function ProfileHomeScreen({ navigation }: Props) {
           </AppText>
         ) : null}
 
-        <View style={styles.section}>
+        <FadeInSection index={3} style={styles.section}>
           <SettingsRow icon="settings-outline" title="Settings" onPress={() => setSettingsOpen((value) => !value)} />
           {settingsOpen ? <View style={styles.trackList}>
             <SettingsRow icon="log-out-outline" title={busy ? 'Logging out…' : 'Log out'} onPress={handleLogOut} trailing={null} />
             <SettingsRow icon="trash-outline" title="Delete account" tone="danger" onPress={confirmDeleteAccount} trailing={null} />
           </View> : null}
-        </View>
+        </FadeInSection>
       </ScrollView>
     </Screen>
   );

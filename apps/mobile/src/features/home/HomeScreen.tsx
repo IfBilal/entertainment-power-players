@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { useNavigation } from '@react-navigation/native';
 import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
@@ -11,6 +11,7 @@ import { useTrackerEntries } from '../../hooks/useTrackerEntries';
 import { useUserGoals } from '../../hooks/useUserGoals';
 import { goalsForWeek } from '../../services/supabase/goals';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useStaggeredEntrance } from '../../hooks/useStaggeredEntrance';
 import { computeWeekKey } from '../../utils/weekKey';
 import type { DirectoryStackParamList, MainTabParamList } from '../../navigation/types';
 
@@ -36,6 +37,27 @@ const quickAccess: Array<{ label: string; icon: IoniconName; tab: keyof MainTabP
   { label: 'Challenges', icon: 'shield-checkmark-outline', tab: 'Challenges' },
   { label: 'Inspiration', icon: 'sparkles-outline', tab: 'Inspiration' },
 ];
+
+function QuickAccessTile({ label, icon, index, onPress }: { label: string; icon: IoniconName; index: number; onPress: () => void }) {
+  const entrance = useStaggeredEntrance(index);
+  return (
+    <Animated.View style={[styles.quickItem, { opacity: entrance.opacity, transform: entrance.transform }]}>
+      <Pressable
+        style={styles.quickItemPressable}
+        accessibilityRole="button"
+        accessibilityLabel={label}
+        onPress={onPress}
+      >
+        <View style={styles.quickTile}>
+          <Ionicons name={icon} size={26} color={colors.accent} />
+        </View>
+        <AppText variant="caption" style={styles.quickLabel}>
+          {label}
+        </AppText>
+      </Pressable>
+    </Animated.View>
+  );
+}
 
 function greeting(now: Date): string {
   const hour = now.getHours();
@@ -120,12 +142,12 @@ export function HomeScreen({ navigation }: Props) {
           Quick Access
         </AppText>
         <View style={styles.quickRow}>
-          {quickAccess.map((q) => (
-            <Pressable
+          {quickAccess.map((q, index) => (
+            <QuickAccessTile
               key={q.label}
-              style={styles.quickItem}
-              accessibilityRole="button"
-              accessibilityLabel={q.label}
+              label={q.label}
+              icon={q.icon}
+              index={index}
               onPress={() => {
                 // Each tab hosts its own stack, so navigate() needs the nested
                 // screen too -- a bare tab name doesn't typecheck.
@@ -146,14 +168,7 @@ export function HomeScreen({ navigation }: Props) {
                     break;
                 }
               }}
-            >
-              <View style={styles.quickTile}>
-                <Ionicons name={q.icon} size={26} color={colors.accent} />
-              </View>
-              <AppText variant="caption" style={styles.quickLabel}>
-                {q.label}
-              </AppText>
-            </Pressable>
+            />
           ))}
         </View>
       </ScrollView>
@@ -211,9 +226,11 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
   },
   quickItem: {
+    flex: 1,
+  },
+  quickItemPressable: {
     alignItems: 'center',
     gap: spacing.sm,
-    flex: 1,
   },
   quickTile: {
     width: 62,

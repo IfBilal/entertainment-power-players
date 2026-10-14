@@ -2,6 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { colors, gradients, radius } from '../theme';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type ProgressBarProps = {
   progress: number; // 0..1
@@ -12,19 +13,20 @@ type ProgressBarProps = {
 };
 
 export function ProgressBar({ progress, height = 6, tone = 'brand' }: ProgressBarProps) {
-  const anim = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReducedMotion();
   const clamped = Math.max(0, Math.min(1, progress));
+  const anim = useRef(new Animated.Value(reduceMotion || process.env.NODE_ENV === 'test' ? clamped : 0)).current;
   const gradient = gradients[tone];
 
   useEffect(() => {
-    if (process.env.NODE_ENV === 'test') {
+    if (reduceMotion || process.env.NODE_ENV === 'test') {
       anim.setValue(clamped);
       return;
     }
     const animation = Animated.timing(anim, { toValue: clamped, duration: 380, useNativeDriver: false });
     animation.start();
     return () => animation.stop();
-  }, [anim, clamped]);
+  }, [anim, clamped, reduceMotion]);
 
   const width = anim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] });
 

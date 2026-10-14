@@ -1,15 +1,26 @@
 import { useState } from 'react';
-import { ActivityIndicator, Alert, Pressable, ScrollView, StyleSheet, View } from 'react-native';
+import { ActivityIndicator, Alert, Animated, Pressable, ScrollView, StyleSheet, View } from 'react-native';
 import { useQuery } from '@tanstack/react-query';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, Button, Logo, Screen } from '../../components';
 import { colors, radius, spacing } from '../../theme';
+import { useStaggeredEntrance } from '../../hooks/useStaggeredEntrance';
 import type { RootStackParamList } from '../../navigation/types';
 import { activatePreviewPlan, fetchPremiumAccess, requestBillingReconcile } from '../../services/supabase/billing';
 import { billingIsConfigured, getBillingPlans, purchaseBillingPlan, restoreBillingPurchases, type PlanKind } from '../../services/billing/revenuecat';
 import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
+
+function BenefitRow({ text, index }: { text: string; index: number }) {
+  const entrance = useStaggeredEntrance(index, { distance: 14 });
+  return (
+    <Animated.View style={[styles.benefit, { opacity: entrance.opacity, transform: entrance.transform }]}>
+      <Ionicons name="checkmark-circle" size={22} color={colors.accentLime} />
+      <AppText variant="body">{text}</AppText>
+    </Animated.View>
+  );
+}
 
 type Props = NativeStackScreenProps<RootStackParamList, 'Paywall'>;
 
@@ -200,11 +211,8 @@ export function PaywallScreen({ navigation, route }: Props) {
         <AppText variant="body" color={colors.textSecondary} style={styles.subheadline}>Get access to the complete directory,{`\n`}challenges and more.</AppText>
 
         <View style={styles.benefits}>
-          {benefits.map((benefit) => (
-            <View key={benefit} style={styles.benefit}>
-              <Ionicons name="checkmark-circle" size={22} color={colors.accentLime} />
-              <AppText variant="body">{benefit}</AppText>
-            </View>
+          {benefits.map((benefit, index) => (
+            <BenefitRow key={benefit} text={benefit} index={index} />
           ))}
         </View>
 

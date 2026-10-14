@@ -4,6 +4,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Logo } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useAuthStore } from '../../store/useAuthStore';
+import { useReducedMotion } from '../../hooks/useReducedMotion';
 import type { OnboardingStackParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<OnboardingStackParamList, 'Splash'>;
@@ -11,8 +12,9 @@ type Props = NativeStackScreenProps<OnboardingStackParamList, 'Splash'>;
 const MIN_DISPLAY_MS = 1100;
 
 export function SplashScreen({ navigation }: Props) {
-  const scale = useRef(new Animated.Value(0.92)).current;
-  const opacity = useRef(new Animated.Value(0)).current;
+  const reduceMotion = useReducedMotion();
+  const scale = useRef(new Animated.Value(reduceMotion ? 1 : 0.92)).current;
+  const opacity = useRef(new Animated.Value(reduceMotion ? 1 : 0)).current;
   const status = useAuthStore((s) => s.status);
   const selectedTrackSlugs = useAuthStore((s) => s.selectedTrackSlugs);
   const minDelayElapsed = useRef(false);
@@ -55,10 +57,12 @@ export function SplashScreen({ navigation }: Props) {
   }
 
   useEffect(() => {
-    Animated.parallel([
-      Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 10, bounciness: 6 }),
-      Animated.timing(opacity, { toValue: 1, duration: 420, useNativeDriver: true }),
-    ]).start();
+    if (!reduceMotion) {
+      Animated.parallel([
+        Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 10, bounciness: 6 }),
+        Animated.timing(opacity, { toValue: 1, duration: 420, useNativeDriver: true }),
+      ]).start();
+    }
     const timer = setTimeout(() => {
       minDelayElapsed.current = true;
       tryNavigate();

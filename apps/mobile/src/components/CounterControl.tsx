@@ -4,6 +4,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText } from './AppText';
 import { ProgressBar } from './ProgressBar';
 import { colors, spacing } from '../theme';
+import { useReducedMotion } from '../hooks/useReducedMotion';
 
 type CounterControlProps = {
   count: number;
@@ -16,15 +17,16 @@ type CounterControlProps = {
 /** Counter-challenge stepper — "2 of 5" with +/- and a progress bar (spec §24). */
 export function CounterControl({ count, target, onIncrement, onDecrement, disabled = false }: CounterControlProps) {
   const complete = count >= target;
+  const reduceMotion = useReducedMotion();
   const scale = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    if (!complete) return;
+    if (!complete || reduceMotion) return;
     Animated.sequence([
       Animated.spring(scale, { toValue: 1.12, useNativeDriver: true, speed: 40, bounciness: 8 }),
       Animated.spring(scale, { toValue: 1, useNativeDriver: true, speed: 30, bounciness: 6 }),
     ]).start();
-  }, [complete]);
+  }, [complete, reduceMotion]);
 
   return (
     <View style={styles.container}>

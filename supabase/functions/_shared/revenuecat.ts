@@ -1,7 +1,11 @@
 export type BillingSnapshot = {
   plan: 'monthly' | 'annual' | null;
   productId: string | null;
-  platform: 'apple' | 'google' | null;
+  // 'test' is RevenueCat's own Test Store, used for sandbox verification of
+  // this pipeline without a real Apple/Google purchase. It is rejected below
+  // whenever expectedEnvironment is 'PRODUCTION', so it can never reach a
+  // live user's subscription_status row.
+  platform: 'apple' | 'google' | 'test' | null;
   environment: 'SANDBOX' | 'PRODUCTION' | null;
   state: 'free' | 'trial' | 'active' | 'cancelled' | 'expired';
   activeUntil: string | null;
@@ -57,10 +61,14 @@ export function parseSubscriberSnapshot(
   const subscriptions = isRecord(subscriber.subscriptions) ? subscriber.subscriptions : {};
   const subscription = subscriptions[productId];
   if (!isRecord(subscription)) throw new Error('Missing RevenueCat subscription details');
-  const platform = subscription.store === 'app_store' ? 'apple' : subscription.store === 'play_store' ? 'google' : null;
+  const platform = subscription.store === 'app_store' ? 'apple' : subscription.store === 'play_store' ? 'google' : subscription.store === 'test_store' ? 'test' : null;
   if (!platform) throw new Error('Unexpected RevenueCat store');
   const environment = subscription.is_sandbox === true ? 'SANDBOX' : 'PRODUCTION';
   if (environment !== expectedEnvironment) throw new Error('RevenueCat environment mismatch');
+  // Test Store purchases are always sandbox by construction, but this is a
+  // second, explicit gate: a 'test' platform snapshot must never be applied
+  // against a PRODUCTION-configured deployment of this function.
+  if (platform === 'test' && expectedEnvironment !== 'SANDBOX') throw new Error('Test Store platform is not valid outside SANDBOX');
 
   const expiresMs = dateMs(entitlement.expires_date);
   const graceMs = dateMs(entitlement.grace_period_expires_date);

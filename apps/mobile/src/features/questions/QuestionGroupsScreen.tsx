@@ -6,9 +6,9 @@ import { AppText, Button, CategoryGlyph, EmptyState, ErrorState, Screen, Setting
 import { categoryPalette, colors, neutralCategoryPalette, spacing } from '../../theme';
 import { fetchCategories } from '../../services/supabase/directory';
 import { useQuestionProgress, useQuestions } from '../../hooks/useQuestions';
-import type { ChallengesStackParamList } from '../../navigation/types';
+import type { PowerMovesStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<ChallengesStackParamList, 'QuestionGroups'>;
+type Props = NativeStackScreenProps<PowerMovesStackParamList, 'QuestionGroups'>;
 
 export function QuestionGroupsScreen({ route, navigation }: Props) {
   const { categorySlug } = route.params;

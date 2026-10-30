@@ -11,9 +11,9 @@ import { fetchContactChoices } from '../../services/supabase/directory';
 import { activityQueryKey, createActivity } from '../../services/supabase/activity';
 import { computeWeekKey } from '../../utils/weekKey';
 import type { ActivityEntry } from '../../services/mock/tracker';
-import type { TrackerStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<TrackerStackParamList, 'LogEntry'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'LogEntry'>;
 
 const typeLabels = { contact: 'Contact', event: 'Event', followUp: 'Follow-up' } as const;
 
@@ -66,7 +66,10 @@ export function LogEntryScreen({ route, navigation }: Props) {
         weekKey: computeWeekKey(date),
       });
       queryClient.setQueryData<ActivityEntry[]>(activityQueryKey(userId), (current) => [entry, ...(current ?? [])]);
-      navigation.popToTop();
+      // TrackerDashboard is no longer this stack's root (Home is, now that
+      // Tracker lives inside the Home stack) -- popToTop() would land back
+      // on Home instead of the dashboard, so target it by name.
+      navigation.popTo('TrackerDashboard');
     } catch {
       setSaveError(true);
     } finally {

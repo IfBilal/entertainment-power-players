@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { TrackerNavigator } from '../features/tracker/TrackerNavigator';
+import { HomeNavigator } from '../features/home/HomeNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAuthStore } from '../store/useAuthStore';
 import { saveWeeklyGoals } from '../services/supabase/goals';
@@ -27,7 +27,8 @@ it('saves weekly goals and restores them after reopening Tracker', async () => {
   for (const key of Object.keys(mockGoals)) delete mockGoals[key];
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', hydrated: true });
 
-  const visit = await renderWithProviders(<TrackerNavigator />);
+  const visit = await renderWithProviders(<HomeNavigator />);
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByLabelText('Edit weekly goals'));
   await waitFor(() => expect(screen.getByRole('button', { name: 'Save goals' }).props.accessibilityState?.disabled).toBe(false));
   fireEvent.changeText(await screen.findByDisplayValue('5'), '7');
@@ -38,6 +39,7 @@ it('saves weekly goals and restores them after reopening Tracker', async () => {
   await waitFor(() => expect(screen.getByTestId('tracker-progress-copy')).toHaveTextContent(/0\/7/));
 
   visit.unmount();
-  await renderWithProviders(<TrackerNavigator />);
+  await renderWithProviders(<HomeNavigator />);
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   await waitFor(() => expect(screen.getByTestId('tracker-progress-copy')).toHaveTextContent(/0\/7/));
 });

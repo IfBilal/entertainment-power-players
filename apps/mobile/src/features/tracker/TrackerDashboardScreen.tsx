@@ -12,10 +12,10 @@ import { computeWeekKey } from '../../utils/weekKey';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuthStore } from '../../store/useAuthStore';
 import { activityQueryKey } from '../../services/supabase/activity';
-import type { TrackerStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 import { useReducedMotion } from '../../hooks/useReducedMotion';
 
-type Props = NativeStackScreenProps<TrackerStackParamList, 'TrackerDashboard'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'TrackerDashboard'>;
 
 function GoalProgressBar({ value, goal, tint }: { value: number; goal: number; tint: string }) {
   const progress = goal > 0 ? Math.min(1, value / goal) : 0;

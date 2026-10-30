@@ -4,16 +4,17 @@ import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 type GlyphName = ComponentProps<typeof MaterialCommunityIcons>['name'];
 
 /**
- * One characterized artifact per industry, not a generic stock glyph --
- * a clapboard for film, a vinyl record for music, a trophy for sports, the
- * way Harry Potter merch uses a wand or house scarf instead of a plain icon.
+ * One characterized artifact per industry, not a generic stock glyph.
+ * Fashion and Sports are the client's literal icon picks (2 Oct feedback:
+ * sunglasses for Fashion, basketball for Sports); the rest keep the earlier
+ * characterized set.
  */
 const icons: Record<string, GlyphName> = {
-  fashion: 'hanger',
+  fashion: 'sunglasses',
   'film-tv': 'movie-open',
   gaming: 'controller-classic',
   music: 'album',
-  sports: 'trophy',
+  sports: 'basketball',
   'creators-producers': 'movie-edit',
 };
 

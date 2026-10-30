@@ -7,9 +7,9 @@ import { categoryPalette, colors, neutralCategoryPalette, spacing } from '../../
 import { fetchCategories } from '../../services/supabase/directory';
 import { useQuestions } from '../../hooks/useQuestions';
 import { useAppStore } from '../../store/useAppStore';
-import type { ChallengesStackParamList } from '../../navigation/types';
+import type { PowerMovesStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<ChallengesStackParamList, 'QuestionCategories'>;
+type Props = NativeStackScreenProps<PowerMovesStackParamList, 'QuestionCategories'>;
 
 export function QuestionCategoriesScreen({ navigation }: Props) {
   const isPro = useAppStore((state) => state.isPro);

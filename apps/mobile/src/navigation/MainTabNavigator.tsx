@@ -3,17 +3,16 @@ import { useEffect, useRef } from 'react';
 import { Animated, StyleSheet, View } from 'react-native';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { DirectoryNavigator } from '../features/directory/DirectoryNavigator';
-import { TrackerNavigator } from '../features/tracker/TrackerNavigator';
+import { HomeNavigator } from '../features/home/HomeNavigator';
+import { PowerMovesNavigator } from '../features/questions/PowerMovesNavigator';
 import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator';
-import { InspirationNavigator } from '../features/inspiration/InspirationNavigator';
-import { ProfileNavigator } from '../features/profile/ProfileNavigator';
+import { SearchNavigator } from '../features/directory/SearchNavigator';
 import { colors, fontFamilies, radius, tabIcons } from '../theme';
 import type { MainTabParamList } from './types';
 
 const Tab = createBottomTabNavigator<MainTabParamList>();
 
-/** A restrained selected pill keeps all five icons legible on the white bar. */
+/** A restrained selected pill keeps all four icons legible on the white bar. */
 function TabIcon({ route, color, size, focused }: { route: string; color: string; size: number; focused: boolean }) {
   const focus = useRef(new Animated.Value(focused ? 1 : 0)).current;
 
@@ -75,11 +74,10 @@ export function MainTabNavigator() {
         ),
       })}
     >
-      <Tab.Screen name="Directory" component={DirectoryNavigator} />
-      <Tab.Screen name="Tracker" component={TrackerNavigator} />
+      <Tab.Screen name="Home" component={HomeNavigator} />
+      <Tab.Screen name="PowerMoves" component={PowerMovesNavigator} />
       <Tab.Screen name="Challenges" component={ChallengesNavigator} />
-      <Tab.Screen name="Inspiration" component={InspirationNavigator} />
-      <Tab.Screen name="Profile" component={ProfileNavigator} />
+      <Tab.Screen name="Search" component={SearchNavigator} />
     </Tab.Navigator>
   );
 }

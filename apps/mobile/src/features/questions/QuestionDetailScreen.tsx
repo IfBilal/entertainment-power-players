@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, Screen } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useQuestionActions, useQuestionProgress, useQuestions } from '../../hooks/useQuestions';
-import type { ChallengesStackParamList } from '../../navigation/types';
+import type { PowerMovesStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<ChallengesStackParamList, 'QuestionDetail'>;
+type Props = NativeStackScreenProps<PowerMovesStackParamList, 'QuestionDetail'>;
 
 export function QuestionDetailScreen({ route, navigation }: Props) {
   const { questionId } = route.params;

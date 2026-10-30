@@ -8,9 +8,9 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useUserGoals } from '../../hooks/useUserGoals';
 import { goalsForWeek, goalsQueryKey, saveWeeklyGoals, type GoalsByWeek } from '../../services/supabase/goals';
 import { computeWeekKey } from '../../utils/weekKey';
-import type { TrackerStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<TrackerStackParamList, 'GoalsEditor'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'GoalsEditor'>;
 
 export function GoalsEditorScreen({ navigation }: Props) {
   const [weekKey] = useState(() => computeWeekKey(new Date()));

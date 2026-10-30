@@ -7,13 +7,12 @@ export type MaterialCommunityIconName = ComponentProps<typeof MaterialCommunityI
 
 /**
  * Navigation pictograms, separate from the six-category icon set. Each one
- * is a specific artifact for what the tab actually is -- a contact book, a
- * target, a medal, a quote bubble -- not a generic stock glyph.
+ * is a specific artifact for what the tab actually is -- a house, a
+ * lightning bolt, a trophy, a magnifying glass -- not a generic stock glyph.
  */
 export const tabIcons: Record<string, MaterialCommunityIconName> = {
-  Directory: 'contacts-outline',
-  Tracker: 'bullseye-arrow',
-  Challenges: 'medal-outline',
-  Inspiration: 'comment-quote-outline',
-  Profile: 'account-circle-outline',
+  Home: 'home-outline',
+  PowerMoves: 'lightning-bolt-outline',
+  Challenges: 'trophy-outline',
+  Search: 'magnify',
 };

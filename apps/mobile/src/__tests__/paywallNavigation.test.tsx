@@ -124,11 +124,11 @@ describe('Paywall reached from a locked screen (root-level modal)', () => {
 
   it('keeps Profile reachable after dismissing the plans sheet', async () => {
     await renderWithProviders(<RootNavigator />);
-    fireEvent.press(await screen.findByText('Profile'));
+    fireEvent.press(await screen.findByLabelText('Open profile'));
     fireEvent.press(await screen.findByText('Subscription'));
     fireEvent.press(await screen.findByText('Choose a plan'));
     fireEvent.press(await screen.findByLabelText('Close paywall'));
-    expect(await screen.findByText('Profile')).toBeTruthy();
+    expect(await screen.findByText('Subscription')).toBeTruthy();
     expect(screen.queryByText('Quick Access')).toBeNull();
   });
 

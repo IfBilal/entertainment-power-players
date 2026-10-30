@@ -9,14 +9,14 @@ import { updateSelectedTracks } from '../../services/supabase/profile';
 import { useAppStore } from '../../store/useAppStore';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStaggeredEntrance } from '../../hooks/useStaggeredEntrance';
-import type { ProfileStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 
 function FadeInSection({ index, style, children }: { index: number; style?: object; children: React.ReactNode }) {
   const entrance = useStaggeredEntrance(index, { distance: 16 });
   return <Animated.View style={[style, { opacity: entrance.opacity, transform: entrance.transform }]}>{children}</Animated.View>;
 }
 
-type Props = NativeStackScreenProps<ProfileStackParamList, 'ProfileHome'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'ProfileHome'>;
 
 export function ProfileHomeScreen({ navigation }: Props) {
   const isPro = useAppStore((s) => s.isPro);

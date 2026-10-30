@@ -20,9 +20,9 @@ import { buildDirectoryItemLayouts } from '../../utils/directoryLayout';
 import { useFavorites } from '../../hooks/useFavorites';
 import { useAppStore } from '../../store/useAppStore';
 import { isScreenLocked } from '../../utils/paywall';
-import type { DirectoryStackParamList } from '../../navigation/types';
+import type { SearchStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<DirectoryStackParamList, 'ContactList'>;
+type Props = NativeStackScreenProps<SearchStackParamList, 'ContactList'>;
 
 const ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ'.split('');
 

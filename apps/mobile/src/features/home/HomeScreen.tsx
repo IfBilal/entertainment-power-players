@@ -13,9 +13,9 @@ import { goalsForWeek } from '../../services/supabase/goals';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useStaggeredEntrance } from '../../hooks/useStaggeredEntrance';
 import { computeWeekKey } from '../../utils/weekKey';
-import type { DirectoryStackParamList, MainTabParamList } from '../../navigation/types';
+import type { HomeStackParamList, MainTabParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<DirectoryStackParamList, 'Home'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'Home'>;
 
 type Metric = {
   key: keyof WeeklyGoals;
@@ -31,11 +31,14 @@ const metrics: Metric[] = [
   { key: 'followUps', label: 'Follow-ups', icon: 'ellipse', tone: 'barOrange', colour: metricAccents.followUps },
 ];
 
-const quickAccess: Array<{ label: string; icon: IoniconName; tab: keyof MainTabParamList }> = [
-  { label: 'Directory', icon: 'people-outline', tab: 'Directory' },
-  { label: 'Tracker', icon: 'stats-chart-outline', tab: 'Tracker' },
-  { label: 'Challenges', icon: 'shield-checkmark-outline', tab: 'Challenges' },
-  { label: 'Inspiration', icon: 'sparkles-outline', tab: 'Inspiration' },
+type QuickAccessTarget = 'Search' | 'Tracker' | 'Challenges' | 'QuoteFeed' | 'PowerMoves';
+
+const quickAccess: Array<{ label: string; icon: IoniconName; target: QuickAccessTarget }> = [
+  { label: 'Directory', icon: 'people-outline', target: 'Search' },
+  { label: 'Tracker', icon: 'stats-chart-outline', target: 'Tracker' },
+  { label: 'Challenges', icon: 'shield-checkmark-outline', target: 'Challenges' },
+  { label: 'Quotes', icon: 'sparkles-outline', target: 'QuoteFeed' },
+  { label: 'Power Moves', icon: 'flash-outline', target: 'PowerMoves' },
 ];
 
 function QuickAccessTile({ label, icon, index, onPress }: { label: string; icon: IoniconName; index: number; onPress: () => void }) {
@@ -100,7 +103,14 @@ export function HomeScreen({ navigation }: Props) {
       >
         <View style={styles.header}>
           <AppText variant="label" color={colors.accentOrange} style={styles.eyebrow}>GOOD TO SEE YOU</AppText>
-          <View style={styles.avatarHalo}><Avatar name={displayName ?? firstName} iconId={avatarIcon} size="lg" /></View>
+          <Pressable
+            style={styles.avatarHalo}
+            accessibilityRole="button"
+            accessibilityLabel="Open profile"
+            onPress={() => navigation.navigate('ProfileHome')}
+          >
+            <Avatar name={displayName ?? firstName} iconId={avatarIcon} size="lg" />
+          </Pressable>
           <AppText variant="display" style={styles.greeting}>{greeting(now)}</AppText>
           <AppText variant="subtitle" color={colors.accent} style={styles.firstName}>{firstName}</AppText>
         </View>
@@ -149,20 +159,25 @@ export function HomeScreen({ navigation }: Props) {
               icon={q.icon}
               index={index}
               onPress={() => {
-                // Each tab hosts its own stack, so navigate() needs the nested
-                // screen too -- a bare tab name doesn't typecheck.
-                switch (q.tab) {
-                  case 'Directory':
-                    navigation.navigate('CategoryGrid');
+                // Tracker and Quotes now live in this same Home stack, so
+                // those two are a same-stack navigate(); Search and
+                // Challenges still live on other tabs and need the nested
+                // { screen } form -- a bare tab name doesn't typecheck.
+                switch (q.target) {
+                  case 'Search':
+                    tabNavigation.navigate('Search', { screen: 'CategoryGrid' });
                     break;
                   case 'Tracker':
-                    tabNavigation.navigate('Tracker', { screen: 'TrackerDashboard' });
+                    navigation.navigate('TrackerDashboard');
                     break;
                   case 'Challenges':
                     tabNavigation.navigate('Challenges', { screen: 'TrackList' });
                     break;
-                  case 'Inspiration':
-                    tabNavigation.navigate('Inspiration', { screen: 'QuoteFeed' });
+                  case 'QuoteFeed':
+                    navigation.navigate('QuoteFeed');
+                    break;
+                  case 'PowerMoves':
+                    tabNavigation.navigate('PowerMoves', { screen: 'QuestionCategories' });
                     break;
                   default:
                     break;

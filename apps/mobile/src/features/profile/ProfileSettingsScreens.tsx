@@ -6,7 +6,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import MaterialCommunityIcons from '@expo/vector-icons/MaterialCommunityIcons';
 import { AppText, Avatar, Button, FormField, Screen } from '../../components';
 import { avatarIconIds, colors, radius, spacing } from '../../theme';
-import type { ProfileStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 import { useAppStore } from '../../store/useAppStore';
 import { assertEmailAvailable, requestEmailChange } from '../../services/supabase/auth';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -15,7 +15,7 @@ import { fetchSubscriptionStatus } from '../../services/supabase/billing';
 
 function Back({ onPress }: { onPress: () => void }) { return <Pressable onPress={onPress} hitSlop={10} style={styles.back}><Ionicons name="chevron-back" size={27} color={colors.textPrimary} /></Pressable>; }
 
-export function EditProfileScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'EditProfile'>) {
+export function EditProfileScreen({ navigation }: NativeStackScreenProps<HomeStackParamList, 'EditProfile'>) {
   const displayName = useAuthStore((state) => state.displayName);
   const userId = useAuthStore((state) => state.userId);
   const setDisplayName = useAuthStore((state) => state.setDisplayName);
@@ -152,7 +152,7 @@ export function EditProfileScreen({ navigation }: NativeStackScreenProps<Profile
   );
 }
 
-export function SubscriptionScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Subscription'>) {
+export function SubscriptionScreen({ navigation }: NativeStackScreenProps<HomeStackParamList, 'Subscription'>) {
   const isPro = useAppStore((state) => state.isPro);
   const userId = useAuthStore((state) => state.userId);
   const statusQuery = useQuery({ queryKey: ['subscriptionStatus', userId], queryFn: () => fetchSubscriptionStatus(userId!), enabled: Boolean(userId), refetchOnMount: 'always' });
@@ -202,7 +202,7 @@ export function SubscriptionScreen({ navigation }: NativeStackScreenProps<Profil
   );
 }
 
-export function NotificationsScreen({ navigation }: NativeStackScreenProps<ProfileStackParamList, 'Notifications'>) {
+export function NotificationsScreen({ navigation }: NativeStackScreenProps<HomeStackParamList, 'Notifications'>) {
   const userId = useAuthStore((state) => state.userId);
   const queryClient = useQueryClient();
   const queryKey = ['notificationPrefs', userId] as const;

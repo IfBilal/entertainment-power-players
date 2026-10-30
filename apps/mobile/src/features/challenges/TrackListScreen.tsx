@@ -1,17 +1,20 @@
 import { useState } from 'react';
 import { FlatList, Pressable, StyleSheet, View } from 'react-native';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { useNavigation } from '@react-navigation/native';
+import type { BottomTabNavigationProp } from '@react-navigation/bottom-tabs';
 import { AppText, Card, EmptyState, IconTile, Screen, SettingsRow } from '../../components';
 import { categoryPalette, colors, neutralCategoryPalette, spacing, type GradientToken } from '../../theme';
 import { useChallenges, useTracks } from '../../hooks/useContent';
 import { useAuthStore } from '../../store/useAuthStore';
 import { useChallengeProgress } from '../../hooks/useChallengeProgress';
 import { useAppStore } from '../../store/useAppStore';
-import type { ChallengesStackParamList } from '../../navigation/types';
+import type { ChallengesStackParamList, MainTabParamList } from '../../navigation/types';
 
 type Props = NativeStackScreenProps<ChallengesStackParamList, 'TrackList'>;
 
 export function TrackListScreen({ navigation }: Props) {
+  const tabNavigation = useNavigation<BottomTabNavigationProp<MainTabParamList>>();
   const selectedSlugs = useAuthStore((s) => s.selectedTrackSlugs) ?? [];
   const progressQuery = useChallengeProgress();
   const tracksQuery = useTracks();
@@ -39,7 +42,7 @@ export function TrackListScreen({ navigation }: Props) {
         <Pressable style={[styles.tab, tab === 'all' && styles.activeTab]} onPress={() => setTab('all')} accessibilityRole="tab" accessibilityState={{ selected: tab === 'all' }}><AppText variant="bodyStrong" color={tab === 'all' ? colors.textInverse : colors.textSecondary}>All Tracks</AppText></Pressable>
       </View>
       <View style={styles.questionsEntry}>
-        <SettingsRow icon="help-circle-outline" title="Questions" subtitle="Test your industry knowledge" onPress={() => navigation.navigate('QuestionCategories')} />
+        <SettingsRow icon="help-circle-outline" title="Questions" subtitle="Test your industry knowledge" onPress={() => tabNavigation.navigate('PowerMoves', { screen: 'QuestionCategories' })} />
       </View>
       {progressQuery.isError ? <Pressable onPress={() => progressQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load challenge progress. Tap to retry.</AppText></Pressable> : null}
       {tracksQuery.isError ? <Pressable onPress={() => tracksQuery.refetch()} accessibilityRole="button"><AppText variant="caption" color={colors.danger}>Couldn't load tracks. Tap to retry.</AppText></Pressable> : null}

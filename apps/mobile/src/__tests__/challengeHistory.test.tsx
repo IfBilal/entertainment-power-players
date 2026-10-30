@@ -32,7 +32,7 @@ jest.mock('../services/supabase/challenges', () => {
 it('shows the one persisted challenge activity in Tracker Week History', async () => {
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['creators-producers'], hydrated: true });
   await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByLabelText('Week History'));
   expect(await screen.findByText('Completed "Create Something New"')).toBeTruthy();
   expect(screen.getAllByText('Completed "Create Something New"')).toHaveLength(1);

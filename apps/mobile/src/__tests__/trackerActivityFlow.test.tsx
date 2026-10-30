@@ -32,7 +32,7 @@ it('saves contact, event and follow-up logs and shows them in Week History after
   mockActivityRows.length = 0;
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['fashion'], hydrated: true });
   const firstVisit = await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
 
   const examples = [
     { type: 'Contact', title: 'Met a producer', placeholder: 'e.g. Jane Doe' },
@@ -56,7 +56,7 @@ it('saves contact, event and follow-up logs and shows them in Week History after
 
   await firstVisit.unmount();
   const secondVisit = await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByLabelText('Week History'));
   for (const example of examples) expect(await screen.findByText(example.title)).toBeTruthy();
   await secondVisit.unmount();
@@ -67,7 +67,7 @@ it('persists a linked directory contact and an event with its week key', async (
   useAppStore.setState({ isPro: true });
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['fashion'], hydrated: true });
   const visit = await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByText('Log Activity'));
   fireEvent.press(await screen.findByText('Contact'));
   fireEvent.press(await screen.findByText('Directory contact'));
@@ -95,14 +95,14 @@ it('confirms a history deletion and keeps it gone after reopening', async () => 
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['fashion'], hydrated: true });
   const alert = jest.spyOn(Alert, 'alert').mockImplementation((_title, _message, buttons) => { buttons?.find((button) => button.text === 'Delete')?.onPress?.(); });
   const visit = await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByLabelText('Week History'));
   fireEvent.press(await screen.findByLabelText('Reveal delete for To remove'));
   fireEvent.press(await screen.findByLabelText('Delete To remove'));
   await waitFor(() => expect(mockActivityRows).toHaveLength(0));
   await visit.unmount();
   const secondVisit = await renderWithProviders(<MainTabNavigator />);
-  fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+  fireEvent.press(await screen.findByLabelText('Tracker'));
   fireEvent.press(await screen.findByLabelText('Week History'));
   expect(screen.queryByText('To remove')).toBeNull();
   await secondVisit.unmount();

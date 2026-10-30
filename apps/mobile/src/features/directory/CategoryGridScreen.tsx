@@ -6,9 +6,9 @@ import { AppText, CategoryCard, ErrorState, Screen, Skeleton } from '../../compo
 import { categoryPalette, colors, neutralCategoryPalette, spacing, type IoniconName } from '../../theme';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { fetchCategories, fetchCategoryCounts } from '../../services/supabase/directory';
-import type { DirectoryStackParamList } from '../../navigation/types';
+import type { SearchStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<DirectoryStackParamList, 'CategoryGrid'>;
+type Props = NativeStackScreenProps<SearchStackParamList, 'CategoryGrid'>;
 
 export function CategoryGridScreen({ navigation }: Props) {
   const [search, setSearch] = useState('');

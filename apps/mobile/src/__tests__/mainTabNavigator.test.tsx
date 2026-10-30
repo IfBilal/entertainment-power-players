@@ -3,9 +3,9 @@ import { MainTabNavigator } from '../navigation/MainTabNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAuthStore } from '../store/useAuthStore';
 
-// Directory screens now read live data. Stub the service so these navigation
-// tests stay deterministic and offline -- what's under test here is that every
-// tab mounts and is reachable, not the data layer.
+// Directory/Search screens now read live data. Stub the service so these
+// navigation tests stay deterministic and offline -- what's under test here
+// is that every tab mounts and is reachable, not the data layer.
 jest.mock('../services/supabase/directory', () => ({
   fetchCategories: jest.fn(async () => [
     { slug: 'fashion', name: 'Fashion', icon: 'glasses-outline', order: 1 },
@@ -35,17 +35,36 @@ describe('MainTabNavigator', () => {
     });
   });
 
-  it('renders all five tabs and each is reachable', async () => {
+  it('renders all four tabs and each is reachable', async () => {
     await renderWithProviders(<MainTabNavigator />);
 
-    // Directory is the initial tab — its screen heading confirms it rendered.
+    // Home is the initial tab — its dashboard heading confirms it rendered.
     expect(await screen.findByText('Quick Access')).toBeTruthy();
 
-    for (const tab of ['Directory', 'Tracker', 'Challenges', 'Inspiration', 'Profile']) {
+    for (const tab of ['Home', 'PowerMoves', 'Challenges', 'Search']) {
       expect(screen.getAllByTestId(`main-tab-icon-${tab}`).length).toBeGreaterThan(0);
     }
 
-    fireEvent.press(await screen.findByLabelText(/^Tracker, tab,/));
+    // Home's Quick Access repeats some of these labels as plain-text tiles,
+    // and tab screens stay mounted (not unmounted) when inactive, so a
+    // bare-text or bare-label match can hit the Quick Access tile instead of
+    // the actual tab bar button. React Navigation's real tab buttons carry
+    // the fuller "<label>, tab, N of 4" accessibility label, which the tile
+    // does not.
+    fireEvent.press(await screen.findByLabelText(/^PowerMoves, tab,/));
+    expect(await screen.findByText('Questions')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText(/^Challenges, tab,/));
+    expect(await screen.findByText('Small steps. Bigger opportunities.')).toBeTruthy();
+
+    fireEvent.press(screen.getByLabelText(/^Search, tab,/));
+    expect(await screen.findByText('YOUR INDUSTRY, ONE PLACE')).toBeTruthy();
+  });
+
+  it('reaches the Tracker dashboard from Home without leaving the Home tab', async () => {
+    await renderWithProviders(<MainTabNavigator />);
+
+    fireEvent.press(await screen.findByLabelText('Tracker'));
     const trackerCenter = await screen.findByTestId('tracker-progress-copy');
     expect(trackerCenter.props.style).toMatchObject({
       position: 'absolute',
@@ -56,18 +75,5 @@ describe('MainTabNavigator', () => {
       alignItems: 'center',
       justifyContent: 'center',
     });
-
-    // Home's Quick Access repeats these labels as plain-text tiles, and tab
-    // screens stay mounted (not unmounted) when inactive, so a bare-text or
-    // bare-label match can hit the Quick Access tile instead of the actual
-    // tab bar button. React Navigation's real tab buttons carry the fuller
-    // "<label>, tab, N of 5" accessibility label, which the tile does not.
-    for (const tab of ['Tracker', 'Challenges', 'Inspiration', 'Profile']) {
-      fireEvent.press(screen.getByLabelText(new RegExp(`^${tab}, tab,`)));
-    }
-
-    // Profile tab renders its subscription control once selected.
-    expect(await screen.findByText('Subscription')).toBeTruthy();
   });
-
 });

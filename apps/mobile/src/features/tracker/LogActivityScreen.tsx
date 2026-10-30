@@ -3,9 +3,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { AppText, IconTile, Screen } from '../../components';
 import { colors, spacing, type GradientToken, type MaterialCommunityIconName } from '../../theme';
-import type { TrackerStackParamList } from '../../navigation/types';
+import type { HomeStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<TrackerStackParamList, 'LogActivity'>;
+type Props = NativeStackScreenProps<HomeStackParamList, 'LogActivity'>;
 
 const options: Array<{ type: 'contact' | 'event' | 'followUp'; title: string; description: string; icon: MaterialCommunityIconName; tone: GradientToken }> = [
   { type: 'contact', title: 'Contact', description: "Add a new contact you've met", icon: 'card-account-phone-outline', tone: 'barOrange' },

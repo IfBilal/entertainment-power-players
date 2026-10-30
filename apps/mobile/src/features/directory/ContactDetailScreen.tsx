@@ -14,9 +14,9 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { useAppStore } from '../../store/useAppStore';
 import { isScreenLocked } from '../../utils/paywall';
 import { computeWeekKey } from '../../utils/weekKey';
-import type { DirectoryStackParamList } from '../../navigation/types';
+import type { SearchStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<DirectoryStackParamList, 'ContactDetail'>;
+type Props = NativeStackScreenProps<SearchStackParamList, 'ContactDetail'>;
 
 export function ContactDetailScreen({ route, navigation }: Props) {
   const { contactId } = route.params;

@@ -1,5 +1,5 @@
 import { fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { ProfileNavigator } from '../features/profile/ProfileNavigator';
+import { HomeNavigator } from '../features/home/HomeNavigator';
 import { renderWithProviders } from '../testing/renderWithProviders';
 import { useAuthStore } from '../store/useAuthStore';
 import { updateNotificationPrefs } from '../services/supabase/profile';
@@ -18,7 +18,8 @@ it('saves notification switches and restores them after reopening', async () => 
   mockPrefs.challengeReminders = true;
   useAuthStore.setState({ status: 'signedIn', userId: 'test-user', selectedTrackSlugs: ['fashion'], hydrated: true });
 
-  const firstVisit = await renderWithProviders(<ProfileNavigator />);
+  const firstVisit = await renderWithProviders(<HomeNavigator />);
+  fireEvent.press(await screen.findByLabelText('Open profile'));
   fireEvent.press(await screen.findByText('Notifications'));
   await waitFor(() => expect(screen.getAllByRole('switch')[0].props.disabled).toBe(false));
   fireEvent(screen.getAllByRole('switch')[0], 'valueChange', false);
@@ -29,7 +30,8 @@ it('saves notification switches and restores them after reopening', async () => 
   await waitFor(() => expect(mockPrefs.weeklyProgress).toBe(false));
 
   firstVisit.unmount();
-  await renderWithProviders(<ProfileNavigator />);
+  await renderWithProviders(<HomeNavigator />);
+  fireEvent.press(await screen.findByLabelText('Open profile'));
   fireEvent.press(await screen.findByText('Notifications'));
   const savedSwitches = await screen.findAllByRole('switch');
   await waitFor(() => expect(savedSwitches[0].props.value).toBe(false));

@@ -1,5 +1,5 @@
 import { cleanup, fireEvent, screen, waitFor } from '@testing-library/react-native';
-import { ChallengesNavigator } from '../features/challenges/ChallengesNavigator';
+import { PowerMovesNavigator } from '../features/questions/PowerMovesNavigator';
 import { useAppStore } from '../store/useAppStore';
 import { useAuthStore } from '../store/useAuthStore';
 import { renderWithProviders } from '../testing/renderWithProviders';
@@ -68,16 +68,13 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
 
   it('shows a locked paywall card instead of questions when not pro', async () => {
     useAppStore.setState({ isPro: false });
-    await renderWithProviders(<ChallengesNavigator />);
-    fireEvent.press(await screen.findByText('Questions'));
+    await renderWithProviders(<PowerMovesNavigator />);
     expect(await screen.findByText('See plans')).toBeTruthy();
     expect(screen.queryByText('Fashion')).toBeNull();
   });
 
   it('walks category -> group -> list -> detail, reveals, completes, and moves next/previous', async () => {
-    await renderWithProviders(<ChallengesNavigator />);
-
-    fireEvent.press(await screen.findByText('Questions'));
+    await renderWithProviders(<PowerMovesNavigator />);
     fireEvent.press(await screen.findByText('Fashion'));
     expect(await screen.findByText('Know the Industry')).toBeTruthy();
     expect(screen.getByText('0/2 complete')).toBeTruthy();
@@ -112,8 +109,7 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
   });
 
   it('persists progress across a simulated reinstall (fresh mount, same account)', async () => {
-    const first = await renderWithProviders(<ChallengesNavigator />);
-    fireEvent.press(await screen.findByText('Questions'));
+    const first = await renderWithProviders(<PowerMovesNavigator />);
     fireEvent.press(await screen.findByText('Fashion'));
     fireEvent.press(await screen.findByText('Know the Industry'));
     fireEvent.press(await screen.findByText('1. Who founded the CFDA?'));
@@ -121,8 +117,7 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
     await screen.findByText('Eleanor Lambert.');
     await first.unmount();
 
-    await renderWithProviders(<ChallengesNavigator />);
-    fireEvent.press(await screen.findByText('Questions'));
+    await renderWithProviders(<PowerMovesNavigator />);
     fireEvent.press(await screen.findByText('Fashion'));
     expect(await screen.findByText('0/2 complete')).toBeTruthy();
     fireEvent.press(screen.getByText('Know the Industry'));
@@ -133,8 +128,7 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
   it('marks a category with no questions honestly, not with fabricated content', async () => {
     const content = jest.requireMock('../services/supabase/questions');
     content.fetchActiveQuestions.mockResolvedValueOnce([]);
-    await renderWithProviders(<ChallengesNavigator />);
-    fireEvent.press(await screen.findByText('Questions'));
+    await renderWithProviders(<PowerMovesNavigator />);
     expect(await screen.findByText('Coming soon')).toBeTruthy();
     // A category with nothing to show yet cannot be opened.
     fireEvent.press(screen.getByText('Fashion'));
@@ -146,8 +140,7 @@ describe('Questions: category -> group -> list -> detail -> reveal -> complete',
     directory.fetchCategories.mockResolvedValueOnce([]);
     const content = jest.requireMock('../services/supabase/questions');
     content.fetchActiveQuestions.mockResolvedValueOnce([]);
-    await renderWithProviders(<ChallengesNavigator />);
-    fireEvent.press(await screen.findByText('Questions'));
+    await renderWithProviders(<PowerMovesNavigator />);
     expect(await screen.findByText('The quiz is still loading up')).toBeTruthy();
   });
 });

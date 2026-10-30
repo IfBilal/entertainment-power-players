@@ -4,9 +4,9 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { AppText, Button, ErrorState, Screen, SettingsRow, Skeleton } from '../../components';
 import { colors, spacing } from '../../theme';
 import { useQuestionProgress, useQuestions } from '../../hooks/useQuestions';
-import type { ChallengesStackParamList } from '../../navigation/types';
+import type { PowerMovesStackParamList } from '../../navigation/types';
 
-type Props = NativeStackScreenProps<ChallengesStackParamList, 'QuestionList'>;
+type Props = NativeStackScreenProps<PowerMovesStackParamList, 'QuestionList'>;
 
 export function QuestionListScreen({ route, navigation }: Props) {
   const { categorySlug, group } = route.params;

@@ -7,6 +7,7 @@ import { ContactsPage } from './pages/ContactsPage';
 import { CategoriesPage } from './pages/CategoriesPage';
 import { ImportPage } from './pages/ImportPage';
 import { QuotesPage } from './pages/QuotesPage';
+import { QuestionsPage } from './pages/QuestionsPage';
 import { QuestionsImportPage } from './pages/QuestionsImportPage';
 import { QuotesImportPage } from './pages/QuotesImportPage';
 import { TracksPage } from './pages/TracksPage';
@@ -114,7 +115,8 @@ export default function App() {
             <Route path="/import" element={<ImportPage />} />
             <Route path="/categories" element={<CategoriesPage />} />
             <Route path="/quotes" element={<QuotesPage />} />
-            <Route path="/questions" element={<QuestionsImportPage />} />
+            <Route path="/questions" element={<QuestionsPage />} />
+            <Route path="/questions-import" element={<QuestionsImportPage />} />
             <Route path="/quotes-import" element={<QuotesImportPage />} />
             <Route path="/tracks" element={<TracksPage />} />
             <Route path="/tracks/:slug" element={<TrackChallengesPage />} />

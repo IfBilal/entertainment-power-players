@@ -29,7 +29,7 @@ describe('profile track selection', () => {
     useAuthStore.setState({ displayName: 'Aisha Khan' });
 
     await renderWithProviders(<RootNavigator />);
-    fireEvent.press(await screen.findByText('Profile'));
+    fireEvent.press(await screen.findByLabelText('Open profile'));
 
     expect(await screen.findByText('Aisha Khan')).toBeTruthy();
     expect(screen.queryByText('Bilal Tahir')).toBeNull();
@@ -43,7 +43,7 @@ describe('profile track selection', () => {
 
   it('allows multiple tracks and saves the edited selection', async () => {
     await renderWithProviders(<RootNavigator />);
-    fireEvent.press(await screen.findByText('Profile'));
+    fireEvent.press(await screen.findByLabelText('Open profile'));
     fireEvent.press(await screen.findByText('Track Selection'));
     fireEvent.press(await screen.findByText('Film/TV'));
 
